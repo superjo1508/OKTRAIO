@@ -161,17 +161,6 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
             }
         }
-
-        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
-        {
-            if (!sender.IsMe) { return;}
-
-            if (args.Slot == SpellSlot.R)
-            {
-                _rDelay = Core.GameTickCount;
-            }
-        }
-
         #endregion
 
         #region Gamerelated Logic
@@ -186,7 +175,7 @@ namespace OKTRAIO.Champions
                             enemy =>
                                 MainMenu._combo[enemy.ChampionName].Cast<CheckBox>().CurrentValue &&
                                 enemy.IsValidTarget() && !enemy.HasBuffOfType(BuffType.SpellShield) &&
-                                !enemy.IsZombie && _q.IsInRange(enemy) && !Orbwalker.IsAutoAttacking && !enemy.HasBuff("ChronoShift")))
+                                !enemy.IsZombie && _q.IsInRange(enemy) && !Orbwalker.IsAutoAttacking))
                 {
                     _q.Cast(enemy);
                 }
@@ -360,6 +349,16 @@ namespace OKTRAIO.Champions
             AutoRcc();
 
             AutoShroom();
+        }
+
+        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (!sender.IsMe) { return; }
+
+            if (args.Slot == SpellSlot.R)
+            {
+                _rDelay = Core.GameTickCount;
+            }
         }
 
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
