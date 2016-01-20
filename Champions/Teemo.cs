@@ -1,35 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
-using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using OKTRAIO.Menu_Settings;
 using SharpDX;
-using Color = SharpDX.Color;
-using MainMenu = OKTRAIO.Menu_Settings.MainMenu;
 
 namespace OKTRAIO.Champions
 {
-    class Teemo : AIOChampion
+    internal class Teemo : AIOChampion
     {
         #region Initialize and Declare
 
         private static Spell.Targeted _q;
         private static Spell.Active _w, _e;
         private static Spell.Skillshot _r;
-        private static readonly int[] Rranges = {300, 600, 900};
-        private static bool _rDelay;
+        private static int _rDelay;
         private static readonly Vector2 Offset = new Vector2(1, 0);
 
-        public static Menu Mainmenu
-        {
-            get { return MainMenu._combo; }
-        }
 
         public override void Init()
         {
@@ -39,7 +30,7 @@ namespace OKTRAIO.Champions
                 _q = new Spell.Targeted(SpellSlot.Q, 680);
                 _w = new Spell.Active(SpellSlot.W);
                 _e = new Spell.Active(SpellSlot.E);
-                _r = new Spell.Skillshot(SpellSlot.R, 900, SkillShotType.Circular, 250, 1000, 120)
+                _r = new Spell.Skillshot(SpellSlot.R, 400, SkillShotType.Circular, 500, 1000, 120)
                 {
                     AllowedCollisionCount = int.MaxValue
                 };
@@ -49,19 +40,18 @@ namespace OKTRAIO.Champions
                 //combo
                 MainMenu.ComboKeys(true, true, false, true);
                 MainMenu._combo.AddSeparator();
-                MainMenu._combo.AddSlider("combo.w.distance", "Use W when enemy is in {0} range", 600, 1, 1200, true);
-                MainMenu._combo.AddSlider("combo.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
-                MainMenu._combo.AddGroupLabel("Prediction", "combo.grouplabel.addonmenu", true);
-                MainMenu._combo.AddSlider("combo.r.prediction", "Hitchance Percentage for R", 80, 0, 100, true);
+                MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
+                MainMenu._combo.AddGroupLabel("Use Q only on:", "combo.grouplabe2.addonmenu");
                 if (EntityManager.Heroes.Enemies.Count > 0)
                 {
-                    var addedChamps = new List<string>();
-                    foreach (var enemy in EntityManager.Heroes.Enemies.Where(enemy => !addedChamps.Contains(enemy.ChampionName)))
+                    foreach (var enemy in EntityManager.Heroes.Enemies)
                     {
-                        addedChamps.Add(enemy.ChampionName);
-                        MainMenu._combo.Add(enemy.ChampionName, new CheckBox(string.Format("{0}", enemy.ChampionName)));
+                        MainMenu._combo.Add(enemy.ChampionName, new CheckBox(enemy.ChampionName));
                     }
                 }
+                MainMenu._combo.AddSlider("combo.w.distance", "Use W when there is an enemy in {0} range", 600, 1, 1200,
+                    true);
+                MainMenu._combo.AddSlider("combo.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);               
 
                 //flee
                 MainMenu.FleeKeys(true, true, false, true);
@@ -87,7 +77,7 @@ namespace OKTRAIO.Champions
                 //jungleclear
                 MainMenu.JungleKeys(true, false, false, true);
                 MainMenu._jungle.AddSeparator();
-                MainMenu._jungle.AddSlider("jungle.r.min", "Min. {0} minions for R", 3, 1, 7, true);
+                MainMenu._jungle.AddSlider("jungle.r.min", "Min. {0} minions for R", 3, 1, 4, true);
                 MainMenu._jungle.AddSlider("jungle.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
                 MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
                 MainMenu.JungleManaManager(true, false, false, true, 60, 0, 0, 60);
@@ -106,8 +96,10 @@ namespace OKTRAIO.Champions
 
                 //misc
                 MainMenu.MiscMenu();
-                MainMenu._misc.Add("misc.r.auto", new KeyBind("Auto shroom locations", true, KeyBind.BindTypes.PressToggle, 'H'));
+                MainMenu._misc.Add("misc.r.auto",
+                    new KeyBind("Auto shroom locations", true, KeyBind.BindTypes.PressToggle, 'G'));
                 MainMenu._misc.AddSlider("misc.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3);
+                MainMenu._misc.AddSlider("misc.r.mana", "Auto Shroom until {0}% mana", 30);
                 MainMenu._misc.AddCheckBox("misc.q.gapcloser", "Use Q on gapcloser");
                 MainMenu._misc.AddSeparator();
                 MainMenu._misc.AddGroupLabel("Auto Q/R Settings", "misc.grouplabel1.addonmenu", true);
@@ -125,13 +117,17 @@ namespace OKTRAIO.Champions
                 MainMenu._misc.AddCheckBox("misc.r.snare", "Use R on Snared Enemy", true, true);
                 MainMenu._misc.AddCheckBox("misc.r.suppression", "Use R on Suppressed Enemy", true, true);
                 MainMenu._misc.AddCheckBox("misc.r.taunt", "Use R on Taunted Enemy", true, true);
+                MainMenu._misc.AddSeparator();
+                MainMenu._misc.AddGroupLabel("Prediction", "combo.grouplabel2.addonmenu", true);
+                MainMenu._misc.AddSlider("misc.r.prediction", "Hitchance Percentage for R", 80, 0, 100, true);
+                MainMenu._misc.AddSlider("misc.r.delay", "Hitchance Percentage for R", 1500, 1000, 4000, true);
 
                 //draw
                 MainMenu.DrawKeys(true, false, false, true);
                 MainMenu._draw.AddSeparator();
                 MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
-                MainMenu._draw.AddCheckBox("draw.r.auto", "Draw Auto Shroom locations", true, true);
-                MainMenu._draw.AddCheckBox("draw.status", "Draw Auto Shroom status", true, true);
+                MainMenu._draw.AddCheckBox("draw.r.auto", "Draw Auto Shroom Locations", true, true);
+                MainMenu._draw.AddCheckBox("draw.status", "Draw Auto Shroom Status", true, true);
             }
 
             catch (Exception e)
@@ -155,61 +151,65 @@ namespace OKTRAIO.Champions
                 Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
                 Drawing.OnDraw += GameOnDraw;
                 Drawing.OnEndScene += Drawing_OnEndScene;
+                Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
             }
 
             catch (Exception e)
             {
-
                 Console.WriteLine(e);
                 Chat.Print(
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
             }
-
         }
+
+        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (!sender.IsMe) { return;}
+
+            if (args.Slot == SpellSlot.R)
+            {
+                _rDelay = Core.GameTickCount;
+            }
+        }
+
         #endregion
 
         #region Gamerelated Logic
 
         public override void Combo()
         {
-            var targetq = TargetSelector.GetTarget(_q.Range, DamageType.Magical);
-
-            if (_q.IsReady())
+            if (_q.IsReady() && Value.Use("combo.q"))
             {
-                if (Value.Use("combo.q"))
+                foreach (
+                    var enemy in
+                        EntityManager.Heroes.Enemies.Where(
+                            enemy =>
+                                MainMenu._combo[enemy.ChampionName].Cast<CheckBox>().CurrentValue &&
+                                enemy.IsValidTarget() && !enemy.HasBuffOfType(BuffType.SpellShield) &&
+                                !enemy.IsZombie && _q.IsInRange(enemy) && !Orbwalker.IsAutoAttacking && !enemy.HasBuff("ChronoShift")))
                 {
-                    if (targetq != null && !Orbwalker.IsAutoAttacking)
-                    {
-                        _q.Cast(targetq);
-                    }
-
+                    _q.Cast(enemy);
                 }
             }
 
-            if (_w.IsReady())
+            if (_w.IsReady() && Value.Use("combo.w"))
             {
-                if (Value.Use("combo.w"))
+                if (Player.Instance.CountEnemiesInRange(Value.Get("combo.w.distance")) > 0)
                 {
-                    if (Player.Instance.CountEnemiesInRange(Value.Get("combo.w.distance")) > 0)
-                    {
-                        _w.Cast();
-                    }
+                    _w.Cast();
                 }
             }
 
-            if (_r.IsReady() && _r.IsLearned)
+            if (_r.IsReady() && Value.Use("combo.r") && Rstacks > Value.Get("combo.r.stacks"))
             {
-                if (Value.Use("combo.r") && Rstacks > Value.Get("combo.r.stacks"))
-                {
-                    var targetr = TargetSelector.GetTarget(RRange, DamageType.Magical);
+                var targetr = TargetSelector.GetTarget(_r.Range, DamageType.Magical);
 
-                    if (targetr != null)
+                if (targetr != null)
+                {
+                    var rpred = _r.GetPrediction(targetr);
+                    if (rpred.HitChancePercent >= Value.Get("combo.r.prediction") && !Orbwalker.IsAutoAttacking)
                     {
-                        var rpred = _r.GetPrediction(targetr);
-                        if (rpred.HitChancePercent >= Value.Get("combo.r.prediction") && !Orbwalker.IsAutoAttacking)
-                        {
-                            Rcast(rpred.CastPosition);
-                        }
+                        Rcast(rpred.CastPosition + 50);
                     }
                 }
             }
@@ -219,14 +219,12 @@ namespace OKTRAIO.Champions
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Magical);
 
-            if (_q.IsReady())
+
+            if (_q.IsReady() && Value.Use("harass.q") && Player.Instance.ManaPercent >= Value.Get("harass.q.mana"))
             {
-                if (Value.Use("harass.q") && Player.Instance.ManaPercent >= Value.Get("harass.q.mana"))
+                if (target != null && !Orbwalker.IsAutoAttacking)
                 {
-                    if (target != null && !Orbwalker.IsAutoAttacking)
-                    {
-                        _q.Cast(target);
-                    }
+                    _q.Cast(target);
                 }
             }
         }
@@ -235,34 +233,29 @@ namespace OKTRAIO.Champions
         {
             var minionq =
                 EntityManager.MinionsAndMonsters.GetLaneMinions()
-                    .OrderBy(a => a.Health)
+                    .OrderByDescending(a => a.MaxHealth)
                     .FirstOrDefault(
-                        a => a.IsValidTarget(_q.Range) && a.Health >= Player.Instance.GetSpellDamage(a, SpellSlot.Q));
+                        a => a.IsValidTarget(_q.Range) && a.Health >= QDamage(a) && !a.IsLasthittableMinion());
 
-            if (_q.IsReady())
+
+            if (_q.IsReady() && Value.Use("lane.q") && Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
             {
-                if (Value.Use("lane.q") && Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
+                if (minionq != null && !Orbwalker.IsAutoAttacking)
                 {
-                    if (minionq != null && !Orbwalker.IsAutoAttacking)
-                    {
-                        _q.Cast(minionq);
-                    }
+                    _q.Cast(minionq);
                 }
             }
 
-            if (_r.IsReady() && _r.IsLearned)
+            if (_r.IsReady() && Value.Use("lane.r") && Player.Instance.ManaPercent >= Value.Get("lane.r.mana"))
             {
-                if (Value.Use("lane.r") && Player.Instance.ManaPercent >= Value.Get("lane.r.mana"))
-                {
-                    var minionr = EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy,
-                        Player.Instance.Position, RRange).Where(a => !a.HasBuff("bantamtraptarget"));
-                    var farmr = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(minionr, _r.Width + 80,
-                        RRange);
+                var minionr = EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy,
+                    Player.Instance.Position, _r.Range).Where(a => !a.HasBuff("bantamtrapslow") && !a.IsMoving);
+                var farmr = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(minionr, _r.Width + 80,
+                    (int) _r.Range);
 
-                    if (farmr.HitNumber >= Value.Get("lane.r.min") && Rstacks > Value.Get("lane.r.stacks"))
-                    {
-                        Rcast(farmr.CastPosition);
-                    }
+                if (farmr.HitNumber >= Value.Get("lane.r.min") && Rstacks > Value.Get("lane.r.stacks"))
+                {
+                    Rcast(farmr.CastPosition);
                 }
             }
         }
@@ -275,33 +268,29 @@ namespace OKTRAIO.Champions
                     .FirstOrDefault(
                         a =>
                             a.IsValidTarget(_q.Range) && Variables.SummonerRiftJungleList.Contains(a.BaseSkinName) &&
-                            a.Health >= Player.Instance.GetSpellDamage(a, SpellSlot.Q));
+                            a.Health >= QDamage(a));
 
-            if (_q.IsReady())
+
+            if (_q.IsReady() && Value.Use("jungle.q") && Player.Instance.ManaPercent >= Value.Get("jungle.q.mana") && !Orbwalker.IsAutoAttacking)
             {
-                if (Value.Use("jungle.q") && Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
+                if (monsterq != null)
                 {
-                    if (monsterq != null)
-                    {
-                        _q.Cast(monsterq);
-                    }
+                    _q.Cast(monsterq);
                 }
             }
 
-            if (_r.IsReady() && _r.IsLearned)
-            {
-                if (Value.Use("jungle.r") && Player.Instance.ManaPercent >= Value.Get("jungle.r.mana"))
-                {
-                    var monsterr =
-                        EntityManager.MinionsAndMonsters.GetJungleMonsters(Player.Instance.Position,
-                            RRange).Where(a => !a.HasBuff("bantamtraptarget"));
-                    var farmr = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(monsterr, _r.Width + 80,
-                        RRange);
 
-                    if (farmr.HitNumber >= Value.Get("jungle.r.min") && Rstacks > Value.Get("jungle.r.stacks"))
-                    {
-                        Rcast(farmr.CastPosition);
-                    }
+            if (_r.IsReady() && Value.Use("jungle.r") && Player.Instance.ManaPercent >= Value.Get("jungle.r.mana"))
+            {
+                var monsterr =
+                    EntityManager.MinionsAndMonsters.GetJungleMonsters(Player.Instance.Position,
+                        _r.Range).Where(a => !a.HasBuff("bantamtrapslow") && !a.IsMoving);
+                var farmr = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(monsterr, _r.Width + 80,
+                    (int) _r.Range);
+
+                if (farmr.HitNumber >= Value.Get("jungle.r.min") && Rstacks > Value.Get("jungle.r.stacks"))
+                {
+                    Rcast(farmr.CastPosition);
                 }
             }
         }
@@ -310,37 +299,32 @@ namespace OKTRAIO.Champions
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Magical);
 
-            if (_w.IsReady())
+
+            if (_w.IsReady() && Value.Use("flee.w") && Player.Instance.ManaPercent >= Value.Get("flee.w.mana"))
             {
-                if (Value.Use("flee.w") && Player.Instance.ManaPercent >= Value.Get("flee.w.mana"))
-                {
-                    _w.Cast();
-                }
+                _w.Cast();
             }
+
 
             if (target == null)
             {
                 return;
             }
 
-            var tpos = Player.Instance.Position.Extend(target.Position, -300).To3D();
+            var tpos = Player.Instance.Position.Extend(target.Position, 100).To3D();
 
-            if (_q.IsReady())
+
+            if (_q.IsReady() && Value.Use("flee.q") && Player.Instance.ManaPercent >= Value.Get("flee.q.mana"))
             {
-                if (Value.Use("flee.q") && Player.Instance.ManaPercent >= Value.Get("flee.q.mana"))
-                {
-                    _q.Cast(target);
-                }
+                _q.Cast(target);
             }
 
-            if (_r.IsLearned && _r.IsReady())
+
+            if (_r.IsReady() && Value.Use("flee.r") && Player.Instance.ManaPercent >= Value.Get("flee.r.mana"))
             {
-                if (Value.Use("flee.r") && Player.Instance.ManaPercent >= Value.Get("flee.r.mana"))
+                if (Rstacks > Value.Get("flee.r.stacks"))
                 {
-                    if (Rstacks > Value.Get("flee.r.stacks"))
-                    {
-                        Rcast(tpos);
-                    }
+                    Rcast(tpos);
                 }
             }
         }
@@ -351,22 +335,26 @@ namespace OKTRAIO.Champions
                 EntityManager.MinionsAndMonsters.GetLaneMinions()
                     .OrderByDescending(a => a.MaxHealth)
                     .FirstOrDefault(
-                        a => a.IsValidTarget(_q.Range) && a.Health <= Player.Instance.GetSpellDamage(a, SpellSlot.Q));
+                        a => a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) && !a.IsLasthittableMinion());
 
-            if (_q.IsReady())
+
+            if (_q.IsReady() && Value.Use("lasthit.q") && Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
             {
-                if (Value.Use("lasthit.q") && Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
+                if (minion != null)
                 {
-                    if (minion != null)
-                    {
-                        _q.Cast(minion);
-                    }
+                    _q.Cast(minion);
                 }
             }
         }
 
         private static void GameOnUpdate(EventArgs args)
         {
+            if (_r.IsLearned)
+            {
+                _r = new Spell.Skillshot(SpellSlot.R, (uint) new[] {400, 650, 900}[_r.Level - 1], SkillShotType.Circular,
+                    500, 1000, 120);
+            }
+
             Ks();
 
             AutoRcc();
@@ -381,7 +369,7 @@ namespace OKTRAIO.Champions
                 return;
             }
 
-            if (_q.IsReady() && _q.IsInRange(sender))
+            if (_q.IsReady() && e.End.Distance(Player.Instance.Position) <= _q.Range)
             {
                 _q.Cast(sender);
             }
@@ -395,28 +383,27 @@ namespace OKTRAIO.Champions
         {
             get { return _r.Handle.Ammo; }
         }
-        
+
         private static bool Shroomed(Vector3 castposition)
         {
             return
                 ObjectManager.Get<Obj_AI_Minion>()
-                    .Where(a => a.Name == "Noxious Trap").Any(a => castposition.Distance(a.Position) <= _r.Width + 80);
+                    .Where(a => a.Name == "Noxious Trap").Any(a => castposition.Distance(a.Position) <= 300);
         }
 
         private static void Ks()
         {
-            var target = TargetSelector.GetTarget(_q.Range, DamageType.Magical);
-
-            if (_q.IsReady())
+            if (_q.IsReady() && Value.Use("killsteal.q") && Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
             {
-                if (Value.Use("killsteal.q") && Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
+                foreach (
+                    var target in
+                        EntityManager.Heroes.Enemies.Where(
+                            a =>
+                                a.IsValid && _q.IsInRange(a) && !Orbwalker.IsAutoAttacking && !a.IsDead &&
+                                !a.IsZombie && !a.HasBuff("ChronoShift") &&
+                                !a.HasBuffOfType(BuffType.Invulnerability) && a.TotalShieldHealth() <= QDamage(a)))
                 {
-                    if (target != null &&
-                        target.TotalShieldHealth() <= Player.Instance.GetSpellDamage(target, SpellSlot.Q) &&
-                        !Orbwalker.IsAutoAttacking)
-                    {
-                        _q.Cast(target);
-                    }
+                    _q.Cast(target);
                 }
             }
         }
@@ -429,53 +416,51 @@ namespace OKTRAIO.Champions
                          (a.HasBuffOfType(BuffType.Charm) || a.HasBuffOfType(BuffType.Knockup) ||
                           a.HasBuffOfType(BuffType.Snare) || a.HasBuffOfType(BuffType.Stun) ||
                           a.HasBuffOfType(BuffType.Suppression) || a.HasBuffOfType(BuffType.Taunt)));
-            
 
-            if (_q.IsReady())
+
+            if (_q.IsReady() && targetq != null)
             {
-                if (targetq != null)
+                if (Value.Use("misc.q.charm") && targetq.IsCharmed ||
+                    Value.Use("misc.q.knockup") ||
+                    Value.Use("misc.q.stun") && targetq.IsStunned ||
+                    Value.Use("misc.q.snare") && targetq.IsRooted ||
+                    Value.Use("misc.q.suppression") && targetq.IsSuppressCallForHelp ||
+                    Value.Use("misc.q.taunt") && targetq.IsTaunted)
                 {
-                    if (Value.Use("misc.q.charm") && targetq.IsCharmed ||
-                        Value.Use("misc.q.knockup") ||
-                        Value.Use("misc.q.stun") && targetq.IsStunned ||
-                        Value.Use("misc.q.snare") && targetq.IsRooted ||
-                        Value.Use("misc.q.suppression") && targetq.IsSuppressCallForHelp ||
-                        Value.Use("misc.q.taunt") && targetq.IsTaunted)
-                    {
-                        _q.Cast(targetq);
-                    }
+                    _q.Cast(targetq);
                 }
             }
 
-            if (_r.IsReady() && _r.IsLearned)
-            {
-                var target =
+
+            var target =
                 EntityManager.Heroes.Enemies.FirstOrDefault(
-                    a => a.IsValidTarget(RRange) &&
+                    a => a.IsValidTarget(_r.Range) &&
                          (a.HasBuffOfType(BuffType.Charm) || a.HasBuffOfType(BuffType.Knockup) ||
                           a.HasBuffOfType(BuffType.Snare) || a.HasBuffOfType(BuffType.Stun) ||
                           a.HasBuffOfType(BuffType.Suppression) || a.HasBuffOfType(BuffType.Taunt)));
 
-                if (target != null)
+            if (_r.IsReady() && target != null)
+            {
+                if (Value.Use("misc.r.charm") && target.IsCharmed ||
+                    Value.Use("misc.r.knockup") ||
+                    Value.Use("misc.r.stun") && target.IsStunned ||
+                    Value.Use("misc.r.snare") && target.IsRooted ||
+                    Value.Use("misc.r.suppression") && target.IsSuppressCallForHelp ||
+                    Value.Use("misc.r.taunt") && target.IsTaunted)
                 {
-                    if (Value.Use("misc.r.charm") && target.IsCharmed ||
-                        Value.Use("misc.r.knockup") ||
-                        Value.Use("misc.r.stun") && target.IsStunned ||
-                        Value.Use("misc.r.snare") && target.IsRooted ||
-                        Value.Use("misc.r.suppression") && target.IsSuppressCallForHelp ||
-                        Value.Use("misc.r.taunt") && target.IsTaunted)
-                    {
-                        Rcast(_r.GetPrediction(target).CastPosition);
-                    }
+                    Rcast(_r.GetPrediction(target).CastPosition);
                 }
             }
         }
 
         private static void AutoShroom()
         {
-            if (_r.IsReady() && _r.IsLearned)
+            if (_r.IsReady())
             {
-                if (Value.Active("misc.r.auto") && Rstacks > Value.Get("misc.r.stacks") && !Player.Instance.IsRecalling() && !Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) && Game.MapId == GameMapId.SummonersRift)
+                if (Value.Active("misc.r.auto") && Rstacks > Value.Get("misc.r.stacks") &&
+                    Player.Instance.ManaPercent >= Value.Get("misc.r.mana") && !Player.Instance.IsRecalling() &&
+                    !Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) &&
+                    Game.MapId == GameMapId.SummonersRift)
                 {
                     var teemo = Player.Instance.Position;
 
@@ -528,155 +513,155 @@ namespace OKTRAIO.Champions
                     if (Player.Instance.CountEnemiesInRange(_q.Range) == 0)
                     {
                         //top
-                        if (teemo.Distance(topTri) < RRange)
+                        if (teemo.Distance(topTri) < _r.Range)
                         {
                             Rcast(topTri.To3D());
                         }
-                        if (teemo.Distance(topRiver) < RRange)
+                        if (teemo.Distance(topRiver) < _r.Range)
                         {
                             Rcast(topRiver.To3D());
                         }
-                        if (teemo.Distance(topPixel) < RRange)
+                        if (teemo.Distance(topPixel) < _r.Range)
                         {
                             Rcast(topPixel.To3D());
                         }
-                        if (teemo.Distance(topEntrance) < RRange)
+                        if (teemo.Distance(topEntrance) < _r.Range)
                         {
                             Rcast(topEntrance.To3D());
                         }
-                        if (teemo.Distance(baron) < RRange)
+                        if (teemo.Distance(baron) < _r.Range)
                         {
                             Rcast(baron.To3D());
                         }
 
                         //mid
-                        if (teemo.Distance(midbrushleft) < RRange)
+                        if (teemo.Distance(midbrushleft) < _r.Range)
                         {
                             Rcast(midbrushleft.To3D());
                         }
-                        if (teemo.Distance(midbushright) < RRange)
+                        if (teemo.Distance(midbushright) < _r.Range)
                         {
                             Rcast(midbushright.To3D());
                         }
-                        if (teemo.Distance(midleftbrush) < RRange)
+                        if (teemo.Distance(midleftbrush) < _r.Range)
                         {
                             Rcast(midleftbrush.To3D());
                         }
-                        if (teemo.Distance(midrighbrush) < RRange)
+                        if (teemo.Distance(midrighbrush) < _r.Range)
                         {
                             Rcast(midrighbrush.To3D());
                         }
 
                         //bot
-                        if (teemo.Distance(botTri) < RRange)
+                        if (teemo.Distance(botTri) < _r.Range)
                         {
                             Rcast(botTri.To3D());
                         }
-                        if (teemo.Distance(botPixel) < RRange)
+                        if (teemo.Distance(botPixel) < _r.Range)
                         {
                             Rcast(botPixel.To3D());
                         }
-                        if (teemo.Distance(botEntrance) < RRange)
+                        if (teemo.Distance(botEntrance) < _r.Range)
                         {
                             Rcast(botEntrance.To3D());
                         }
-                        if (teemo.Distance(botRiver) < RRange)
+                        if (teemo.Distance(botRiver) < _r.Range)
                         {
                             Rcast(botRiver.To3D());
                         }
-                        if (teemo.Distance(dragon) < RRange)
+                        if (teemo.Distance(dragon) < _r.Range)
                         {
                             Rcast(dragon.To3D());
                         }
 
                         //red
-                        if (teemo.Distance(rbasebrush) < RRange)
+                        if (teemo.Distance(rbasebrush) < _r.Range)
                         {
                             Rcast(rbasebrush.To3D());
                         }
-                        if (teemo.Distance(rbluebrush) < RRange)
+                        if (teemo.Distance(rbluebrush) < _r.Range)
                         {
                             Rcast(rbluebrush.To3D());
                         }
-                        if (teemo.Distance(rbotlanebrush) < RRange)
+                        if (teemo.Distance(rbotlanebrush) < _r.Range)
                         {
                             Rcast(rbotlanebrush.To3D());
                         }
-                        if (teemo.Distance(rgrompbrush) < RRange)
+                        if (teemo.Distance(rgrompbrush) < _r.Range)
                         {
                             Rcast(rgrompbrush.To3D());
                         }
-                        if (teemo.Distance(rkrugsBrush) < RRange)
+                        if (teemo.Distance(rkrugsBrush) < _r.Range)
                         {
                             Rcast(rkrugsBrush.To3D());
                         }
-                        if (teemo.Distance(rredbrus1) < RRange)
+                        if (teemo.Distance(rredbrus1) < _r.Range)
                         {
                             Rcast(rredbrus1.To3D());
                         }
-                        if (teemo.Distance(rredbrush2) < RRange)
+                        if (teemo.Distance(rredbrush2) < _r.Range)
                         {
                             Rcast(rredbrush2.To3D());
                         }
-                        if (teemo.Distance(rredbrush3) < RRange)
+                        if (teemo.Distance(rredbrush3) < _r.Range)
                         {
                             Rcast(rredbrush3.To3D());
                         }
-                        if (teemo.Distance(rtoplanebrush) < RRange)
+                        if (teemo.Distance(rtoplanebrush) < _r.Range)
                         {
                             Rcast(rtoplanebrush.To3D());
                         }
-                        if (teemo.Distance(rwolvesbrush) < RRange)
+                        if (teemo.Distance(rwolvesbrush) < _r.Range)
                         {
                             Rcast(rwolvesbrush.To3D());
                         }
-                        if (teemo.Distance(rwraitshbrush) < RRange)
+                        if (teemo.Distance(rwraitshbrush) < _r.Range)
                         {
                             Rcast(rwraitshbrush.To3D());
                         }
 
                         //blue
-                        if (teemo.Distance(bbasebrush) < RRange)
+                        if (teemo.Distance(bbasebrush) < _r.Range)
                         {
                             Rcast(bbasebrush.To3D());
                         }
-                        if (teemo.Distance(bbluebrush) < RRange)
+                        if (teemo.Distance(bbluebrush) < _r.Range)
                         {
                             Rcast(bbluebrush.To3D());
                         }
-                        if (teemo.Distance(bbotlanebrush) < RRange)
+                        if (teemo.Distance(bbotlanebrush) < _r.Range)
                         {
                             Rcast(bbotlanebrush.To3D());
                         }
-                        if (teemo.Distance(bgrompbrush) < RRange)
+                        if (teemo.Distance(bgrompbrush) < _r.Range)
                         {
                             Rcast(bgrompbrush.To3D());
                         }
-                        if (teemo.Distance(bkrugsBrush) < RRange)
+                        if (teemo.Distance(bkrugsBrush) < _r.Range)
                         {
                             Rcast(bkrugsBrush.To3D());
                         }
-                        if (teemo.Distance(bredbrus1) < RRange)
+                        if (teemo.Distance(bredbrus1) < _r.Range)
                         {
                             Rcast(bredbrus1.To3D());
                         }
-                        if (teemo.Distance(bredbrush2) < RRange)
+                        if (teemo.Distance(bredbrush2) < _r.Range)
                         {
                             Rcast(bredbrush2.To3D());
                         }
-                        if (teemo.Distance(bredbrush3) < RRange)
+                        if (teemo.Distance(bredbrush3) < _r.Range)
                         {
                             Rcast(bredbrush3.To3D());
                         }
-                        if (teemo.Distance(btoplanebrush) < RRange)
+                        if (teemo.Distance(btoplanebrush) < _r.Range)
                         {
                             Rcast(btoplanebrush.To3D());
                         }
-                        if (teemo.Distance(bwolvesbrush) < RRange)
+                        if (teemo.Distance(bwolvesbrush) < _r.Range)
                         {
                             Rcast(bwolvesbrush.To3D());
                         }
-                        if (teemo.Distance(bwraitshbrush) < RRange)
+                        if (teemo.Distance(bwraitshbrush) < _r.Range)
                         {
                             Rcast(bwraitshbrush.To3D());
                         }
@@ -687,19 +672,13 @@ namespace OKTRAIO.Champions
 
         private static void Rcast(Vector3 location)
         {
-            if (!Shroomed(location) && !_rDelay)
+            if (!Shroomed(location) && Core.GameTickCount - _rDelay > Value.Get("misc.r.delay"))
             {
                 _r.Cast(location);
-                _rDelay = true; Core.DelayAction(() => _rDelay = false, 1000);
             }
         }
 
-        private static int RRange
-        {
-            get { return Rranges[_r.Level - 1]; }
-        }
-
-        private static float EPassiveTime(Obj_AI_Base target)
+        private static float EDotTime(Obj_AI_Base target)
         {
             if (target.HasBuff("toxicshotparticle"))
             {
@@ -710,69 +689,79 @@ namespace OKTRAIO.Champions
 
         private static float RTime(Obj_AI_Base target)
         {
-            if (target.HasBuff("bantamtraptarget"))
+            if (target.HasBuff("bantamtrapslow"))
             {
-                return Math.Max(0, target.GetBuff("bantamtraptarget").EndTime) - Game.Time;
+                return Math.Max(0, target.GetBuff("bantamtrapslow").EndTime) - Game.Time;
             }
             return 0;
         }
 
-        private static float EPassivedamage(Obj_AI_Base target)
+        private static float EDotdamageRaw(Obj_AI_Base target)
         {
             float dmg = 0;
             if (!target.HasBuff("toxicshotparticle") || !_e.IsLearned) return 0;
 
             if (_e.Level == 1)
             {
-                dmg = 6 + (.10f * Player.Instance.TotalMagicalDamage);
+                dmg = 6 + .10f*Player.Instance.TotalMagicalDamage;
             }
             if (_e.Level == 2)
             {
-                dmg = 12 + (.10f * Player.Instance.TotalMagicalDamage);
+                dmg = 12 + .10f*Player.Instance.TotalMagicalDamage;
             }
             if (_e.Level == 3)
             {
-                dmg = 18 + (.10f * Player.Instance.TotalMagicalDamage);
+                dmg = 18 + .10f*Player.Instance.TotalMagicalDamage;
             }
             if (_e.Level == 4)
             {
-                dmg = 24 + (.10f * Player.Instance.TotalMagicalDamage);
+                dmg = 24 + .10f*Player.Instance.TotalMagicalDamage;
             }
             if (_e.Level == 5)
             {
-                dmg = 30 + (.10f * Player.Instance.TotalMagicalDamage);
+                dmg = 30 + .10f*Player.Instance.TotalMagicalDamage;
             }
-            return dmg * EPassiveTime(target) - target.HPRegenRate;
+            return dmg*EDotTime(target) - target.HPRegenRate;
         }
 
-        private static float Rdamage(Obj_AI_Base target)
+        private static float RdamageRaw(Obj_AI_Base target)
         {
             float dmg = 0;
-            if (!target.HasBuff("bantamtraptarget") || !_r.IsLearned) return 0;
+            if (!target.HasBuff("bantamtrapslow")) return 0;
 
             if (_r.Level == 1)
             {
-                dmg = 50 + (.125f * Player.Instance.TotalMagicalDamage);
+                dmg = 50 + .125f*Player.Instance.TotalMagicalDamage;
             }
             if (_r.Level == 2)
             {
-                dmg = 81.25f + (.125f * Player.Instance.TotalMagicalDamage);
+                dmg = 81.25f + .125f*Player.Instance.TotalMagicalDamage;
             }
             if (_r.Level == 3)
             {
-                dmg = 112.5f + (.125f * Player.Instance.TotalMagicalDamage);
+                dmg = 112.5f + .125f*Player.Instance.TotalMagicalDamage;
             }
-            return dmg * RTime(target) - target.HPRegenRate;
+            return dmg*RTime(target) - target.HPRegenRate;
         }
 
         private static float Rdamagecalc(Obj_AI_Base target)
         {
-            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, Rdamage(target));
+            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, RdamageRaw(target));
         }
 
         private static float EPassivedamagecalc(Obj_AI_Base target)
         {
-            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, EPassivedamage(target));
+            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, EDotdamageRaw(target));
+        }
+
+        private static float QDamage(Obj_AI_Base target)
+        {
+            if (_q.IsLearned)
+            {
+                return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical,
+                    new[] {80, 125, 170, 215, 260}[_q.Level - 1] + .80f*Player.Instance.TotalMagicalDamage);
+            }
+            return 0f;
         }
 
         private static float EDamageonhit(Obj_AI_Base target)
@@ -780,7 +769,7 @@ namespace OKTRAIO.Champions
             if (_e.IsLearned)
             {
                 return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical,
-                    new[] {10, 20, 30, 40, 50}[_e.Level - 1] + (.30f*Player.Instance.TotalMagicalDamage));
+                    new[] {10, 20, 30, 40, 50}[_e.Level - 1] + .30f*Player.Instance.TotalMagicalDamage);
             }
             return 0f;
         }
@@ -791,7 +780,7 @@ namespace OKTRAIO.Champions
 
             if (_q.IsReady())
             {
-                damage += Player.Instance.GetSpellDamage(target, SpellSlot.Q);
+                damage += QDamage(target);
             }
 
             if (target.HasBuff("toxicshotparticle"))
@@ -805,9 +794,11 @@ namespace OKTRAIO.Champions
             }
             return damage;
         }
+
         #endregion
 
         #region Drawings
+
         private static void GameOnDraw(EventArgs args)
         {
             var colorQ = MainMenu._draw.GetColor("color.q");
@@ -827,17 +818,14 @@ namespace OKTRAIO.Champions
                     }.Draw(Player.Instance.Position);
                 }
 
-                if (_r.IsLearned)
+                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
                 {
-                    if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
+                    new Circle
                     {
-                        new Circle
-                        {
-                            Color = colorR,
-                            Radius = RRange,
-                            BorderWidth = widthR
-                        }.Draw(Player.Instance.Position);
-                    }
+                        Color = colorR,
+                        Radius = _r.Range,
+                        BorderWidth = widthR
+                    }.Draw(Player.Instance.Position);
                 }
 
                 if (Value.Use("draw.r.auto") && Game.MapId == GameMapId.SummonersRift)
@@ -935,19 +923,20 @@ namespace OKTRAIO.Champions
                     new Circle(Color.Green, 70).Draw(btoplanebrush.To3D());
                 }
 
-                if (Value.Use("draw.status"))
+                if (Value.Use("draw.status") && Game.MapId == GameMapId.SummonersRift)
                 {
                     if (Value.Active("misc.r.auto"))
                     {
-                        Drawing.DrawText(1342, 1019, System.Drawing.Color.Chartreuse, "Auto-Shroom Activated", 20);
+                        Drawing.DrawText(1342, 1019, System.Drawing.Color.Chartreuse, "Auto-Shroom Activated (G)", 20);
                     }
                     else
                     {
-                        Drawing.DrawText(1342, 1019, System.Drawing.Color.Red, "Auto-Shroom Disabled", 20);
+                        Drawing.DrawText(1342, 1019, System.Drawing.Color.Red, "Auto-Shroom Disabled (G)", 20);
                     }
                 }
             }
         }
+
         private static void Drawing_OnEndScene(EventArgs args)
         {
             if (Value.Use("draw.hp.bar"))
@@ -955,15 +944,20 @@ namespace OKTRAIO.Champions
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => !a.IsDead && a.IsHPBarRendered))
                 {
                     var damage = ComboDamage(enemy);
-                    var damagepercent = ((enemy.TotalShieldHealth() - damage) > 0 ? (enemy.TotalShieldHealth() - damage) : 0) / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var hppercent = enemy.TotalShieldHealth() / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var start = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + damagepercent * 104), (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
-                    var end = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + hppercent * 104) + 2, (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var damagepercent = (enemy.TotalShieldHealth() - damage > 0 ? enemy.TotalShieldHealth() - damage : 0)/
+                                        (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var hppercent = enemy.TotalShieldHealth()/
+                                    (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var start = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + damagepercent*104),
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var end = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + hppercent*104) + 2,
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
 
                     Drawing.DrawLine(start, end, 9, System.Drawing.Color.Chartreuse);
                 }
             }
         }
-        #endregion 
+
+        #endregion
     }
 }
