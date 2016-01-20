@@ -2,9 +2,9 @@
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
-using MarksmanAIO.Champions;
+using OKTRAIO.Champions;
 
-namespace MarksmanAIO
+namespace OKTRAIO
 {
     public class Variables
     {

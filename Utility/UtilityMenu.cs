@@ -3,9 +3,9 @@ using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
-using MarksmanAIO.Menu_Settings;
+using OKTRAIO.Menu_Settings;
 
-namespace MarksmanAIO
+namespace OKTRAIO.Utility
 {
     public static class UtilityMenu
     {

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Permissions;
-using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
+using OKTRAIO.Utility;
 
-namespace MarksmanAIO.Menu_Settings
+namespace OKTRAIO.Menu_Settings
 {
     public static class Value
     {

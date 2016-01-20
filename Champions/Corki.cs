@@ -2,15 +2,15 @@ using System;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Rendering;
-using EloBuddy.SDK.Enumerations;
-using MarksmanAIO.Menu_Settings;
+using OKTRAIO.Menu_Settings;
 using SharpDX;
 using Color = System.Drawing.Color;
 
 
-namespace MarksmanAIO.Champions
+namespace OKTRAIO.Champions
 {
     internal class Corki : AIOChampion
     {

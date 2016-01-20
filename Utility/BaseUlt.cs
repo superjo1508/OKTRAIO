@@ -5,13 +5,13 @@ using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
-using MarksmanAIO.Menu_Settings;
+using OKTRAIO.Menu_Settings;
 using SharpDX;
 using SharpDX.Direct3D9;
 using Color = System.Drawing.Color;
 using Font = EloBuddy.SDK.Rendering.Text;
 
-namespace MarksmanAIO.Utility
+namespace OKTRAIO.Utility
 {
     public class BaseUlt
     {

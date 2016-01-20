@@ -4,15 +4,14 @@ using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
-using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
-using MarksmanAIO.Menu_Settings;
-using MarksmanAIO.Spell_Library;
-using MarksmanAIO.Utility;
+using OKTRAIO.Menu_Settings;
+using OKTRAIO.Utility;
 using SharpDX;
+using MainMenu = OKTRAIO.Menu_Settings.MainMenu;
 
-namespace MarksmanAIO.Champions
+namespace OKTRAIO.Champions
 {
     class Jinx : AIOChampion
     {

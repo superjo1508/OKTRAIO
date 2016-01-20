@@ -2,9 +2,8 @@
 using EloBuddy;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
-using MarksmanAIO.Menu_Settings;
 
-namespace MarksmanAIO
+namespace OKTRAIO.Menu_Settings
 {
     internal class MainMenu
     {

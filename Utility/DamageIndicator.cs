@@ -3,9 +3,9 @@ using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Menu.Values;
-using MarksmanAIO.Menu_Settings;
+using OKTRAIO.Menu_Settings;
 
-namespace MarksmanAIO.Utility
+namespace OKTRAIO.Utility
 {
     using Color = System.Drawing.Color;
 

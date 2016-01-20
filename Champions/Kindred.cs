@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu.Values;
-using MarksmanAIO.Menu_Settings;
+using OKTRAIO.Menu_Settings;
 
-namespace MarksmanAIO.Champions
+namespace OKTRAIO.Champions
 {
     class Kindred : AIOChampion
     {

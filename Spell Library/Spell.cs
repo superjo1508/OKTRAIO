@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MarksmanAIO.Spell_Library
+﻿namespace OKTRAIO.Spell_Library
 {
     public class SpellDb
     {

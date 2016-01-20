@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
-using EloBuddy.SDK.Menu.Values;
-using MarksmanAIO.Utility;
-using MarksmanAIO.Menu_Settings;
-using EloBuddy.SDK.Rendering;
-using Color = System.Drawing.Color;
 using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
+using EloBuddy.SDK.Rendering;
+using OKTRAIO.Menu_Settings;
+using OKTRAIO.Utility;
+using Color = System.Drawing.Color;
+using MainMenu = OKTRAIO.Menu_Settings.MainMenu;
 
-namespace MarksmanAIO.Champions
+namespace OKTRAIO.Champions
 {
     class Katarina : AIOChampion
     {

@@ -1,13 +1,7 @@
-﻿using EloBuddy;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EloBuddy.SDK;
-using MarksmanAIO.Champions;
+﻿using System.Collections.Generic;
+using EloBuddy;
 
-namespace MarksmanAIO.Spell_Library
+namespace OKTRAIO.Spell_Library
 {
 
 

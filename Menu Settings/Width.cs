@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using EloBuddy.SDK.Menu.Values;
 
-namespace MarksmanAIO
+namespace OKTRAIO.Menu_Settings
 {
     public static class WidthMenu
     {

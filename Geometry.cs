@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
-using MarksmanAIO.Champions;
 using SharpDX;
 using RectangleF = SharpDX.RectangleF;
 //ReSharper disable InconsistentNaming
 //ReSharper disable CompareOfFloatsByEqualityOperator
 
-namespace MarksmanAIO
+namespace OKTRAIO
 {
     public class OKTRGeometry
     {

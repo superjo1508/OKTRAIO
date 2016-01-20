@@ -2,7 +2,7 @@
 using EloBuddy.SDK.Menu.Values;
 using Color = System.Drawing.Color;
 
-namespace MarksmanAIO
+namespace OKTRAIO.Menu_Settings
 {
     public static class ColorMenu
     {

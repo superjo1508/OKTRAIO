@@ -2,16 +2,16 @@
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
-using EloBuddy.SDK.Rendering;
-using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
-using MarksmanAIO.Menu_Settings;
-using MarksmanAIO.Utility;
+using EloBuddy.SDK.Rendering;
+using OKTRAIO.Menu_Settings;
+using OKTRAIO.Utility;
 using SharpDX;
 using Color = System.Drawing.Color;
 
-namespace MarksmanAIO.Champions
+namespace OKTRAIO.Champions
 {
     class Ashe : AIOChampion
     {
@@ -146,7 +146,7 @@ namespace MarksmanAIO.Champions
 
                 Console.WriteLine(e);
                 Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>"); 
             }
 
         }

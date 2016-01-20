@@ -2,10 +2,10 @@
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
-using MarksmanAIO.Menu_Settings;
+using OKTRAIO.Menu_Settings;
 using SharpDX;
 
-namespace MarksmanAIO
+namespace OKTRAIO.Utility
 {
     public static class Activator
     {

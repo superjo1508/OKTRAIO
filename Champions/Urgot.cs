@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MarksmanAIO.Champions
+namespace OKTRAIO.Champions
 {
     class Urgot : AIOChampion
-    {
+    {//Hi im an example done by Riot <-- see ? ^^
+        //This is a second example done by FinnFap
+        // best commit NA by Cuntr
         public override void Combo()
         {
             throw new NotImplementedException();

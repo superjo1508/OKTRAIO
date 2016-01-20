@@ -1,17 +1,17 @@
 ﻿using System;
+using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
-using EloBuddy.SDK.Events;
-using MarksmanAIO.Menu_Settings;
-using MarksmanAIO.Utility;
-using Color = System.Drawing.Color;
+using OKTRAIO.Menu_Settings;
+using OKTRAIO.Utility;
 using SharpDX;
-using System.Linq;
+using Color = System.Drawing.Color;
 
-namespace MarksmanAIO.Champions
+namespace OKTRAIO.Champions
 {
     class Ezreal : AIOChampion
     {

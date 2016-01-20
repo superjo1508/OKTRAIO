@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using EloBuddy;
 using SharpDX;
 
-namespace MarksmanAIO.Utility
+namespace OKTRAIO.Utility
 {
     public static class Humanizer
     {
