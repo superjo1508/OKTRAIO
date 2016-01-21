@@ -98,8 +98,10 @@ namespace OKTRAIO.Champions
                 MainMenu.MiscMenu();
                 MainMenu._misc.Add("misc.r.auto",
                     new KeyBind("Auto shroom locations", true, KeyBind.BindTypes.PressToggle, 'G'));
+                MainMenu._misc.AddSeparator();
                 MainMenu._misc.AddSlider("misc.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3);
                 MainMenu._misc.AddSlider("misc.r.mana", "Auto Shroom until {0}% mana", 30);
+                MainMenu._misc.AddSeparator();
                 MainMenu._misc.AddCheckBox("misc.q.gapcloser", "Use Q on gapcloser");
                 MainMenu._misc.AddSeparator();
                 MainMenu._misc.AddGroupLabel("Auto Q/R Settings", "misc.grouplabel1.addonmenu", true);
@@ -120,7 +122,7 @@ namespace OKTRAIO.Champions
                 MainMenu._misc.AddSeparator();
                 MainMenu._misc.AddGroupLabel("Prediction", "combo.grouplabel2.addonmenu", true);
                 MainMenu._misc.AddSlider("misc.r.prediction", "Hitchance Percentage for R", 80, 0, 100, true);
-                MainMenu._misc.AddSlider("misc.r.delay", "Hitchance Percentage for R", 1500, 1000, 4000, true);
+                MainMenu._misc.AddSlider("misc.r.delay", "Shroom Cast Delay", 1500, 1000, 4000, true);
 
                 //draw
                 MainMenu.DrawKeys(true, false, false, true);
@@ -196,7 +198,7 @@ namespace OKTRAIO.Champions
                 if (targetr != null)
                 {
                     var rpred = _r.GetPrediction(targetr);
-                    if (rpred.HitChancePercent >= Value.Get("combo.r.prediction") && !Orbwalker.IsAutoAttacking)
+                    if (rpred.HitChancePercent >= Value.Get("misc.r.prediction") && !Orbwalker.IsAutoAttacking)
                     {
                         Rcast(rpred.CastPosition + 50);
                     }
@@ -224,7 +226,7 @@ namespace OKTRAIO.Champions
                 EntityManager.MinionsAndMonsters.GetLaneMinions()
                     .OrderByDescending(a => a.MaxHealth)
                     .FirstOrDefault(
-                        a => a.IsValidTarget(_q.Range) && a.Health >= QDamage(a) && !a.IsLasthittableMinion());
+                        a => a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) && !a.IsLasthittableMinion());
 
 
             if (_q.IsReady() && Value.Use("lane.q") && Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
