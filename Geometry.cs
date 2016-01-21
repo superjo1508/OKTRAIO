@@ -510,7 +510,7 @@ namespace OKTRAIO
             if (Variables.CloseEnemies().Count <= 1)
             {
                 var dashPos = (Player.Instance.ServerPosition.To2D() + range * Player.Instance.Direction.To2D()).To3D();
-                if (!dashPos.IsUnderTurret())
+                if (!dashPos.IsUnderTurret() && (!Variables.JinxTrap(dashPos) || !Variables.CaitTrap(dashPos)))
                 {
                     return dashPos;
                 }
@@ -532,7 +532,7 @@ namespace OKTRAIO
                                 .First()
                                 .ServerPosition, range);
 
-                    if (!dashPos.IsUnderTurret())
+                    if (!dashPos.IsUnderTurret() && (!Variables.JinxTrap(dashPos.To3D()) || !Variables.CaitTrap(dashPos.To3D())))
                     {
                         return dashPos.To3D();
                     }
@@ -544,7 +544,7 @@ namespace OKTRAIO
             {
                 Chat.Print("2 high");
                 var dashPos = (Player.Instance.ServerPosition.To2D() + range * Player.Instance.Direction.To2D()).To3D();
-                if (!dashPos.IsUnderTurret())
+                if (!dashPos.IsUnderTurret() && (!Variables.JinxTrap(dashPos) || !Variables.CaitTrap(dashPos)))
                 {
                     return dashPos;
                 }
@@ -624,12 +624,12 @@ namespace OKTRAIO
             return SafeCheckTwo(pos)
                    && SafeCheckThree(pos)
                    && EntityManager.Heroes.Enemies.All(e => e.Distance(pos) > 350f)
-                   && (!pos.IsUnderTurret()) || Player.Instance.IsUnderTurret() && pos.IsUnderTurret() && Player.Instance.HealthPercent > 10;
+                   && (!pos.IsUnderTurret() && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos))) || Player.Instance.IsUnderTurret() && pos.IsUnderTurret() && Player.Instance.HealthPercent > 10 && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos));
         }
 
         public static bool SafeCheckTwo(Vector3 pos)
         {
-            return (!pos.IsUnderTurret() || Player.Instance.IsUnderTurret()) &&
+            return (!pos.IsUnderTurret() && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos)) || Player.Instance.IsUnderTurret()) && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos)) &&
                    Variables.CloseAllies(1000).Count(a => a.HealthPercent > 10) +
                    EntityManager.Turrets.Allies.Count(t => t.Distance(Player.Instance) < 1000) * 2 >=
                    Variables.CloseEnemies(1000).Count(e => e.HealthPercent > 10) +

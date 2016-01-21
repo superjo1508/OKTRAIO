@@ -3,11 +3,26 @@ using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using OKTRAIO.Champions;
+using SharpDX;
 
 namespace OKTRAIO
 {
     public class Variables
     {
+
+        public static bool JinxTrap(Vector3 castposition)
+        {
+            return
+                ObjectManager.Get<Obj_AI_Base>()
+                    .Where(a => a.BaseSkinName == "JinxMine").Any(a => castposition.Distance(a.Position) <= 300);
+        }
+
+        public static bool CaitTrap(Vector3 castposition)
+        {
+            return
+                ObjectManager.Get<Obj_AI_Base>()
+                    .Where(a => a.BaseSkinName == "CaitlynTrap").Any(a => castposition.Distance(a.Position) <= 250);
+        }
 
         public static AIHeroClient GetBestExplosionRange(float distance, int radius)
         {
