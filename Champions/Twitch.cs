@@ -21,6 +21,7 @@ namespace OKTRAIO.Champions
         private static readonly int[] EStackDamage = {15, 20, 25, 30, 35};
         private static readonly int[] EBaseDamage = {20, 35, 50, 65, 80};
         private static readonly Vector2 Offset = new Vector2(1, 0);
+        private static float _qmana, _wmana, _emana, _rmana;
 
 
 
@@ -54,6 +55,7 @@ namespace OKTRAIO.Champions
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddSlider("combo.r.aoe", "Use R when {0} enemies can be hit", 2, 1, 5, true);
                 MainMenu._combo.AddSeparator();
+                MainMenu._combo.AddCheckBox("combo.mana.management", "Smart Mana Management", true, true);
                 MainMenu._combo.AddGroupLabel("Prediction", "combo.grouplabel.addonmenu", true);
                 MainMenu._combo.AddSlider("combo.w.prediction", "Hitchance Percentage for W", 80, 0, 100, true);
 
@@ -140,9 +142,6 @@ namespace OKTRAIO.Champions
 
         }
 
-
-
-
         #endregion
 
         #region Gamerelated Logic
@@ -156,7 +155,7 @@ namespace OKTRAIO.Champions
                 return;
             }
 
-            if (Value.Use("combo.q") && _q.IsReady() && !Ulting)
+            if (Value.Use("combo.q") && _q.IsReady() && !Ulting && Player.Instance.Mana > _qmana + _rmana)
             {
                 if (Player.Instance.CountEnemiesInRange(900) >= Value.Get("combo.q.close"))
                 {
@@ -164,13 +163,11 @@ namespace OKTRAIO.Champions
                 }
             }
 
-            if (Value.Use("combo.w") && _w.IsReady())
+            if (Value.Use("combo.w") && _w.IsReady() && Player.Instance.Mana > _wmana + _rmana)
             {
                 var targetw = TargetSelector.GetTarget(_w.Range, DamageType.Physical);
 
-                
-
-                if (targetw != null && (!Stealthed && _w.IsInRange(targetw) && EStacks(target) < 5 || !Stealthed && !Player.Instance.IsInAutoAttackRange(targetw)))
+                if (targetw != null && (!Stealthed && _w.IsInRange(targetw) && EStacks(target) < 5 || !Stealthed && !Player.Instance.IsInAutoAttackRange(targetw) && _w.IsInRange(targetw)))
                 {
                     var wpred = _w.GetPrediction(targetw);
 
@@ -186,7 +183,7 @@ namespace OKTRAIO.Champions
                 }
             }
 
-            if (Value.Use("combo.e") && _e.IsReady())
+            if (Value.Use("combo.e") && _e.IsReady() && Player.Instance.Mana > _emana + _rmana)
             {
                 if (EStacks(target) == 6 && _e.IsInRange(target))
                 {
@@ -340,6 +337,8 @@ namespace OKTRAIO.Champions
             AutoEDeath();
 
             AutoERange();
+            
+            ComboManaManagement();
 
         }
 
@@ -610,7 +609,25 @@ namespace OKTRAIO.Champions
             }
         }
 
-    private static bool Stealthed
+        private static void ComboManaManagement()
+        {
+            if (Value.Use("combo.mana.management") && Player.Instance.HealthPercent > 20)
+            {
+                _qmana = _q.Handle.SData.Mana;
+                _wmana = _w.Handle.SData.Mana;
+                _emana = _e.Handle.SData.Mana;
+                _rmana = _r.IsReady() ? _r.Handle.SData.Mana : 0;
+            }
+            else
+            {
+                _qmana = 0;
+                _wmana = 0;
+                _emana = 0;
+                _rmana = 0;
+            }
+        }
+
+        private static bool Stealthed
         {
             get { return Player.Instance.HasBuff("TwitchHideInShadows"); }
         }
