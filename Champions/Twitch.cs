@@ -99,10 +99,12 @@ namespace OKTRAIO.Champions
                 MainMenu._misc.Add("misc.recall", new KeyBind("Stealh Recall", false, KeyBind.BindTypes.HoldActive, 'B'));
                 MainMenu._misc.AddSeparator();
                 MainMenu._misc.AddGroupLabel("Auto E Settings", "misc.grouplabel.addonmenu", true);
-                MainMenu._misc.AddCheckBox("misc.e.range", "E if full stacks and timer is below 1 second", true, true);
+                MainMenu._misc.AddCheckBox("misc.e.range", "E if target is going out of range", true, true);
+                MainMenu._misc.AddSlider("misc.e.range.stacks", "Min {0} stacks on enemy", 6, 1, 6, true);
+                MainMenu._misc.AddSeparator();
+                MainMenu._misc.AddCheckBox("misc.e.time", "E if full stacks and timer is below 1 second", true, true);
                 MainMenu._misc.AddSeparator();
                 MainMenu._misc.AddCheckBox("misc.e.death", "Use E before death", true, true);
-                MainMenu._misc.AddSeparator();
                 MainMenu._misc.AddSlider("misc.e.health", "Use E below {0}% Health", 10, 0, 100, true);
                 MainMenu._misc.AddSlider("misc.e.stacks", "Min {0} stacks on enemy", 6, 1, 6, true);
 
@@ -194,7 +196,6 @@ namespace OKTRAIO.Champions
 
             if (Value.Use("combo.r") && _r.IsReady())
             {
-                var targetr = TargetSelector.GetTarget(_r.Range, DamageType.Physical);
                 var targetr2 = TargetSelector.GetTarget(_r2.Range, DamageType.Physical);
 
                 if (targetr2 == null)
@@ -249,7 +250,7 @@ namespace OKTRAIO.Champions
                     .FirstOrDefault(
                         a =>
                             a.IsValidTarget(_e.Range) && a.BaseSkinName.Contains("Siege") &&
-                            a.HasBuff("twitchdeadlyvenom"));
+                            a.HasBuff("twitchdeadlyvenom") && !a.IsLasthittableMinion());
 
             var wfarm = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(minionw, _w.Width, (int) _w.Range);
 
@@ -338,6 +339,8 @@ namespace OKTRAIO.Champions
 
             AutoEDeath();
 
+            AutoERange();
+
         }
 
         #endregion
@@ -350,7 +353,7 @@ namespace OKTRAIO.Champions
             for (var i = 1; i < 7; i++)
             {
                 if (ObjectManager.Get<Obj_GeneralParticleEmitter>()
-                    .Any(e => e.Position.Distance(obj.ServerPosition) <= 125 &&
+                    .Any(e => e.Position.Distance(obj.ServerPosition) <= 175 &&
                               e.Name == "twitch_poison_counter_0" + i + ".troy"))
                 {
                     twitchECount = i;
@@ -459,7 +462,7 @@ namespace OKTRAIO.Champions
         {
             foreach (var enemy in EntityManager.Heroes.Enemies.Where(
                     a =>
-                        a.IsValidTarget(_e.Range) && !a.IsDead && !a.IsZombie && a.HasBuff("twitchdeadlyvenom")))
+                        a.IsValidTarget(_e.Range) && !a.IsDead && !a.IsZombie && a.HasBuff("twitchdeadlyvenom") && !a.HasBuffOfType(BuffType.Invulnerability) && !a.HasBuff("ChronoShift")))
             {
                 if (Value.Use("killsteal.e") && _e.IsReady() && Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana"))
                 {
@@ -502,6 +505,19 @@ namespace OKTRAIO.Champions
             if (_e.IsReady() && Value.Use("misc.e.death") && targete != null)
             {
                 if (Player.Instance.HealthPercent <= Value.Get("misc.e.health"))
+                {
+                    _e.Cast();
+                }
+            }
+        }
+
+        private static void AutoERange()
+        {
+            // ReSharper disable once UnusedVariable
+            foreach (var targete in EntityManager.Heroes.Enemies.Where(
+                    a => a.IsValid && a.HasBuff("twitchdeadlyvenom") && EStacks(a) >= Value.Get("misc.e.range.stacks")))
+            {
+                if (Value.Use("misc.e.range") && _e.IsReady() && targete.Distance(Player.Instance.ServerPosition) >= _e.Range - 200)
                 {
                     _e.Cast();
                 }
@@ -560,7 +576,7 @@ namespace OKTRAIO.Champions
                         _e.Cast();
                     }
 
-                    if (monster.BaseSkinName == ("SRU_Crab") && Value.Use("jungle.SRU_Crab"))
+                    if (monster.BaseSkinName == ("Sru_Crab") && Value.Use("jungle.SRU_Crab"))
                     {
                         _e.Cast();
                     }
@@ -584,7 +600,7 @@ namespace OKTRAIO.Champions
         {
             foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => a.HasBuff("twitchdeadlyvenom") && a.IsValidTarget(_e.Range)))
             {
-                if (Value.Use("misc.e.range") && _e.IsReady())
+                if (Value.Use("misc.e.time") && _e.IsReady())
                 {
                     if (EStacks(enemy) == 6 && PassiveTime(enemy) < 1)
                     {
