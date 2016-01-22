@@ -21,6 +21,7 @@ namespace OKTRAIO.Champions
         private static Spell.Skillshot _w, _e, _r;
         private static readonly Vector2 Offset = new Vector2(1, 0);
 
+
         public override void Init()
         {
 
@@ -267,7 +268,7 @@ namespace OKTRAIO.Champions
         {
             var minion = EntityManager.MinionsAndMonsters.GetLaneMinions().OrderByDescending(a => a.MaxHealth).FirstOrDefault(a => a.IsValidTarget(_w.Range) && a.Distance(Player.Instance.Position) > Player.Instance.GetAutoAttackRange() + 50 && a.Health <= Player.Instance.GetSpellDamage(a, SpellSlot.W));
 
-            if (Value.Use("last.w") && _w.IsReady() && Player.Instance.ManaPercent >= Value.Get("last.w.mana"))
+            if (Value.Use("lasthit.w") && _w.IsReady() && Player.Instance.ManaPercent >= Value.Get("lasthit.w.mana"))
             {
                 if (minion != null)
                 {
@@ -591,6 +592,8 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
             }
         }
+
+
 
         private static double ComboDamage(Obj_AI_Base target)
         {
