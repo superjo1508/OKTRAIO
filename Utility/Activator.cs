@@ -22,7 +22,53 @@ namespace OKTRAIO.Utility
             {
                 Game.OnTick += GameOnUpdate;
             }
+
             Obj_AI_Base.OnProcessSpellCast += OnProcessSpellCast;
+
+            Shop.OnBuyItem += Shop_OnBuyItem;
+        }
+
+        private static void Shop_OnBuyItem(AIHeroClient sender, ShopActionEventArgs args)
+        {
+            if (Botrk.IsOwned())
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.botrk", "Use BOTRK");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Blade of The Ruined King Manager:", "activator.label.utilitymenu.botrk", true);
+                UtilityMenu.Activator.AddCheckBox("activator.botrk.combo", "Use BOTRK (COMBO Mode)", true, true);
+                UtilityMenu.Activator.AddCheckBox("activator.botrk.ks", "Use BOTRK (KS Mode)", false, true);
+                UtilityMenu.Activator.AddCheckBox("activator.botrk.lifesave", "Use BOTRK (LifeSave)", false, true);
+                UtilityMenu.Activator.AddSlider("activator.botrk.hp", "Use BOTRK (LifeSave) if HP are under {0}", 20, 0, 100, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
+            if (Cutlass.IsOwned())
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.bilgewater", "Use BC");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Bilgewater Cutlass Manager:", "activator.label.utilitymenu.bilgewater", true);
+                UtilityMenu.Activator.AddCheckBox("activator.bilgewater.combo", "Use BC (COMBO Mode)", true, true);
+                UtilityMenu.Activator.AddCheckBox("activator.bilgewater.ks", "Use BC (KS Mode)", false, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
+
+            if (Youmuus.IsOwned())
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.youmus", "Use Youmus");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Youmus Manager:", "activator.label.utilitymenu.youmus", true);
+                UtilityMenu.Activator.AddCheckBox("activator.youmusspellonly", "Use Youmus only on spell cast", false, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
+
+            if (Hunter.IsOwned() || Refillable.IsOwned() || Potion.IsOwned() || Biscuit.IsOwned() || Corrupting.IsOwned())
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.potions", "Use Potions");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Potions Manager:", "activator.label.utilitymenu.potions", true);
+                UtilityMenu.Activator.AddSlider("activator.potions.hp", "Use POTIONS if HP are under {0}", 20, 0, 100, true);
+                UtilityMenu.Activator.AddSlider("activator.potions.mana", "Use POTIONS if mana is under {0}", 20, 0, 100, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
         }
 
         #endregion
@@ -32,7 +78,7 @@ namespace OKTRAIO.Utility
         private static void OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
 
-            if (sender.IsMe && Value.Use("activator.youmusspellonly"))
+            if (sender.IsMe && Youmuus.IsOwned() && Value.Use("activator.youmusspellonly"))
             {
                 if (((Player.Instance.ChampionName == "Lucian" || Player.Instance.ChampionName == "Twitch") &&
                      args.Slot == SpellSlot.R) || (Player.Instance.ChampionName == "Ashe" && args.Slot == SpellSlot.Q))
@@ -112,55 +158,63 @@ namespace OKTRAIO.Utility
         private static void Potions()
         {
             if (Player.Instance.IsInFountain() || Player.Instance.IsRecalling() ||
-                Player.Instance.IsUsingPotion()) return;
-            if (Value.Use("activator.potions"))
+                Player.Instance.IsUsingPotion() || (!Hunter.IsOwned() && !Refillable.IsOwned() && !Potion.IsOwned() && !Biscuit.IsOwned() &&
+                 !Corrupting.IsOwned()) || !Value.Use("activator.potions")) return;
+
+            if (Player.Instance.HealthPercent < Value.Get("activator.potions.hp"))
             {
-                if (Player.Instance.HealthPercent < Value.Get("activator.potions.hp"))
+                if (Hunter.IsReady())
                 {
-                    if (Hunter.IsReady())
-                    {
-                        Hunter.Cast();
-                    }
-                    else if (Corrupting.IsReady())
-                    {
-                        Corrupting.Cast();
-                    }
-                    else if (Refillable.IsReady())
-                    {
-                        Refillable.Cast();
-                    }
-                    else if (Potion.IsReady())
-                    {
-                        Potion.Cast();
-                    }
-                    else if (Biscuit.IsReady())
-                    {
-                        Biscuit.Cast();
-                    }
+                    Hunter.Cast();
                 }
-                if (Player.Instance.ManaPercent < Value.Get("activator.potions.mana"))
+                else if (Corrupting.IsReady())
                 {
-                    if (Hunter.IsReady())
-                    {
-                        Hunter.Cast();
-                    }
-                    else if (Corrupting.IsReady())
-                    {
-                        Corrupting.Cast();
-                    }
+                    Corrupting.Cast();
+                }
+                else if (Refillable.IsReady())
+                {
+                    Refillable.Cast();
+                }
+                else if (Potion.IsReady())
+                {
+                    Potion.Cast();
+                }
+                else if (Biscuit.IsReady())
+                {
+                    Biscuit.Cast();
+                }
+            }
+            if (Player.Instance.ManaPercent < Value.Get("activator.potions.mana"))
+            {
+                if (Hunter.IsReady())
+                {
+                    Hunter.Cast();
+                }
+                else if (Corrupting.IsReady())
+                {
+                    Corrupting.Cast();
                 }
             }
         }
 
         #endregion
+
         #region Spells
 
-        public static Spell.Targeted Ignite;
+        public static Spell.Targeted Ignite, Smite, Exhaust;
 
         public static Spell.Active Heal, Barrier;
 
         public static void LoadSpells()
         {
+            if (ObjectManager.Player.Spellbook.GetSpell(SpellSlot.Summoner1).Name.Contains("exhaust"))
+                Exhaust = new Spell.Targeted(SpellSlot.Summoner1, 650);
+            else if (ObjectManager.Player.Spellbook.GetSpell(SpellSlot.Summoner2).Name.Contains("exhaust"))
+                Exhaust = new Spell.Targeted(SpellSlot.Summoner2, 650);
+            if (ObjectManager.Player.Spellbook.GetSpell(SpellSlot.Summoner1).Name.Contains("smite"))
+                Smite = new Spell.Targeted(SpellSlot.Summoner1, 570);
+            else if (ObjectManager.Player.Spellbook.GetSpell(SpellSlot.Summoner2).Name.Contains("smite"))
+                Smite = new Spell.Targeted(SpellSlot.Summoner2, 570);
             if (Player.Instance.Spellbook.GetSpell(SpellSlot.Summoner1).Name.Contains("dot"))
                 Ignite = new Spell.Targeted(SpellSlot.Summoner1, 580);
             else if (Player.Instance.Spellbook.GetSpell(SpellSlot.Summoner2).Name.Contains("dot"))
@@ -177,15 +231,15 @@ namespace OKTRAIO.Utility
 
         private static void ActivatorSpells()
         {
-            var target = TargetSelector.GetTarget(1000, DamageType.Mixed );
-            
+            var target = TargetSelector.GetTarget(1000, DamageType.Mixed);
+
             var spell = Player.Instance.Spellbook;
 
             if (Player.Instance.IsInFountain() || Player.Instance.IsRecalling() || target == null) return;
 
-            if (Value.Use("activator.barrier"))
+            if (Barrier != null)
             {
-                if (Barrier != null)
+                if (Value.Use("activator.barrier"))
                 {
                     if (Value.Get("activator.barrier.hp") > Player.Instance.HealthPercent)
                     {
@@ -197,9 +251,9 @@ namespace OKTRAIO.Utility
                 }
             }
 
-            if (Value.Use("activator.heal"))
+            if (Heal != null && Heal.IsReady())
             {
-                if (Heal != null && Heal.IsReady())
+                if (Value.Use("activator.heal"))
                 {
                     if (Value.Use("activator.heal.lifesave"))
                     {
@@ -230,10 +284,11 @@ namespace OKTRAIO.Utility
                 }
             }
 
-            if (Value.Use("activator.ignite"))
+            if (Ignite != null && Ignite.IsReady())
             {
-                if (Ignite != null && Ignite.IsReady())
+                if (Value.Use("activator.ignite"))
                 {
+
                     if (Value.Use("activator.ignite.killsteal"))
                     {
                         if (target.Health <= DamageLibrary.GetSpellDamage(Player.Instance, target, Ignite.Slot))
@@ -244,8 +299,9 @@ namespace OKTRAIO.Utility
 
                     if (Value.Use("activator.ignite.burst"))
                     {
-                        if (spell.GetSpell(SpellSlot.Q).IsReady && spell.GetSpell(SpellSlot.W).IsReady && spell.GetSpell(SpellSlot.E).IsReady && spell.GetSpell(SpellSlot.R).IsReady)
-                        { 
+                        if (spell.GetSpell(SpellSlot.Q).IsReady && spell.GetSpell(SpellSlot.W).IsReady &&
+                            spell.GetSpell(SpellSlot.E).IsReady && spell.GetSpell(SpellSlot.R).IsReady)
+                        {
                             if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
                             {
                                 Ignite.Cast(target);
@@ -261,17 +317,15 @@ namespace OKTRAIO.Utility
                     }
                 }
             }
-
-
-
         }
 
         #endregion
 
 
-        #region Util
+                #region Util
 
-        public static bool IsInFountain(this AIHeroClient hero)
+            public static
+            bool IsInFountain(this AIHeroClient hero)
         {
             float fountainRange = 562500; //750 * 750
             var vec3 = (hero.Team == GameObjectTeam.Order)

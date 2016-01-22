@@ -8,7 +8,6 @@ using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
-using Color = System.Drawing.Color;
 using MainMenu = OKTRAIO.Menu_Settings.MainMenu;
 
 namespace OKTRAIO.Champions
@@ -22,8 +21,18 @@ namespace OKTRAIO.Champions
         private static Spell.Targeted _e;
         private static Spell.Active _r;
         #endregion
+        private static bool _isChannelingImportantSpell;
+        Database.Spell_Library.InterrupterExtensions ext = new Database.Spell_Library.InterrupterExtensions();
 
-        private bool _isUlting;
+        private static bool IsUlting
+        {
+            get { return Player.Instance.HasBuff("katarinarsound") || Player.Instance.HasBuff("KatarinaR") || _isChannelingImportantSpell; }
+        }
+        private static double _QMarkBuff(Obj_AI_Base target)
+        {
+            return target.HasBuff("katarinaqmark") ? Player.Instance.GetSpellDamage(target, SpellSlot.Q) : 0;
+        }
+
         private static Menu _humanizerMenu;
         public override void Init()
         {
@@ -55,14 +64,20 @@ namespace OKTRAIO.Champions
                     MainMenu.ComboKeys(true, true, true, true);
                     MainMenu.HarassKeys(true, true, true, true);
                     MainMenu._harass.Add("harass.autow", new CheckBox("Use Auto W"));
+                    MainMenu._harass.Add("harass.donteunderturret", new CheckBox("Dont E Under Turret"));
 
                     MainMenu.FleeKeys(false, false, true, false);
                     MainMenu._flee.Add("flee.ward", new CheckBox("Use Wardjump"));
 
                     MainMenu.LaneKeys(true, true, true, false);
+                    MainMenu._lane.Add("lane.donteunderturret", new CheckBox("Dont E Under Turret"));
+
                     MainMenu.LastHitKeys(true, true, true, false);
+                    MainMenu._lasthit.Add("lasthit.donteunderturret", new CheckBox("Dont E Under Turret"));
+
                     MainMenu.KsKeys(true, true, true, true);
                     MainMenu._ks.Add("killsteal.ignite", new CheckBox("Use Ignite"));
+                    MainMenu._ks.Add("killsteal.donteunderturret", new CheckBox("Dont E Under Turret"));
 
                     MainMenu.DamageIndicator();
                     MainMenu.DrawKeys(true, true, true, true);
@@ -141,7 +156,7 @@ namespace OKTRAIO.Champions
                     if (_humanizerMenu["min.e"].Cast<Slider>().CurrentValue > _humanizerMenu["max.e"].Cast<Slider>().CurrentValue)
                         _humanizerMenu["min.e"].Cast<Slider>().CurrentValue = _humanizerMenu["max.e"].Cast<Slider>().CurrentValue;
                 };
-                _humanizerMenu["min.e"].Cast<Slider>().OnValueChange += delegate
+                _humanizerMenu["max.e"].Cast<Slider>().OnValueChange += delegate
                 {
                     if (_humanizerMenu["max.e"].Cast<Slider>().CurrentValue < _humanizerMenu["min.e"].Cast<Slider>().CurrentValue)
                         _humanizerMenu["max.e"].Cast<Slider>().CurrentValue = _humanizerMenu["min.e"].Cast<Slider>().CurrentValue;
@@ -151,7 +166,7 @@ namespace OKTRAIO.Champions
                     if (_humanizerMenu["min.r"].Cast<Slider>().CurrentValue > _humanizerMenu["max.r"].Cast<Slider>().CurrentValue)
                         _humanizerMenu["min.r"].Cast<Slider>().CurrentValue = _humanizerMenu["max.r"].Cast<Slider>().CurrentValue;
                 };
-                _humanizerMenu["min.r"].Cast<Slider>().OnValueChange += delegate
+                _humanizerMenu["max.r"].Cast<Slider>().OnValueChange += delegate
                 {
                     if (_humanizerMenu["max.r"].Cast<Slider>().CurrentValue < _humanizerMenu["min.r"].Cast<Slider>().CurrentValue)
                         _humanizerMenu["max.r"].Cast<Slider>().CurrentValue = _humanizerMenu["min.r"].Cast<Slider>().CurrentValue;
@@ -169,19 +184,13 @@ namespace OKTRAIO.Champions
             {
                 try
                 {
-                    #region IsUlting
-                    _isUlting = Player.Instance.HasBuff("katarinarsound");
-
-                    Orbwalker.DisableAttacking = _isUlting;
-                    Orbwalker.DisableMovement = _isUlting;
-                    #endregion
                     #region AutoW
                     if (MainMenu._harass["harass.autow"].Cast<CheckBox>().CurrentValue)
                     {
                         var e = EntityManager.Heroes.Enemies.Where(ee => !ee.IsDead && ee.IsValid);
                         foreach (var enemy in e)
                         {
-                            if (_w.IsInRange(enemy) && _w.IsReady() && !_isUlting)
+                            if (_w.IsInRange(enemy) && _w.IsReady() && !IsUlting)
                             {
                                 _w.Cast();
                             }
@@ -189,6 +198,7 @@ namespace OKTRAIO.Champions
                     }
                     #endregion
 
+                    _isChannelingImportantSpell = ext.IsChannelingImportantSpell(Player.Instance);
                     KillSteal();
                 }
                 catch (Exception e)
@@ -342,7 +352,17 @@ namespace OKTRAIO.Champions
                 }
                 if (_e.IsReady() && _e.IsInRange(target) && Value.Use("harass.e"))
                 {
-                    Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
+                    if (Value.Use("harass.donteunderturret"))
+                    {
+                        if (!target.IsUnderEnemyturret())
+                        {
+                            Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
+                        }
+                    }
+                    else
+                    {
+                        Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
+                    }
                 }
             }
             catch (Exception e)
@@ -353,7 +373,7 @@ namespace OKTRAIO.Champions
         }
         #endregion
 
-       #region LastHitMain
+        #region LastHitMain
         public override void LastHit()
         {
             try
@@ -404,7 +424,17 @@ namespace OKTRAIO.Champions
                         {
                             if (_e.IsInRange(minion) && _e.IsReady() && Value.Use("lasthit.e"))
                             {
-                                Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                                if (Value.Use("lasthit.donteunderturret"))
+                                {
+                                    if (!minion.IsUnderEnemyturret())
+                                    {
+                                        Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                                    }
+                                }
+                                else
+                                {
+                                    Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                                }
                             }
                         }
                     }
@@ -494,7 +524,17 @@ namespace OKTRAIO.Champions
 
                     if (_e.IsInRange(minion) && _e.IsReady() && Value.Use("lane.e"))
                     {
-                        Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                        if (Value.Use("lane.donteunderturret"))
+                        {
+                            if (!minion.IsUnderEnemyturret())
+                            {
+                                Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                            }
+                        }
+                        else
+                        {
+                            Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                        }
                     }
                 }
             }
@@ -528,7 +568,17 @@ namespace OKTRAIO.Champions
                         }
                         if (_e.IsReady() && _e.IsInRange(enemy) && Value.Use("killsteal.e"))
                         {
-                            Core.DelayAction(() => _e.Cast(enemy), new Random().Next(MinWDelay, MaxWDelay));
+                            if (Value.Use("killsteal.donteunderturret"))
+                            {
+                                if (!enemy.IsUnderEnemyturret())
+                                {
+                                    Core.DelayAction(() => _e.Cast(enemy), new Random().Next(MinWDelay, MaxWDelay));
+                                }
+                            }
+                            else
+                            {
+                                Core.DelayAction(() => _e.Cast(enemy), new Random().Next(MinWDelay, MaxWDelay));
+                            }
                         }
                     }
                 }
@@ -602,7 +652,7 @@ namespace OKTRAIO.Champions
                     if (Player.Instance.Spellbook.CanUseSpell(spell) == SpellState.Ready)
                         damage += GetSpellDamage(spell);
                 }
-                if (Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) != SpellState.Cooldown && Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) != SpellState.NotLearned && Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready)
+                if (Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) != SpellState.Cooldown && Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) != SpellState.NotLearned && Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready && GetIgniteSpellSlot() != SpellSlot.Unknown)
                     damage += Player.Instance.GetSummonerSpellDamage(enemy, DamageLibrary.SummonerSpells.Ignite);
                 if (Player.Instance.Spellbook.CanUseSpell(SpellSlot.R) != SpellState.Cooldown && Player.Instance.Spellbook.CanUseSpell(SpellSlot.R) != SpellState.NotLearned)
                     damage += GetSpellDamage(SpellSlot.R);
@@ -618,144 +668,85 @@ namespace OKTRAIO.Champions
         }
         #endregion
 
-        #region DrawColorIndex
-        private static Color ColorQ
-        {
-            get { return MainMenu._draw.GetColor("color.q"); }
-        }
-        private static Color ColorW
-        {
-            get { return MainMenu._draw.GetColor("color.w"); }
-        }
-        private static Color ColorE
-        {
-            get { return MainMenu._draw.GetColor("color.e"); }
-        }
-        private static Color ColorR
-        {
-            get { return MainMenu._draw.GetColor("color.r"); }
-        }
-        private static Color ColorIgnite
-        {
-            get { return MainMenu._draw.GetColor("color.ignite"); }
-        }
-        private static Color ColorFlash
-        {
-            get { return MainMenu._draw.GetColor("color.flash"); }
-        }
-        #endregion
-        #region Value.Use("draw.w")idthIndex
-        private static float WidthQ
-        {
-            get { return MainMenu._draw.GetWidth("width.q"); }
-        }
-        private static float WidthW
-        {
-            get { return MainMenu._draw.GetWidth("width.w"); }
-        }
-        private static float WidthE
-        {
-            get { return MainMenu._draw.GetWidth("width.e"); }
-        }
-        private static float WidthR
-        {
-            get { return MainMenu._draw.GetWidth("width.r"); }
-        }
-        private static float WidthIgnite
-        {
-            get { return MainMenu._draw.GetWidth("width.ignite"); }
-        }
-        private static float WidthFlash
-        {
-            get { return MainMenu._draw.GetWidth("width.flash"); }
-        }
-        #endregion
-        #region DrawSummonersIndex
-        private static bool DrawFlash
-        {
-            get
-            {
-                return Value.Use("dra_w.flash");
-            }
-        }
-        private static bool DrawIgnite
-        {
-            get
-            {
-                return Value.Use("dra_w.ignite");
-            }
-        }
-        #endregion
         #region SummonersRanges
         private static float flashrange = 425;
         private static float igniterange = 600;
         #endregion
-        #region Value.Use("draw.r")angesMain
         private static void DrawRanges(EventArgs args)
         {
             try
             {
                 if (Value.Use("draw.disable"))
                     return;
-
                 try
                 {
                     #region Q
-                    if (Value.Use("draw.ready"))
+                    if (Value.Use("draw.q"))
                     {
-                        if (_q.IsReady())
-                            new Circle{ BorderWidth = WidthQ, Color = ColorQ, Radius = _q.Range }.Draw(Player.Instance.Position);
-                    }
-                    else
-                    {
-                        new Circle { BorderWidth = WidthQ, Color = ColorQ, Radius = _q.Range }.Draw(Player.Instance.Position);
+                        if (Value.Use("draw.ready"))
+                        {
+                            if (_q.IsReady())
+                            {
+                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = _q.Range }.Draw(Player.Instance.Position);
+                            }
+                        }
+                        else
+                        {
+                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = _q.Range }.Draw(Player.Instance.Position);
+                        }
                     }
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW</font>");
+                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.Q</font>");
                 }
 
                 try
                 {
                     #region W
-                    if (Value.Use("draw.ready"))
+                    if (Value.Use("draw.w"))
                     {
-                        if (_w.IsReady())
-                            new Circle { BorderWidth = WidthW, Color = ColorW, Radius = _w.Range }.Draw(Player.Instance.Position);
-                    }
-                    else
-                    {
-                        new Circle { BorderWidth = WidthW, Color = ColorW, Radius = _w.Range }.Draw(Player.Instance.Position);
+                        if (Value.Use("draw.ready"))
+                        {
+                            if (_w.IsReady())
+                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.w"), Color = MainMenu._draw.GetColor("color.w"), Radius = _w.Range }.Draw(Player.Instance.Position);
+                        }
+                        else
+                        {
+                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.w"), Color = MainMenu._draw.GetColor("color.w"), Radius = _w.Range }.Draw(Player.Instance.Position);
+                        }
                     }
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW</font>");
+                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.W</font>");
                 }
 
                 try
                 {
                     #region E
-                    if (Value.Use("draw.ready"))
+                    if (Value.Use("draw.e"))
                     {
-                        if (_e.IsReady())
-                            new Circle { BorderWidth = WidthE, Color = ColorE, Radius = _e.Range }.Draw(Player.Instance.Position);
-                    }
-                    else
-                    {
-                        new Circle{ BorderWidth = WidthE, Color = ColorE, Radius = _e.Range }.Draw(Player.Instance.Position);
+                        if (Value.Use("draw.ready"))
+                        {
+                            if (_e.IsReady())
+                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = _e.Range }.Draw(Player.Instance.Position);
+                        }
+                        else
+                        {
+                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = _e.Range }.Draw(Player.Instance.Position);
+                        }
                     }
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW</font>");
+                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.E</font>");
                 }
 
                 try
@@ -763,27 +754,34 @@ namespace OKTRAIO.Champions
                     #region R
                     if (Value.Use("draw.r"))
                     {
-                        if (!_r.IsOnCooldown)
-                            new Circle() { BorderWidth = WidthR, Color = ColorR, Radius = _r.Range }.Draw(Player.Instance.Position);
+                        if (Value.Use("draw.ready"))
+                        {
+                            if (!_r.IsOnCooldown)
+                                new Circle() { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = _r.Range }.Draw(Player.Instance.Position);
+                        }
+                        else
+                        {
+                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = _r.Range }.Draw(Player.Instance.Position);
+                        }
                     }
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW)</font>");
+                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.R)</font>");
                 }
 
                 #region Summoners
                 try
                 {
                     #region Flash
-                    if (DrawFlash)
+                    if (Value.Use("draw.flash"))
                     {
                         if (Player.CanUseSpell(GetFlashSpellSlot()) == SpellState.Ready)
-                            new Circle() { BorderWidth = WidthFlash, Color = ColorFlash, Radius = flashrange }.Draw(Player.Instance.Position);
+                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("width.flash"), Color = MainMenu._draw.GetColor("color.flash"), Radius = flashrange }.Draw(Player.Instance.Position);
                         if (Player.CanUseSpell(GetFlashSpellSlot()) == SpellState.Cooldown)
-                            new Circle() { BorderWidth = WidthFlash, Color = ColorFlash, Radius = flashrange }.Draw(Player.Instance.Position);
+                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("width.flash"), Color = MainMenu._draw.GetColor("color.flash"), Radius = flashrange }.Draw(Player.Instance.Position);
                     }
                     #endregion
                 }
@@ -796,12 +794,12 @@ namespace OKTRAIO.Champions
                 try
                 {
                     #region Ignite
-                    if (DrawIgnite)
+                    if (Value.Use("draw.ignite"))
                     {
                         if (Player.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready)
-                            new Circle() { BorderWidth = WidthIgnite, Color = ColorIgnite, Radius = igniterange }.Draw(Player.Instance.Position);
+                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("color.flash"), Color = MainMenu._draw.GetColor("color.ignite"), Radius = igniterange }.Draw(Player.Instance.Position);
                         if (Player.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Cooldown)
-                            new Circle() { BorderWidth = WidthIgnite, Color = ColorIgnite, Radius = igniterange }.Draw(Player.Instance.Position);
+                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("color.flash"), Color = MainMenu._draw.GetColor("color.ignite"), Radius = igniterange }.Draw(Player.Instance.Position);
                     }
                     #endregion
                 }
@@ -820,7 +818,7 @@ namespace OKTRAIO.Champions
             }
         }
         #endregion
-        #endregion
+
         #region GetSpellSlots
         private static SpellSlot GetFlashSpellSlot()
         {

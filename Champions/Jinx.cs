@@ -287,10 +287,14 @@ namespace OKTRAIO.Champions
             {
                 if (!Orbwalker.IsAutoAttacking) return;
 
-                var target = (Obj_AI_Base) Orbwalker.GetTarget();
-                if (target != null && target.IsMonster)
+                var monsters =
+                EntityManager.MinionsAndMonsters.GetJungleMonsters(ObjectManager.Player.ServerPosition,
+                    _q.Range)
+                    .FirstOrDefault(x => x.IsValidTarget(_q.Range));
+
+                if (monsters != null)
                 {
-                    _w.Cast(target);
+                    _w.Cast(monsters);
                 }
             }
         }
@@ -357,7 +361,7 @@ namespace OKTRAIO.Champions
             var enemy = TargetSelector.GetTarget(MissleRange + 60, DamageType.Physical);
             if (enemy == null || !enemy.IsValidTarget()) return null;
 
-            if (!MissleActive && (!Player.Instance.IsInAutoAttackRange(enemy) || enemy.CountEnemiesInRange(250) > 2) && Orbwalker.GetTarget() == null)
+            if (!MissleActive && (!Player.Instance.IsInAutoAttackRange(enemy) || enemy.CountEnemiesInRange(250) > 2) && TargetSelector.GetTarget(_q.Range, DamageType.Physical) == null)
             {
                 return enemy;
             }

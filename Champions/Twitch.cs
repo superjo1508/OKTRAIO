@@ -13,6 +13,7 @@ namespace OKTRAIO.Champions
 {
     class Twitch : AIOChampion
     {
+
         #region Initialize and Declare
 
         private static Spell.Active _q, _e, _r, _recall;
@@ -146,6 +147,7 @@ namespace OKTRAIO.Champions
 
         #region Gamerelated Logic
 
+        #region Combo
         public override void Combo()
         {
             var target = TargetSelector.GetTarget(_e.Range, DamageType.Physical);
@@ -213,7 +215,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Harass
         public override void Harass()
         {
             var target =
@@ -235,7 +239,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Laneclear
         public override void Laneclear()
         {
             var minionw = EntityManager.MinionsAndMonsters.GetLaneMinions().Where(a => a.IsValidTarget(_w.Range));
@@ -247,7 +253,8 @@ namespace OKTRAIO.Champions
                     .FirstOrDefault(
                         a =>
                             a.IsValidTarget(_e.Range) && a.BaseSkinName.Contains("Siege") &&
-                            a.HasBuff("twitchdeadlyvenom") && !a.IsLasthittableMinion());
+                            a.HasBuff("twitchdeadlyvenom") &&
+                        a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
 
             var wfarm = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(minionw, _w.Width, (int) _w.Range);
 
@@ -279,7 +286,9 @@ namespace OKTRAIO.Champions
             }
 
         }
+        #endregion
 
+        #region Jungleclear
         public override void Jungleclear()
         {
             var monster =
@@ -297,7 +306,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Flee
         public override void Flee()
         {
             var target = TargetSelector.GetTarget(_w.Range, DamageType.Physical);
@@ -322,7 +333,13 @@ namespace OKTRAIO.Champions
                 _q.Cast();
             }
         }
+        #endregion
 
+        #endregion
+
+        #region Utils
+
+        #region OnUpdate
         private static void GameOnOnUpdate(EventArgs args)
         {
 
@@ -341,11 +358,9 @@ namespace OKTRAIO.Champions
             ComboManaManagement();
 
         }
-
         #endregion
 
-        #region Utils
-
+        #region EStacks
         private static int EStacks(Obj_AI_Base obj)
         {
             var twitchECount = 0;
@@ -405,7 +420,63 @@ namespace OKTRAIO.Champions
                      (.2 * Player.Instance.FlatMagicDamageMod) +
                      (.25 * (Player.Instance.TotalAttackDamage - Player.Instance.BaseAttackDamage)));
         }
+        
+        private static float EDamage(Obj_AI_Base target)
+        {
+            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, ERaw(target)) *
+                   (Player.Instance.HasBuff("summonerexhaust") ? 0.6f : 1);
+        }
 
+        private static float EDamageMinion(Obj_AI_Minion minion)
+        {
+            return Player.Instance.CalculateDamageOnUnit(minion, DamageType.Physical, ERawMinion(minion)) *
+                   (Player.Instance.HasBuff("summonerexhaust") ? 0.6f : 1);
+        }
+
+        private static void AutoEDeath()
+        {
+            var targete =
+                EntityManager.Heroes.Enemies.FirstOrDefault(
+                    a => a.IsValidTarget(_e.Range) && a.HasBuff("twitchdeadlyvenom") && EStacks(a) > Value.Get("misc.e.stacks"));
+
+            if (_e.IsReady() && Value.Use("misc.e.death") && targete != null)
+            {
+                if (Player.Instance.HealthPercent <= Value.Get("misc.e.health"))
+                {
+                    _e.Cast();
+                }
+            }
+        }
+
+        private static void AutoERange()
+        {
+            // ReSharper disable once UnusedVariable
+            foreach (var targete in EntityManager.Heroes.Enemies.Where(
+                    a => a.IsValid && a.HasBuff("twitchdeadlyvenom") && EStacks(a) >= Value.Get("misc.e.range.stacks")))
+            {
+                if (Value.Use("misc.e.range") && _e.IsReady() && targete.Distance(Player.Instance.ServerPosition) >= _e.Range - 200)
+                {
+                    _e.Cast();
+                }
+            }
+        }
+
+        private static void AutoE()
+        {
+            foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => a.HasBuff("twitchdeadlyvenom") && a.IsValidTarget(_e.Range)))
+            {
+                if (Value.Use("misc.e.time") && _e.IsReady())
+                {
+                    if (EStacks(enemy) == 6 && PassiveTime(enemy) < 1)
+                    {
+                        _e.Cast();
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region Passive values
         public static float PassiveTime(Obj_AI_Base target)
         {
             if (target.HasBuff("twitchdeadlyvenom"))
@@ -442,21 +513,9 @@ namespace OKTRAIO.Champions
             }
             return (dmg * EStacks(target) * PassiveTime(target)) - target.HPRegenRate * PassiveTime(target);
         }
+        #endregion
 
-
-
-        private static float EDamage(Obj_AI_Base target)
-        {
-            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, ERaw(target))*
-                   (Player.Instance.HasBuff("summonerexhaust") ? 0.6f : 1);
-        }
-
-        private static float EDamageMinion(Obj_AI_Minion minion)
-        {
-            return Player.Instance.CalculateDamageOnUnit(minion, DamageType.Physical, ERawMinion(minion)) *
-                   (Player.Instance.HasBuff("summonerexhaust") ? 0.6f : 1);
-        }
-
+        #region KillSteal
         private static void Ks()
         {
             foreach (var enemy in EntityManager.Heroes.Enemies.Where(
@@ -494,35 +553,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
-        private static void AutoEDeath()
-        {
-            var targete =
-                EntityManager.Heroes.Enemies.FirstOrDefault(
-                    a => a.IsValidTarget(_e.Range) && a.HasBuff("twitchdeadlyvenom") && EStacks(a) > Value.Get("misc.e.stacks"));
-
-            if (_e.IsReady() && Value.Use("misc.e.death") && targete != null)
-            {
-                if (Player.Instance.HealthPercent <= Value.Get("misc.e.health"))
-                {
-                    _e.Cast();
-                }
-            }
-        }
-
-        private static void AutoERange()
-        {
-            // ReSharper disable once UnusedVariable
-            foreach (var targete in EntityManager.Heroes.Enemies.Where(
-                    a => a.IsValid && a.HasBuff("twitchdeadlyvenom") && EStacks(a) >= Value.Get("misc.e.range.stacks")))
-            {
-                if (Value.Use("misc.e.range") && _e.IsReady() && targete.Distance(Player.Instance.ServerPosition) >= _e.Range - 200)
-                {
-                    _e.Cast();
-                }
-            }
-        }
-
+        #region JungleSteal
         private static void JungleSteal()
         {
             var monster =
@@ -582,7 +615,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region QRecall
         private static void Recall()
         {
             if (Value.Active("misc.recall"))
@@ -594,21 +629,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
-        private static void AutoE()
-        {
-            foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => a.HasBuff("twitchdeadlyvenom") && a.IsValidTarget(_e.Range)))
-            {
-                if (Value.Use("misc.e.time") && _e.IsReady())
-                {
-                    if (EStacks(enemy) == 6 && PassiveTime(enemy) < 1)
-                    {
-                        _e.Cast();
-                    }
-                }
-            }
-        }
-
+        #region Mana manager
         private static void ComboManaManagement()
         {
             if (Value.Use("combo.mana.management") && Player.Instance.HealthPercent > 20)
@@ -626,7 +649,9 @@ namespace OKTRAIO.Champions
                 _rmana = 0;
             }
         }
+        #endregion
 
+        #region Values
         private static bool Stealthed
         {
             get { return Player.Instance.HasBuff("TwitchHideInShadows"); }
@@ -636,6 +661,7 @@ namespace OKTRAIO.Champions
         {
             get { return Player.Instance.HasBuff("TwitchFullAutomatic"); }
         }
+        #endregion 
 
         #endregion
 
@@ -699,5 +725,6 @@ namespace OKTRAIO.Champions
             }
         }
         #endregion 
+
     }
 }

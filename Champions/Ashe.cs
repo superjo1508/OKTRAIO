@@ -15,6 +15,7 @@ namespace OKTRAIO.Champions
 {
     class Ashe : AIOChampion
     {
+
         #region Initialize and Declare
 
         private static Spell.Active _q;
@@ -38,8 +39,6 @@ namespace OKTRAIO.Champions
 
 
                 //menu
-
-                //combo test
                 MainMenu.ComboKeys(true, true, false, true);
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
@@ -156,12 +155,15 @@ namespace OKTRAIO.Champions
 
         #region Gamerelated Logic
 
+        #region UltButton
         private static void OnUltButton(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
         {
             if (args.NewValue && TargetSelector.GetTarget(_r.Range, DamageType.Physical) != null)
                 _r.Cast(_r.GetPrediction(TargetSelector.GetTarget(_r.Range, DamageType.Physical)).CastPosition);
         }
+        #endregion
 
+        #region Combo
         public override void Combo()
         {
 
@@ -207,12 +209,18 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
+
+        #region Harass
 
         public override void Harass()
         {
             var target = TargetSelector.GetTarget(_w.Range, DamageType.Physical);
 
-            if (target == null) { return; }
+            if (target == null)
+            {
+                return;
+            }
             if (Value.Use("harass.w") && _w.IsReady() && Player.Instance.ManaPercent >= Value.Get("harass.w.mana"))
             {
                 if (target.IsValid)
@@ -235,10 +243,10 @@ namespace OKTRAIO.Champions
                         _q.Cast();
                     }
             }
-
-
         }
+        #endregion
 
+        #region Laneclear
         public override void Laneclear()
         {
             var lanemonsters =
@@ -263,7 +271,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Lasthit
         public override void LastHit()
         {
             var minion = EntityManager.MinionsAndMonsters.GetLaneMinions().OrderByDescending(a => a.MaxHealth).FirstOrDefault(a => a.IsValidTarget(_w.Range) && a.Distance(Player.Instance.Position) > Player.Instance.GetAutoAttackRange() + 50 && a.Health <= Player.Instance.GetSpellDamage(a, SpellSlot.W));
@@ -276,8 +286,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
-
+        #region Jungleclear
         public override void Jungleclear()
         {
             var monsters =
@@ -298,8 +309,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
-
+        #region Flee
         public override void Flee()
         {
             var target = TargetSelector.GetTarget(_w.Range, DamageType.Physical);
@@ -316,7 +328,13 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #endregion
+
+        #region Utils
+
+        #region OnUpdate
         private static void GameOnUpdate(EventArgs args)
         {
             if (Player.Instance.IsDead || Player.Instance.HasBuff("Recall")
@@ -335,7 +353,9 @@ namespace OKTRAIO.Champions
 
 
         }
+        #endregion
 
+        #region Interrupter
         private static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender,
             Interrupter.InterruptableSpellEventArgs e)
         {
@@ -361,7 +381,9 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INTERRUPTER)</font>");
             }
         }
+        #endregion
 
+        #region AntiGapCloser
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
             try
@@ -412,7 +434,9 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ONCREATE)</font>");
             }
         }
+        #endregion
 
+        #region Orbwalker
         private void Orbwalker_OnPreAttack(AttackableUnit target, Orbwalker.PreAttackArgs args)
         {
 
@@ -458,7 +482,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region OnSpellCast
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             if (sender.IsAlly || !Value.Use("misc.e"))
@@ -472,24 +498,16 @@ namespace OKTRAIO.Champions
                 _e.Cast(args.End);
             }
         }
-
         #endregion
 
-        #region Utils
-
+        #region Prediciton
         public static int Predslider
         {
             get { return Value.Get("combo.wr.prediction"); }
         }
+        #endregion
 
-        public static double RDamage(Obj_AI_Base target)
-        {
-            if (!Player.GetSpell(SpellSlot.R).IsLearned) return 0;
-            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical,
-                (float)new double[] { 250, 425, 600 }[_r.Level - 1] + 1 * Player.Instance.FlatMagicDamageMod);
-        }
-
-
+        #region AutoE
         private static void AutoE()
         {
             foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => a.IsValidTarget(3000)))
@@ -507,8 +525,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
-
+        #region AutoW
         private static void AutoW()
         {
             var target =
@@ -546,7 +565,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region KillSteal
         private static void Ks()
         {
             try
@@ -592,8 +613,15 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
             }
         }
+        #endregion
 
-
+        #region Damage
+        public static double RDamage(Obj_AI_Base target)
+        {
+            if (!Player.GetSpell(SpellSlot.R).IsLearned) return 0;
+            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical,
+                (float)new double[] { 250, 425, 600 }[_r.Level - 1] + 1 * Player.Instance.FlatMagicDamageMod);
+        }
 
         private static double ComboDamage(Obj_AI_Base target)
         {
@@ -640,6 +668,7 @@ namespace OKTRAIO.Champions
             }
             return enemy.TotalShieldHealth() <= damage;
         }
+        #endregion 
 
         #endregion
 
@@ -680,5 +709,6 @@ namespace OKTRAIO.Champions
             }
         }
         #endregion     
+
     }
 }

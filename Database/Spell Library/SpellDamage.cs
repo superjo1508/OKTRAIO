@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using EloBuddy;
 
-namespace OKTRAIO.Spell_Library
+namespace OKTRAIO.Database.Spell_Library
 {
 
 
-    public class SpellData
+    public class SpellDamage
     {
         public static List<SpellDb> Spells = new List<SpellDb>();
 
@@ -24,7 +24,7 @@ namespace OKTRAIO.Spell_Library
         ;}
 
 
-        internal SpellData()
+        internal SpellDamage()
         {
             #region Ashe
 

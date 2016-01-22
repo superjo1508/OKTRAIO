@@ -25,7 +25,7 @@ namespace OKTRAIO.Utility
 
         public static void Initialize()
         {
-            if (UtilityMenu._baseult == null) return;
+            if (UtilityMenu.Baseult == null) return;
 
             Game.OnTick += OnTick;
             Drawing.OnEndScene += OnEndScene;

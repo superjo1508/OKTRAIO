@@ -7,19 +7,20 @@ using EloBuddy;
 using EloBuddy.Sandbox;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
+using MarksmanAIO.Champions;
 using OKTRAIO.Champions;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
+using OKTRAIO.Utility.SkinManager;
 using Activator = OKTRAIO.Utility.Activator;
 using Color = System.Drawing.Color;
 
 namespace OKTRAIO
 {
-    internal class MarksmanAIO
+    internal class Brain
     {
         public static AIOChampion Champion;
         private static SoundPlayer _welcomeSound;
-
         private static void Main(string[] args)
         {
             try
@@ -113,6 +114,7 @@ namespace OKTRAIO
                 Activator.LoadSpells();
                 Activator.Init();
                 Humanizer.Init();
+                try {SkinManagement.Init();} catch (Exception e) { Chat.Print("Failed to load Skin manager" + e.ToString());}
                 if (MainMenu._menu["playsound"].Cast<CheckBox>().CurrentValue) PlayWelcome();
                 Chat.Print("MarksmanAIO: " + Player.Instance.ChampionName + " Loaded", Color.CornflowerBlue);
             }

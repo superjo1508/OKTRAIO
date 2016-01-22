@@ -6,6 +6,7 @@ using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
+using MarksmanAIO;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
 using SharpDX;
@@ -15,6 +16,8 @@ namespace OKTRAIO.Champions
 {
     class Ezreal : AIOChampion
     {
+
+        #region Initialize and Declare
         //Spells
         private static Spell.Skillshot _q, _w, _r;
         private static Spell.Targeted _e;
@@ -141,9 +144,6 @@ namespace OKTRAIO.Champions
                 MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
                 MainMenu.DamageIndicator(true);
                 UtilityMenu.BaseUltMenu();
-                
-
-
                 //Value
                 Value.Init();
             }
@@ -178,10 +178,274 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 503)</font>");
             }
         }
+        #endregion
 
+        #region Gamerelated Logic
 
-      
+        #region Combo
+        public override void Combo()
+        {
+            var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
 
+            if (target == null) return;
+
+            if (Value.Get("combo.mode") == 0)
+            {
+                if (_e.IsReady() && Value.Use("combo.e"))
+                {
+                    if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana"))
+                    {
+                        ELogic();
+                    }
+                }
+                else if (_q.IsReady() && Value.Use("combo.q"))
+                {
+                    if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("combo.q.pred")) &&
+                        (Player.Instance.ManaPercent >= Value.Get("combo.q.mana")))
+                    {
+                        _q.Cast(_q.GetPrediction(target).CastPosition);
+                    }
+                }
+                else if (_w.IsReady() && Value.Use("combo.w"))
+                {
+                    var ally =
+                       EntityManager.Heroes.Allies
+                           .FirstOrDefault(x => x.IsValidTarget(_w.Range));
+
+                    if (Value.Use("misc.w.ally"))
+                    {
+                        if (Player.Instance.Distance(ally) <= _w.Range)
+                        {
+                            _w.Cast(_w.GetPrediction(ally).CastPosition);
+                        }
+                        else
+                        {
+                            _w.Cast(Game.CursorPos);
+                        }
+                    }
+                    else if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("combo.w.pred")) &&
+                        (Player.Instance.ManaPercent >= Value.Get("combo.w.mana")))
+                    {
+                        _w.Cast(_w.GetPrediction(target).CastPosition);
+                    }
+                }
+            }
+            else
+            {
+                if (_q.IsReady() && Value.Use("combo.q"))
+                {
+                    if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("combo.q.pred")) &&
+                        (Player.Instance.ManaPercent >= Value.Get("combo.q.mana")))
+                    {
+                        _q.Cast(_q.GetPrediction(target).CastPosition);
+                    }
+                }
+                else if (_w.IsReady() && Value.Use("combo.w"))
+                {
+                    if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("combo.w.pred")) &&
+                        (Player.Instance.ManaPercent >= Value.Get("combo.w.mana")))
+                    {
+                        _w.Cast(_w.GetPrediction(target).CastPosition);
+                    }
+                }
+                else if (_e.IsReady() && Value.Use("combo.e"))
+                {
+                    if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana"))
+                    {
+                        ELogic();
+                    }
+                }
+            }
+        }
+        #endregion 
+
+        #region Harass
+        public override void Harass()
+        {
+            var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
+
+            if (target == null) return;
+
+            if (_q.IsReady() && Value.Use("harass.q"))
+            {
+                if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("harass.q.pred")) &&
+                    (Player.Instance.ManaPercent >= Value.Get("harass.q.mana")))
+                {
+                    _q.Cast(_q.GetPrediction(target).CastPosition);
+                }
+            }
+            else if (_w.IsReady() && Value.Use("harass.w"))
+            {
+                var ally =
+                       EntityManager.Heroes.Allies
+                           .FirstOrDefault(x => x.IsValidTarget(_w.Range));
+
+                if (Value.Use("misc.w.ally"))
+                {
+                    if (Player.Instance.Distance(ally) <= _w.Range)
+                    {
+                        _w.Cast(_w.GetPrediction(ally).CastPosition);
+                    }
+                    else
+                    {
+                        _w.Cast(Game.CursorPos);
+                    }
+                }
+
+                else if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("harass.w.pred")) &&
+                    (Player.Instance.ManaPercent >= Value.Get("harass.w.mana")))
+                {
+                    _w.Cast(_w.GetPrediction(target).CastPosition);
+                }
+            }
+            else if (_e.IsReady() && Value.Use("harass.e"))
+            {
+                if (Player.Instance.ManaPercent >= Value.Get("harass.e.mana"))
+                {
+                    ELogic();
+                }
+            }
+        }
+        #endregion 
+
+        #region Laneclear
+        public override void Laneclear()
+        {
+            //only q when cant aa
+            var source =
+                EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy,
+                    Player.Instance.ServerPosition,
+                    _q.Range).OrderByDescending(a => a.MaxHealth).FirstOrDefault();
+
+            if (source == null) return;
+
+            if (_q.IsReady() && Value.Use("lane.q"))
+            {
+                if (Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
+                {
+                    if (Value.Use("lane.q.aa"))
+                    {
+                        if (Player.Instance.GetAutoAttackRange() >= source.Distance(Player.Instance))
+                        {
+                            _q.Cast(source);
+                        }
+                    }
+                    else
+                    {
+                        _q.Cast(source);
+                    }
+                }
+            }
+        }
+        #endregion 
+
+        #region Jungleclear
+        public override void Jungleclear()
+        {
+            var monsters =
+                EntityManager.MinionsAndMonsters.GetJungleMonsters(ObjectManager.Player.ServerPosition,
+                    _q.Range)
+                    .FirstOrDefault(x => x.IsValidTarget(_q.Range));
+            var fappamonsters =
+                EntityManager.MinionsAndMonsters.GetJungleMonsters(ObjectManager.Player.ServerPosition,
+                    _q.Range)
+                    .LastOrDefault(x => x.IsValidTarget(_q.Range));
+
+            if ((monsters == null) || (fappamonsters == null)) return;
+
+            if (Value.Use("jungle.monsters.spell"))
+            {
+                if (Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
+                {
+                    if (Value.Use("jungle.q") && _q.IsReady())
+                    {
+                        _q.Cast(monsters);
+                    }
+                }
+
+                else if (_w.IsReady() && Value.Use("jungle.w"))
+                {
+                    if (Player.Instance.ManaPercent >= Value.Get("jungle.w.mana"))
+                    {
+                        _w.Cast(monsters);
+                    }
+                }
+
+                else if (Player.Instance.ManaPercent >= Value.Get("jungle.e.mana"))
+                {
+                    if (Value.Use("jungle.e") && _e.IsReady())
+                    {
+                        _e.Cast(DetectWall());
+                    }
+                }
+            }
+
+            if (Value.Use("jungle.minimonsters.spell"))
+            {
+                if (Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
+                {
+                    if (Value.Use("jungle.q") && _q.IsReady())
+                    {
+                        _q.Cast();
+                    }
+                }
+
+                else if (_w.IsReady() && Value.Use("jungle.w"))
+                {
+                    if (Player.Instance.ManaPercent >= Value.Get("jungle.w.mana"))
+                    {
+                        _w.Cast(fappamonsters);
+                    }
+                }
+
+                if (Player.Instance.ManaPercent >= Value.Get("jungle.e.mana"))
+                {
+                    if (Value.Use("jungle.e") && _w.IsReady())
+                    {
+                        _e.Cast(DetectWall());
+                    }
+                }
+
+            }
+        }
+        #endregion 
+
+        #region Flee
+        public override void Flee()
+        {
+            if (_e.IsReady() && Value.Use("flee.e") && _e.IsLearned)
+            {
+                _e.Cast(Player.Instance.ServerPosition.Extend(Game.CursorPos, _e.Range).To3D());
+            }
+        }
+        #endregion 
+
+        #region Lasthit
+        public override void LastHit()
+        {
+            var source =
+                EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault
+                (m =>
+                        m.IsValidTarget(_q.Range) &&
+                        (Player.Instance.GetSpellDamage(m, SpellSlot.Q) > m.TotalShieldHealth()));
+
+            if (source == null) return;
+
+            if (Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
+            {
+                if (Value.Use("lasthit.q") && _q.IsReady())
+                {
+                    _q.Cast(source);
+                }
+            }
+        }
+        #endregion
+
+        #endregion
+
+        #region Utils
+
+        #region Orbwalker
         private void OrbwalkerOnOnPostAttack(AttackableUnit target, EventArgs args)
         {
             if (_minionId != target.NetworkId) return;
@@ -198,14 +462,16 @@ namespace OKTRAIO.Champions
             {
                 foreach (var allies in EntityManager.Heroes.Allies)
                 {
-                    if ((allies.Distance(Player.Instance.Position) < 600) && !allies.IsMe && allies.IsAlly )
+                    if ((allies.Distance(Player.Instance.Position) < 600) && !allies.IsMe && allies.IsAlly)
                     {
                         _w.Cast(allies);
                     }
                 }
             }
         }
+        #endregion 
 
+        #region OnUpdate
         private void GameOnUpdate(EventArgs args)
         {
             if (Player.Instance.IsDead || Player.Instance.HasBuff("Recall")
@@ -224,15 +490,12 @@ namespace OKTRAIO.Champions
                 AutoQwCc();
             }
 
-            if ((Value.Use("killsteal.q") && _q.IsReady()) ||
-                (Value.Use("killsteal.w") && _w.IsReady()) ||
-                (Value.Use("killsteal.e") && _e.IsReady()) ||
-                (Value.Use("killsteal.r") && _r.IsReady()))
-            {
-                KillSteal();
-            }
-        }
+            KillSteal();
 
+        }
+        #endregion 
+
+        #region Damage
         private static void Drawing_OnEndScene(EventArgs args)
         {
             if (Value.Use("draw.hp.bar"))
@@ -276,7 +539,9 @@ namespace OKTRAIO.Champions
 
             return damage;
         }
+        #endregion 
 
+        #region AntiGapCloser
         private void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
             if (!e.Sender.IsValidTarget() || (e.Sender.Type != Player.Instance.Type) || !e.Sender.IsEnemy)
@@ -294,51 +559,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
-        
-        #region Drawings
+        #endregion 
 
-        private static void GameOnDraw(EventArgs args)
-        {
-            Color colorW = MainMenu._draw.GetColor("color.w");
-            var widthW = MainMenu._draw.GetWidth("width.w");
-            Color colorE = MainMenu._draw.GetColor("color.e");
-            var widthE = MainMenu._draw.GetWidth("width.e");
-            Color colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
-
-            if (!Value.Use("draw.disable"))
-            {
-                if (Value.Use("draw.w") && ((Value.Use("draw.ready") && _w.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorW,
-                        Radius = _w.Range,
-                        BorderWidth = widthW
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.e") && ((Value.Use("draw.ready") && _e.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorE,
-                        Radius = _e.Range,
-                        BorderWidth = widthE
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorR,
-                        Radius = _q.Range,
-                        BorderWidth = widthR
-                    }.Draw(Player.Instance.Position);
-                }
-            }
-        }
-
-        #endregion
+        #region Geometry-Cone
         private static bool InsideCone()
         {
             var target = TargetSelector.GetTarget(_e.Range, DamageType.Mixed);
@@ -348,7 +571,9 @@ namespace OKTRAIO.Champions
                             (Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2));
             return cone.IsInside(Game.CursorPos.To2D());
         }
+        #endregion 
 
+        #region Slider
         private static void ComboEModeSlider(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
         {
             UpdateSlider(2);
@@ -427,22 +652,27 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code anal)</font>");
             }
         }
+        #endregion 
 
+        #region UltButton
         private static void OnUltButton(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
         {
             if (args.NewValue && (TargetSelector.GetTarget(_r.Range, DamageType.Mixed) != null))
                 _r.Cast(_r.GetPrediction(TargetSelector.GetTarget(_r.Range, DamageType.Mixed)).CastPosition);
         }
+        #endregion 
+
+        #region ELogic
         private static void ELogic()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
             if (target == null) return;
-            
+
             if (Value.Mode(Orbwalker.ActiveModes.Combo))
             {
                 if (Value.Get("combo.emode") == 0)
                 {
-                    var ePos = OKTRGeometry.SafeDashLogic(_e.Range);
+                    var ePos = OKTRGeometry.SafeDashPos(_e.Range);
                     if (ePos != Vector3.Zero)
                         _e.Cast(ePos);
                 }
@@ -479,7 +709,7 @@ namespace OKTRAIO.Champions
             {
                 if (Value.Get("harass.emode") == 0)
                 {
-                    var ePos = OKTRGeometry.SafeDashLogic(_e.Range);
+                    var ePos = OKTRGeometry.SafeDashPos(_e.Range);
                     if (ePos != Vector3.Zero)
                         _e.Cast(ePos);
                 }
@@ -513,255 +743,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion 
 
-        public override void Combo()
-        {
-            var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
-
-            if (target == null) return;
-
-            if (Value.Get("combo.mode") == 0)
-            {
-                if (_e.IsReady() && Value.Use("combo.e"))
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana"))
-                    {
-                        ELogic();
-                    }
-                }
-                else if (_q.IsReady() && Value.Use("combo.q"))
-                {
-                    if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("combo.q.pred")) &&
-                        (Player.Instance.ManaPercent >= Value.Get("combo.q.mana")))
-                    {
-                        _q.Cast(_q.GetPrediction(target).CastPosition);
-                    }
-                }
-                else if (_w.IsReady() && Value.Use("combo.w"))
-                {
-                    var ally =
-                       EntityManager.Heroes.Allies
-                           .FirstOrDefault(x => x.IsValidTarget(_w.Range));
-
-                    if (Value.Use("misc.w.ally"))
-                    {
-                        if (Player.Instance.Distance(ally) <= _w.Range)
-                        {
-                            _w.Cast(_w.GetPrediction(ally).CastPosition);
-                        }
-                        else
-                        {
-                            _w.Cast(Game.CursorPos);
-                        }
-                    }
-                    else if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("combo.w.pred")) &&
-                        (Player.Instance.ManaPercent >= Value.Get("combo.w.mana")))
-                    {
-                        _w.Cast(_w.GetPrediction(target).CastPosition);
-                    }
-                }
-            }
-            else
-            {
-                if (_q.IsReady() && Value.Use("combo.q"))
-                {
-                    if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("combo.q.pred")) &&
-                        (Player.Instance.ManaPercent >= Value.Get("combo.q.mana")))
-                    {
-                        _q.Cast(_q.GetPrediction(target).CastPosition);
-                    }
-                }
-                else if (_w.IsReady() && Value.Use("combo.w"))
-                {
-                    if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("combo.w.pred")) &&
-                        (Player.Instance.ManaPercent >= Value.Get("combo.w.mana")))
-                    {
-                        _w.Cast(_w.GetPrediction(target).CastPosition);
-                    }
-                }
-                else if (_e.IsReady() && Value.Use("combo.e"))
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana"))
-                    {
-                        ELogic();
-                    }
-                }
-            }
-        }
-
-
-        public override void Harass()
-        {
-            var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
-
-            if (target == null) return;
-
-            if (_q.IsReady() && Value.Use("harass.q"))
-            {
-                if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("harass.q.pred")) &&
-                    (Player.Instance.ManaPercent >= Value.Get("harass.q.mana")))
-                {
-                    _q.Cast(_q.GetPrediction(target).CastPosition);
-                }
-            }
-            else if (_w.IsReady() && Value.Use("harass.w"))
-            {
-                var ally =
-                       EntityManager.Heroes.Allies
-                           .FirstOrDefault(x => x.IsValidTarget(_w.Range));
-
-                if (Value.Use("misc.w.ally"))
-                {
-                    if (Player.Instance.Distance(ally) <= _w.Range)
-                    {
-                        _w.Cast(_w.GetPrediction(ally).CastPosition);
-                    }
-                    else
-                    {
-                        _w.Cast(Game.CursorPos);
-                    }
-                }
-
-                else if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("harass.w.pred")) &&
-                    (Player.Instance.ManaPercent >= Value.Get("harass.w.mana")))
-                {
-                    _w.Cast(_w.GetPrediction(target).CastPosition);
-                }
-            }
-            else if (_e.IsReady() && Value.Use("harass.e"))
-            {
-                if (Player.Instance.ManaPercent >= Value.Get("harass.e.mana"))
-                {
-                    ELogic();
-                }
-            }
-        }
-
-        public override void Laneclear()
-        {
-            //only q when cant aa
-            var source =
-                EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy,
-                    Player.Instance.ServerPosition,
-                    _q.Range).OrderByDescending(a => a.MaxHealth).FirstOrDefault();
-
-            if (source == null) return;
-
-            if (_q.IsReady() && Value.Use("lane.q"))
-            {
-                if (Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
-                {
-                    if (Value.Use("lane.q.aa"))
-                    {
-                        if (Player.Instance.GetAutoAttackRange() >= source.Distance(Player.Instance))
-                        {
-                            _q.Cast(source);
-                        }
-                    }
-                    else
-                    {
-                        _q.Cast(source);
-                    }
-                }
-            }
-        }
-
-        public override void Jungleclear()
-        {
-            var monsters =
-                EntityManager.MinionsAndMonsters.GetJungleMonsters(ObjectManager.Player.ServerPosition,
-                    _q.Range)
-                    .FirstOrDefault(x => x.IsValidTarget(_q.Range));
-            var fappamonsters =
-                EntityManager.MinionsAndMonsters.GetJungleMonsters(ObjectManager.Player.ServerPosition,
-                    _q.Range)
-                    .LastOrDefault(x => x.IsValidTarget(_q.Range));
-
-            if ((monsters == null) || (fappamonsters == null)) return;
-
-            if (Value.Use("jungle.monsters.spell"))
-            {
-                if (Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
-                {
-                    if (Value.Use("jungle.q") && _q.IsReady())
-                    {
-                        _q.Cast(monsters);
-                    }
-                }
-
-                else if (_w.IsReady() && Value.Use("jungle.w"))
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("jungle.w.mana"))
-                    {
-                        _w.Cast(monsters);
-                    }
-                }
-
-                else if (Player.Instance.ManaPercent >= Value.Get("jungle.e.mana"))
-                {
-                    if (Value.Use("jungle.e") && _e.IsReady())
-                    {
-                        _e.Cast(DetectWall());
-                    }
-                }
-            }
-
-            if (Value.Use("jungle.minimonsters.spell"))
-            {
-                if (Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
-                {
-                    if (Value.Use("jungle.q") && _q.IsReady())
-                    {
-                        _q.Cast();
-                    }
-                }
-
-                else if (_w.IsReady() && Value.Use("jungle.w"))
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("jungle.w.mana"))
-                    {
-                        _w.Cast(fappamonsters);
-                    }
-                }
-
-                if (Player.Instance.ManaPercent >= Value.Get("jungle.e.mana"))
-                {
-                    if (Value.Use("jungle.e") && _w.IsReady())
-                    {
-                        _e.Cast(DetectWall());
-                    }
-                }
-
-            }
-        }
-
-        public override void Flee()
-        {
-            if (_e.IsReady() && Value.Use("flee.e") && _e.IsLearned)
-            {
-                _e.Cast(Player.Instance.ServerPosition.Extend(Game.CursorPos, _e.Range).To3D());
-            }
-        }
-
-        public override void LastHit()
-        {
-            var source =
-                EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault
-                (m =>
-                        m.IsValidTarget(_q.Range) &&
-                        (Player.Instance.GetSpellDamage(m, SpellSlot.Q) > m.TotalShieldHealth()));
-
-            if (source == null) return;
-
-            if (Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
-            {
-                if (Value.Use("lasthit.q") && _q.IsReady())
-                {
-                    _q.Cast(source);
-                }
-            }
-        }
-
+        #region AutoHarass
         private static void AutoHarass()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
@@ -799,8 +783,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion 
 
-
+        #region AutoCC
         private static void AutoQwCc()
         {
             var enemy =
@@ -864,7 +849,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion 
 
+        #region KillSteal
         private static void KillSteal()
         {
             foreach (
@@ -874,54 +861,68 @@ namespace OKTRAIO.Champions
                                 hero.IsValidTarget(1200) && !hero.IsDead && !hero.IsZombie &&
                                 (hero.HealthPercent <= 25)))
             {
-                if (Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
+                if (Value.Use("killsteal.q") && _q.IsReady())
                 {
-                    if (target.Health + target.AttackShield <
-                        Player.Instance.GetSpellDamage(target, SpellSlot.Q))
-
+                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
                     {
-                        _q.Cast(_q.GetPrediction(target).CastPosition);
+                        if (target.Health + target.AttackShield <
+                            Player.Instance.GetSpellDamage(target, SpellSlot.Q))
+
+                        {
+                            _q.Cast(_q.GetPrediction(target).CastPosition);
+                        }
                     }
                 }
 
-                if (Player.Instance.ManaPercent >= Value.Get("killsteal.w.mana"))
+                if (Value.Use("killsteal.w") && _w.IsReady())
                 {
-                    if (target.Health + target.AttackShield <
-                        Player.Instance.GetSpellDamage(target, SpellSlot.W))
-
+                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.w.mana"))
                     {
-                        _w.Cast(_w.GetPrediction(target).CastPosition);
+                        if (target.Health + target.AttackShield <
+                            Player.Instance.GetSpellDamage(target, SpellSlot.W))
+
+                        {
+                            _w.Cast(_w.GetPrediction(target).CastPosition);
+                        }
                     }
                 }
 
-                if (Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana"))
+                if (Value.Use("killsteal.e") && _e.IsReady())
                 {
-                    var tawah =
-                        EntityManager.Turrets.Enemies.FirstOrDefault(
-                            a =>
-                                !a.IsDead && (a.Distance(target) <= 775 + Player.Instance.BoundingRadius +
-                                target.BoundingRadius / 2 + 44.2));
-
-                    if ((target.Health + target.AttackShield <
-                        Player.Instance.GetSpellDamage(target, SpellSlot.E)) &&
-                        (target.Position.CountEnemiesInRange(800) == 1) && (tawah == null) &&
-                       (Player.Instance.Mana >= 120))
+                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana"))
                     {
-                        _e.Cast(target);
+                        var tawah =
+                            EntityManager.Turrets.Enemies.FirstOrDefault(
+                                a =>
+                                    !a.IsDead && (a.Distance(target) <= 775 + Player.Instance.BoundingRadius +
+                                                  target.BoundingRadius/2 + 44.2));
+
+                        if ((target.Health + target.AttackShield <
+                             Player.Instance.GetSpellDamage(target, SpellSlot.E)) &&
+                            (target.Position.CountEnemiesInRange(800) == 1) && (tawah == null) &&
+                            (Player.Instance.Mana >= 120))
+                        {
+                            _e.Cast(target);
+                        }
                     }
                 }
-                if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
+                if (Value.Use("killsteal.r") && _r.IsReady())
                 {
-                    if (target.Distance(Player.Instance) <= 1200)
-                    if (target.Health + target.AttackShield <
-                        Player.Instance.GetSpellDamage(target, SpellSlot.R))
-                    { 
-                        _r.Cast(_r.GetPrediction(target).CastPosition);
+                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
+                    {
+                        if (target.Distance(Player.Instance) <= 1200)
+                            if (target.Health + target.AttackShield <
+                                Player.Instance.GetSpellDamage(target, SpellSlot.R))
+                            {
+                                _r.Cast(_r.GetPrediction(target).CastPosition);
+                            }
                     }
                 }
             }
         }
+        #endregion
 
+        #region DetectWall
         private Vector3 DetectWall()
         {
 
@@ -946,5 +947,54 @@ namespace OKTRAIO.Champions
 
             return new Vector3();
         }
+        #endregion 
+
+        #endregion
+
+        #region Drawings
+
+        private static void GameOnDraw(EventArgs args)
+        {
+            Color colorW = MainMenu._draw.GetColor("color.w");
+            var widthW = MainMenu._draw.GetWidth("width.w");
+            Color colorE = MainMenu._draw.GetColor("color.e");
+            var widthE = MainMenu._draw.GetWidth("width.e");
+            Color colorR = MainMenu._draw.GetColor("color.r");
+            var widthR = MainMenu._draw.GetWidth("width.r");
+
+            if (!Value.Use("draw.disable"))
+            {
+                if (Value.Use("draw.w") && ((Value.Use("draw.ready") && _w.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorW,
+                        Radius = _w.Range,
+                        BorderWidth = widthW
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.e") && ((Value.Use("draw.ready") && _e.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorE,
+                        Radius = _e.Range,
+                        BorderWidth = widthE
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorR,
+                        Radius = _q.Range,
+                        BorderWidth = widthR
+                    }.Draw(Player.Instance.Position);
+                }
+            }
+        }
+
+        #endregion
+
     }
 }

@@ -35,22 +35,25 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EloBuddy">
-      <HintPath>D:\Program Files (x86)\EloBuddy\System\EloBuddy.dll</HintPath>
+      <HintPath>..\..\..\..\Desktop\Elobuddy\System\EloBuddy.dll</HintPath>
     </Reference>
     <Reference Include="EloBuddy.Sandbox">
-      <HintPath>..\..\..\..\..\Program Files (x86)\EloBuddy\System\EloBuddy.Sandbox.dll</HintPath>
+      <HintPath>..\..\..\..\Desktop\Elobuddy\System\EloBuddy.Sandbox.dll</HintPath>
     </Reference>
     <Reference Include="EloBuddy.Sandbox">
       <HintPath>D:\Program Files (x86)\EloBuddy\System\EloBuddy.Sandbox.dll</HintPath>
     </Reference>
     <Reference Include="EloBuddy.SDK">
-      <HintPath>D:\Program Files (x86)\EloBuddy\System\EloBuddy.SDK.dll</HintPath>
+      <HintPath>..\..\..\..\Desktop\Elobuddy\System\EloBuddy.SDK.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX">
-      <HintPath>D:\Program Files (x86)\EloBuddy\System\SharpDX.dll</HintPath>
+      <HintPath>..\..\..\..\Desktop\Elobuddy\System\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct3D9">
-      <HintPath>D:\Program Files (x86)\EloBuddy\System\SharpDX.Direct3D9.dll</HintPath>
+      <HintPath>..\..\..\..\Desktop\Elobuddy\System\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -64,8 +67,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Champions\Katarina.cs" />
-    <Compile Include="Spell Library\Spell.cs" />
-    <Compile Include="Spell Library\SpellData.cs" />
+    <Compile Include="Database\Spell Library\SpellDatabase.cs" />
+    <Compile Include="Database\Spell Library\Values.cs" />
+    <Compile Include="Database\Spell Library\SpellDamage.cs" />
     <Compile Include="Utility\Activator.cs" />
     <Compile Include="Champions\AIOChampion.cs" />
     <Compile Include="Champions\Corki.cs" />
@@ -88,6 +92,9 @@
     <Compile Include="Champions\Teemo.cs" />
     <Compile Include="Champions\Ashe.cs" />
     <Compile Include="Champions\Draven.cs" />
+    <Compile Include="Utility\AutoLVLUP\AutoLVLUP.cs" />
+    <Compile Include="Utility\AutoLVLUP\Mobafire\Mobafire.cs" />
+    <Compile Include="Utility\SkinManager\SkinManager.cs" />
     <Compile Include="Utility\DamageIndicator.cs" />
     <Compile Include="Geometry.cs" />
     <Compile Include="Menu Settings\Color.cs" />
@@ -102,6 +109,11 @@
     <Compile Include="Utility\BaseUlt.cs" />
     <Compile Include="Utility\UtilityMenu.cs" />
     <Compile Include="Variables.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -111,7 +123,30 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Utility\SkinManager\SkinInfo.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TextFile1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Utility\AutoLVLUP\Championgg\" />
+    <Folder Include="Utility\AutoLVLUP\Leaguecraft\" />
+    <Folder Include="Utility\AutoLVLUP\Lolclass\" />
+    <Folder Include="Utility\AutoLVLUP\Lolking\" />
+    <Folder Include="Utility\AutoLVLUP\Lolpro\" />
+    <Folder Include="Utility\AutoLVLUP\Metalol\" />
+    <Folder Include="Utility\AutoLVLUP\Probuilds\" />
+    <Folder Include="Utility\AutoLVLUP\Solomid\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

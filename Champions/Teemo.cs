@@ -13,6 +13,7 @@ namespace OKTRAIO.Champions
 {
     internal class Teemo : AIOChampion
     {
+
         #region Initialize and Declare
 
         private static Spell.Targeted _q;
@@ -167,6 +168,7 @@ namespace OKTRAIO.Champions
 
         #region Gamerelated Logic
 
+        #region Combo
         public override void Combo()
         {
             if (_q.IsReady() && Value.Use("combo.q"))
@@ -205,7 +207,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Harass
         public override void Harass()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Magical);
@@ -219,14 +223,16 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Laneclear
         public override void Laneclear()
         {
             var minionq =
                 EntityManager.MinionsAndMonsters.GetLaneMinions()
                     .OrderByDescending(a => a.MaxHealth)
                     .FirstOrDefault(
-                        a => a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) && !a.IsLasthittableMinion());
+                        a => a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) && a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
 
 
             if (_q.IsReady() && Value.Use("lane.q") && Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
@@ -250,7 +256,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Jungleclear
         public override void Jungleclear()
         {
             var monsterq =
@@ -285,7 +293,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Flee
         public override void Flee()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Magical);
@@ -319,14 +329,16 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Lasthit
         public override void LastHit()
         {
             var minion =
                 EntityManager.MinionsAndMonsters.GetLaneMinions()
                     .OrderByDescending(a => a.MaxHealth)
                     .FirstOrDefault(
-                        a => a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) && !a.IsLasthittableMinion());
+                        a => a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) && a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
 
 
             if (_q.IsReady() && Value.Use("lasthit.q") && Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
@@ -337,7 +349,13 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #endregion
+
+        #region Utils
+
+        #region OnUpdate
         private static void GameOnUpdate(EventArgs args)
         {
             if (_r.IsLearned)
@@ -352,7 +370,9 @@ namespace OKTRAIO.Champions
 
             AutoShroom();
         }
+        #endregion
 
+        #region OnSpellCast
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             if (!sender.IsMe) { return; }
@@ -362,7 +382,9 @@ namespace OKTRAIO.Champions
                 _rDelay = Core.GameTickCount;
             }
         }
+        #endregion
 
+        #region AntiGapCloser
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
             if (sender.IsAlly || !Value.Use("misc.q.gapcloser"))
@@ -375,16 +397,16 @@ namespace OKTRAIO.Champions
                 _q.Cast(sender);
             }
         }
-
         #endregion
 
-        #region Utils
-
+        #region Check RStacks
         private static int Rstacks
         {
             get { return _r.Handle.Ammo; }
         }
+        #endregion
 
+        #region Vector Shroomed
         private static bool Shroomed(Vector3 castposition)
         {
             return
@@ -392,6 +414,16 @@ namespace OKTRAIO.Champions
                     .Where(a => a.Name == "Noxious Trap").Any(a => castposition.Distance(a.Position) <= 300);
         }
 
+        private static void Rcast(Vector3 location)
+        {
+            if (!Shroomed(location) && Core.GameTickCount - _rDelay > Value.Get("misc.r.delay"))
+            {
+                _r.Cast(location);
+            }
+        }
+        #endregion
+
+        #region Killsteal
         private static void Ks()
         {
             if (_q.IsReady() && Value.Use("killsteal.q") && Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
@@ -408,7 +440,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region AutoR
         private static void AutoRcc()
         {
             var targetq =
@@ -453,7 +487,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region AutoPlaceShroom
         private static void AutoShroom()
         {
             if (_r.IsReady())
@@ -670,15 +706,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
-        private static void Rcast(Vector3 location)
-        {
-            if (!Shroomed(location) && Core.GameTickCount - _rDelay > Value.Get("misc.r.delay"))
-            {
-                _r.Cast(location);
-            }
-        }
-
+        #region Timing
         private static float EDotTime(Obj_AI_Base target)
         {
             if (target.HasBuff("toxicshotparticle"))
@@ -696,7 +726,9 @@ namespace OKTRAIO.Champions
             }
             return 0;
         }
+        #endregion
 
+        #region Damages
         private static float EDotdamageRaw(Obj_AI_Base target)
         {
             float dmg = 0;
@@ -795,6 +827,7 @@ namespace OKTRAIO.Champions
             }
             return damage;
         }
+        #endregion
 
         #endregion
 
@@ -960,5 +993,6 @@ namespace OKTRAIO.Champions
         }
 
         #endregion
+
     }
 }

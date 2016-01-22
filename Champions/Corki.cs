@@ -5,15 +5,17 @@ using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Rendering;
+using MarksmanAIO;
 using OKTRAIO.Menu_Settings;
 using SharpDX;
 using Color = System.Drawing.Color;
 
-
 namespace OKTRAIO.Champions
 {
-    internal class Corki : AIOChampion
+    class Corki : AIOChampion
     {
+
+        #region Initialize and Declare
 
         private static Spell.Skillshot _q, _w, _w2, _r;
         private static Spell.Active _e;
@@ -174,294 +176,11 @@ namespace OKTRAIO.Champions
             }
         }
 
-        private void GameOnUpdate(EventArgs args)
-        {
-            if (Player.Instance.IsDead || Player.Instance.HasBuff("Recall")
-                || Player.Instance.IsStunned || Player.Instance.IsRooted || Player.Instance.IsCharmed ||
-                Orbwalker.IsAutoAttacking)
-                return;
+        #endregion
 
-            if (Value.Use("misc.q") && _q.IsReady() || Value.Use("misc.r") && _r.IsReady())
-            {
-                AutoQr();
-            }
+        #region Gamerelated Logic
 
-            if (Value.Use("killsteal.q") && _q.IsReady() ||
-                Value.Use("killsteal.w") && _w.IsReady() ||
-                Value.Use("killsteal.r") && _r.IsReady())
-            {
-                KillSteal();
-            }
-        }
-
-        private static void AntiGapCloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
-        {
-
-            try
-            {
-                if (!e.Sender.IsValidTarget() || !Value.Use("misc.w.gapcloser") || e.Sender.Type != Player.Instance.Type ||
-                    !e.Sender.IsEnemy)
-                    return;
-
-                if (_w.IsReady() && _w.IsInRange(sender) && Value.Use("misc.w.gapcloser"))
-                {
-                    Vector3 pred = e.End;
-
-                    _w.Cast(pred + 5 * (Player.Instance.Position - e.End));
-                }
-            }
-
-            catch (Exception a)
-            {
-                Console.WriteLine(a);
-                Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ANTIGAP)</font>");
-            }
-        }
-
-        private static void GameOnDraw(EventArgs args)
-        {
-            var colorQ = MainMenu._draw.GetColor("color.q");
-            var widthQ = MainMenu._draw.GetWidth("width.q");
-            var colorW = MainMenu._draw.GetColor("color.w");
-            var widthW = MainMenu._draw.GetWidth("width.w");
-            var colorE = MainMenu._draw.GetColor("color.e");
-            var widthE = MainMenu._draw.GetWidth("width.e");
-            var colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
-
-            if (!Value.Use("draw.disable"))
-            {
-                if (Value.Use("draw.q") && ((Value.Use("draw.ready") && _q.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorQ,
-                        Radius = _q.Range,
-                        BorderWidth = widthQ
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.w") && ((Value.Use("draw.ready") && _w.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorW,
-                        Radius = _w.Range,
-                        BorderWidth = widthW
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.e") && ((Value.Use("draw.ready") && _e.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorE,
-                        Radius = _e.Range,
-                        BorderWidth = widthE
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorR,
-                        Radius = _q.Range,
-                        BorderWidth = widthR
-                    }.Draw(Player.Instance.Position);
-                }
-            }
-
-        }
-
-        private static void Drawing_OnEndScene(EventArgs args)
-        {
-            if (Value.Use("draw.hp.bar"))
-            {
-                foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => !a.IsDead && a.IsHPBarRendered))
-                {
-                    var damage = ComboDamage(enemy);
-                    var damagepercent = ((enemy.TotalShieldHealth() - damage) > 0 ? (enemy.TotalShieldHealth() - damage) : 0) / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var hppercent = enemy.TotalShieldHealth() / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var start = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + damagepercent * 104), (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
-                    var end = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + hppercent * 104) + 2, (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
-
-                    Drawing.DrawLine(start, end, 9, Color.Chartreuse);
-                }
-            }
-        }
-
-        private static void KillSteal()
-        {
-            try
-            {
-                foreach (
-                    var target in
-                        EntityManager.Heroes.Enemies.Where(
-                            hero =>
-                                hero.IsValidTarget(_r.Range) && !hero.IsDead && !hero.IsZombie &&
-                                hero.HealthPercent <= 25))
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
-                    {
-                        if (target.Health + target.AttackShield <
-                            Player.Instance.GetSpellDamage(target, SpellSlot.Q))
-
-                        {
-                            _q.Cast(_q.GetPrediction(target).CastPosition);
-                        }
-                    }
-
-                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.w.mana"))
-                    {
-                        var tawah =
-                            EntityManager.Turrets.Enemies.FirstOrDefault(
-                                a =>
-                                    !a.IsDead && a.Distance(target) <= 775 + Player.Instance.BoundingRadius +
-                                    target.BoundingRadius/2 + 44.2);
-
-                        if (target.Health + target.AttackShield <
-                            Player.Instance.GetSpellDamage(target, SpellSlot.W) &&
-                            target.Position.CountEnemiesInRange(800) == 1 && tawah == null &&
-                            Player.Instance.Mana >= 120)
-                        {
-                            if (Player.Instance.HasBuff("CorkiLoaded") && _w2.IsReady())
-                            {
-                                _w2.Cast(_w2.GetPrediction(target).CastPosition);
-                            }
-                            if (!Player.Instance.HasBuff("CorkiLoaded") && _w.IsReady())
-                            {
-                                _w.Cast(_w.GetPrediction(target).CastPosition);
-                            }
-                        }
-                    }
-                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
-                    {
-                        if (target.Health + target.AttackShield <
-                            Player.Instance.GetSpellDamage(target, SpellSlot.R))
-
-                        {
-                            _r.Cast(_r.GetPrediction(target).CastPosition);
-                        }
-                    }
-                }
-
-            }
-
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
-            }
-        }
-
-        private static float ComboDamage(Obj_AI_Base enemy)
-        {
-            float damage = Player.Instance.GetAutoAttackDamage(enemy);
-
-            if (_q.IsReady())
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.Q);
-            }
-
-            if (_w.IsReady())
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.W);
-            }
-
-            if (_e.IsReady())
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.E);
-            }
-
-            if (_r.IsReady())
-            {
-                if (Player.Instance.HasBuff("mbcheck2"))
-                {
-                    damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.R) * .5f;
-                }
-                else
-                {
-                    damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.R);
-                }
-            }
-
-            return damage;
-        }
-
-        private static void AutoQr()
-        {
-
-            var enemy =
-                EntityManager.Heroes.Enemies.FirstOrDefault(
-                    x =>
-                        x.HasBuffOfType(BuffType.Charm) || x.HasBuffOfType(BuffType.Knockup) ||
-                        x.HasBuffOfType(BuffType.Stun) || x.HasBuffOfType(BuffType.Suppression) ||
-                        x.HasBuffOfType(BuffType.Snare));
-
-            if (Orbwalker.IsAutoAttacking ||
-                EntityManager.Turrets.Enemies.Count(t => t.IsValidTarget(_q.Range) && t.IsAttackingPlayer) > 0)
-                return;
-
-            try
-            {
-                if (enemy == null || enemy.IsValidTarget(_q.Range)) return;
-                if (Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
-                {
-                    if (Value.Use("misc.q.stun") && enemy.IsStunned)
-                    {
-                        _q.Cast(enemy);
-                    }
-                    if (Value.Use("misc.q.snare") && enemy.IsRooted)
-                    {
-                        _q.Cast(enemy);
-                    }
-                    if (Value.Use("misc.q.charm") && enemy.IsCharmed)
-                    {
-                        _q.Cast(enemy);
-                    }
-                    if (Value.Use("misc.q.taunt") && enemy.IsTaunted)
-                    {
-                        _q.Cast(enemy);
-                    }
-                    if (Value.Use("misc.q.fear") && enemy.IsFeared)
-                    {
-                        _q.Cast(enemy);
-                    }
-                }
-                
-                if (Value.Get("misc.r.mana") >= Player.Instance.ManaPercent)
-                {
-                    if (Value.Use("misc.r.stun") && enemy.IsStunned)
-                    {
-                        _r.Cast(enemy);
-                    }
-                    if (Value.Use("misc.r.snare") && enemy.IsRooted)
-                    {
-                        _r.Cast(enemy);
-                    }
-                    if (Value.Use("misc.r.charm") && enemy.IsCharmed)
-                    {
-                        _r.Cast(enemy);
-                    }
-                    if (Value.Use("misc.r.taunt") && enemy.IsTaunted)
-                    {
-                        _r.Cast(enemy);
-                    }
-                    if (Value.Use("misc.r.fear") && enemy.IsFeared)
-                    {
-                        _r.Cast(enemy);
-                    }
-                }
-            }
-
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code AUTOQ)</font>");
-            }
-        }
-
+        #region Combo
 
         public override void Combo()
         {
@@ -471,7 +190,8 @@ namespace OKTRAIO.Champions
 
             if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana"))
             {
-                if (Value.Use("combo.e") && _e.IsReady() && target.Distance(Player.Instance) <= Value.Get("combo.e.range"))
+                if (Value.Use("combo.e") && _e.IsReady() &&
+                    target.Distance(Player.Instance) <= Value.Get("combo.e.range"))
                 {
                     _e.Cast();
                 }
@@ -519,6 +239,10 @@ namespace OKTRAIO.Champions
             }
         }
 
+        #endregion
+
+        #region Harass
+
         public override void Harass()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Magical);
@@ -546,14 +270,16 @@ namespace OKTRAIO.Champions
                     }
                 }
             }
-            if (Player.Instance.ManaPercent >= Value.Get("harass.e.mana") && target.Distance(Player.Instance) <= Value.Get("harass.e.range"))
+            if (Player.Instance.ManaPercent >= Value.Get("harass.e.mana") &&
+                target.Distance(Player.Instance) <= Value.Get("harass.e.range"))
             {
                 if (Value.Use("harass.e") && _e.IsReady())
                 {
                     _e.Cast();
                 }
             }
-            if (Player.Instance.ManaPercent >= Value.Get("harass.r.mana") && _r.Handle.Ammo >= Value.Get("harass.stacks"))
+            if (Player.Instance.ManaPercent >= Value.Get("harass.r.mana") &&
+                _r.Handle.Ammo >= Value.Get("harass.stacks"))
             {
                 if (Value.Use("harass.r") && _r.IsReady())
                 {
@@ -562,6 +288,10 @@ namespace OKTRAIO.Champions
             }
 
         }
+
+        #endregion
+
+        #region Jungleclear
 
         public override void Jungleclear()
         {
@@ -659,6 +389,10 @@ namespace OKTRAIO.Champions
             }
         }
 
+        #endregion
+
+        #region Laneclear
+
         public override void Laneclear()
         {
             var count =
@@ -715,20 +449,28 @@ namespace OKTRAIO.Champions
             }
         }
 
+        #endregion
+
+        #region Lasthit
+
         public override void LastHit()
         {
             var predQ = OKTRGeometry.GetOptimizedCircleLocation(
                 EntityManager.MinionsAndMonsters.EnemyMinions.Where(
-                    m => m.IsValidTarget(_q.Range) && Player.Instance.GetSpellDamage(m, SpellSlot.Q) > m.TotalShieldHealth())
+                    m =>
+                        m.IsValidTarget(_q.Range) &&
+                        Player.Instance.GetSpellDamage(m, SpellSlot.Q) > m.TotalShieldHealth())
                     .Select(m => m.Position.To2D())
                     .ToList(),
                 _q.Width, _q.Range).Position.To3D();
 
             var source =
                 EntityManager.MinionsAndMonsters.EnemyMinions.Where(
-                    m => m.IsValidTarget(_r.Range) && Player.Instance.GetSpellDamage(m, SpellSlot.R) > m.TotalShieldHealth())
+                    m =>
+                        m.IsValidTarget(_r.Range) &&
+                        Player.Instance.GetSpellDamage(m, SpellSlot.R) > m.TotalShieldHealth())
                     .FirstOrDefault();
-            
+
             if (source == null) return;
 
             if (Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
@@ -746,6 +488,10 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
+        #endregion
+
+        #region Flee
 
         public override void Flee()
         {
@@ -773,5 +519,331 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
+        #endregion
+
+        #endregion
+
+        #region Utils
+
+        #region OnUpdate
+
+        private void GameOnUpdate(EventArgs args)
+        {
+            if (Player.Instance.IsDead || Player.Instance.HasBuff("Recall")
+                || Player.Instance.IsStunned || Player.Instance.IsRooted || Player.Instance.IsCharmed ||
+                Orbwalker.IsAutoAttacking)
+                return;
+
+            if (Value.Use("misc.q") && _q.IsReady() || Value.Use("misc.r") && _r.IsReady())
+            {
+                AutoQr();
+            }
+
+            if (Value.Use("killsteal.q") && _q.IsReady() ||
+                Value.Use("killsteal.w") && _w.IsReady() ||
+                Value.Use("killsteal.r") && _r.IsReady())
+            {
+                KillSteal();
+            }
+        }
+
+        #endregion
+
+        #region AntiGapCloser
+
+        private static void AntiGapCloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
+        {
+
+            try
+            {
+                if (!e.Sender.IsValidTarget() || !Value.Use("misc.w.gapcloser") || e.Sender.Type != Player.Instance.Type ||
+                    !e.Sender.IsEnemy)
+                    return;
+
+                if (_w.IsReady() && _w.IsInRange(sender) && Value.Use("misc.w.gapcloser"))
+                {
+                    Vector3 pred = e.End;
+
+                    _w.Cast(pred + 5 * (Player.Instance.Position - e.End));
+                }
+            }
+
+            catch (Exception a)
+            {
+                Console.WriteLine(a);
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ANTIGAP)</font>");
+            }
+        }
+
+        #endregion
+
+        #region Killsteal
+
+        private static void KillSteal()
+        {
+            try
+            {
+                foreach (
+                    var target in
+                        EntityManager.Heroes.Enemies.Where(
+                            hero =>
+                                hero.IsValidTarget(_r.Range) && !hero.IsDead && !hero.IsZombie &&
+                                hero.HealthPercent <= 25))
+                {
+                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
+                    {
+                        if (target.Health + target.AttackShield <
+                            Player.Instance.GetSpellDamage(target, SpellSlot.Q))
+
+                        {
+                            _q.Cast(_q.GetPrediction(target).CastPosition);
+                        }
+                    }
+
+                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.w.mana"))
+                    {
+                        var tawah =
+                            EntityManager.Turrets.Enemies.FirstOrDefault(
+                                a =>
+                                    !a.IsDead && a.Distance(target) <= 775 + Player.Instance.BoundingRadius +
+                                    target.BoundingRadius / 2 + 44.2);
+
+                        if (target.Health + target.AttackShield <
+                            Player.Instance.GetSpellDamage(target, SpellSlot.W) &&
+                            target.Position.CountEnemiesInRange(800) == 1 && tawah == null &&
+                            Player.Instance.Mana >= 120)
+                        {
+                            if (Player.Instance.HasBuff("CorkiLoaded") && _w2.IsReady())
+                            {
+                                _w2.Cast(_w2.GetPrediction(target).CastPosition);
+                            }
+                            if (!Player.Instance.HasBuff("CorkiLoaded") && _w.IsReady())
+                            {
+                                _w.Cast(_w.GetPrediction(target).CastPosition);
+                            }
+                        }
+                    }
+                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
+                    {
+                        if (target.Health + target.AttackShield <
+                            Player.Instance.GetSpellDamage(target, SpellSlot.R))
+
+                        {
+                            _r.Cast(_r.GetPrediction(target).CastPosition);
+                        }
+                    }
+                }
+
+            }
+
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
+            }
+        }
+
+        #endregion
+
+        #region Damage
+
+        private static float ComboDamage(Obj_AI_Base enemy)
+        {
+            float damage = Player.Instance.GetAutoAttackDamage(enemy);
+
+            if (_q.IsReady())
+            {
+                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.Q);
+            }
+
+            if (_w.IsReady())
+            {
+                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.W);
+            }
+
+            if (_e.IsReady())
+            {
+                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.E);
+            }
+
+            if (_r.IsReady())
+            {
+                if (Player.Instance.HasBuff("mbcheck2"))
+                {
+                    damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.R) * .5f;
+                }
+                else
+                {
+                    damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.R);
+                }
+            }
+
+            return damage;
+        }
+
+        #endregion
+
+        #region AutoSpells   
+
+        private static void AutoQr()
+        {
+
+            var enemy =
+                EntityManager.Heroes.Enemies.FirstOrDefault(
+                    x =>
+                        x.HasBuffOfType(BuffType.Charm) || x.HasBuffOfType(BuffType.Knockup) ||
+                        x.HasBuffOfType(BuffType.Stun) || x.HasBuffOfType(BuffType.Suppression) ||
+                        x.HasBuffOfType(BuffType.Snare));
+
+            if (Orbwalker.IsAutoAttacking ||
+                EntityManager.Turrets.Enemies.Count(t => t.IsValidTarget(_q.Range) && t.IsAttackingPlayer) > 0)
+                return;
+
+            try
+            {
+                if (enemy == null || enemy.IsValidTarget(_q.Range)) return;
+                if (Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
+                {
+                    if (Value.Use("misc.q.stun") && enemy.IsStunned)
+                    {
+                        _q.Cast(enemy);
+                    }
+                    if (Value.Use("misc.q.snare") && enemy.IsRooted)
+                    {
+                        _q.Cast(enemy);
+                    }
+                    if (Value.Use("misc.q.charm") && enemy.IsCharmed)
+                    {
+                        _q.Cast(enemy);
+                    }
+                    if (Value.Use("misc.q.taunt") && enemy.IsTaunted)
+                    {
+                        _q.Cast(enemy);
+                    }
+                    if (Value.Use("misc.q.fear") && enemy.IsFeared)
+                    {
+                        _q.Cast(enemy);
+                    }
+                }
+
+                if (Value.Get("misc.r.mana") >= Player.Instance.ManaPercent)
+                {
+                    if (Value.Use("misc.r.stun") && enemy.IsStunned)
+                    {
+                        _r.Cast(enemy);
+                    }
+                    if (Value.Use("misc.r.snare") && enemy.IsRooted)
+                    {
+                        _r.Cast(enemy);
+                    }
+                    if (Value.Use("misc.r.charm") && enemy.IsCharmed)
+                    {
+                        _r.Cast(enemy);
+                    }
+                    if (Value.Use("misc.r.taunt") && enemy.IsTaunted)
+                    {
+                        _r.Cast(enemy);
+                    }
+                    if (Value.Use("misc.r.fear") && enemy.IsFeared)
+                    {
+                        _r.Cast(enemy);
+                    }
+                }
+            }
+
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code AUTOQ)</font>");
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Drawings
+
+        private static void GameOnDraw(EventArgs args)
+        {
+            var colorQ = MainMenu._draw.GetColor("color.q");
+            var widthQ = MainMenu._draw.GetWidth("width.q");
+            var colorW = MainMenu._draw.GetColor("color.w");
+            var widthW = MainMenu._draw.GetWidth("width.w");
+            var colorE = MainMenu._draw.GetColor("color.e");
+            var widthE = MainMenu._draw.GetWidth("width.e");
+            var colorR = MainMenu._draw.GetColor("color.r");
+            var widthR = MainMenu._draw.GetWidth("width.r");
+
+            if (!Value.Use("draw.disable"))
+            {
+                if (Value.Use("draw.q") && ((Value.Use("draw.ready") && _q.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorQ,
+                        Radius = _q.Range,
+                        BorderWidth = widthQ
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.w") && ((Value.Use("draw.ready") && _w.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorW,
+                        Radius = _w.Range,
+                        BorderWidth = widthW
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.e") && ((Value.Use("draw.ready") && _e.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorE,
+                        Radius = _e.Range,
+                        BorderWidth = widthE
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorR,
+                        Radius = _q.Range,
+                        BorderWidth = widthR
+                    }.Draw(Player.Instance.Position);
+                }
+            }
+
+        }
+
+        private static void Drawing_OnEndScene(EventArgs args)
+        {
+            if (Value.Use("draw.hp.bar"))
+            {
+                foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => !a.IsDead && a.IsHPBarRendered))
+                {
+                    var damage = ComboDamage(enemy);
+                    var damagepercent = ((enemy.TotalShieldHealth() - damage) > 0
+                        ? (enemy.TotalShieldHealth() - damage)
+                        : 0)/(enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var hppercent = enemy.TotalShieldHealth()/
+                                    (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var start = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + damagepercent*104),
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var end = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + hppercent*104) + 2,
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
+
+                    Drawing.DrawLine(start, end, 9, Color.Chartreuse);
+                }
+            }
+        }
+
+        #endregion
+
     }
 }

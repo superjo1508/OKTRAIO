@@ -17,6 +17,7 @@ namespace OKTRAIO.Champions
     class Draven : AIOChampion
     {
 
+        #region Initialize and Declare
         private static int AxeCount
         {
             get
@@ -216,7 +217,11 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
             }
         }
+        #endregion
 
+        #region Utils
+
+        #region OnCreate
         private static void GameObjectOnCreate(GameObject sender, EventArgs args)
         {
             if (sender.Name.Contains("Draven_Base_Q_reticle_self.troy"))
@@ -226,7 +231,9 @@ namespace OKTRAIO.Champions
                 Core.DelayAction(() => Axes.RemoveAll(x => x.Object.NetworkId == sender.NetworkId), 1800);
             }
         }
+        #endregion
 
+        #region OnDelete
         private static void GameObjectOnDelete(GameObject sender, EventArgs args)
         {
             if (sender.Name.Contains("Draven_Base_Q_reticle_self.troy"))
@@ -234,7 +241,9 @@ namespace OKTRAIO.Champions
                 Axes.RemoveAll(x => x.Object.NetworkId == sender.NetworkId);
             }
         }
+        #endregion
 
+        #region Interrupter
         private static void InterrupterOnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
             try
@@ -259,7 +268,9 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INTERRUPTER)</font>");
             }
         }
+        #endregion
 
+        #region Orbwalker
         private static void OrbwalkerOnPreAttack(AttackableUnit target, Orbwalker.PreAttackArgs args)
         {
             if (_q.IsReady())
@@ -294,7 +305,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region AntiGapCloser
         private static void AntiGapCloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
 
@@ -320,7 +333,9 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ANTIGAP)</font>");
             }
         }
+        #endregion
 
+        #region OnUpdate
         private static void GameOnUpdate(EventArgs args)
         {
             if (Player.Instance.IsDead || Player.Instance.HasBuff("Recall")
@@ -338,15 +353,13 @@ namespace OKTRAIO.Champions
                 AutoETurret();
             }
 
-            if (Value.Use("killsteal.e") && _e.IsReady() ||
-                Value.Use("killsteal.r") && _r.IsReady())
-            {
-                KillSteal();
-            }
+            KillSteal();
 
             CatchAxe();
         }
+        #endregion
 
+        #region AutoE
         private static void AutoE()
         {
 
@@ -424,7 +437,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region KillSteal
         private static void KillSteal()
         {
             try
@@ -436,26 +451,32 @@ namespace OKTRAIO.Champions
                                 hero.IsValidTarget(_e.Range) && !hero.IsDead && !hero.IsZombie &&
                                 hero.HealthPercent <= 25))
                 {
-                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana"))
+                    if (Value.Use("killsteal.e") && _e.IsReady())
                     {
-                        if (target.Health + target.AttackShield <
-                            Player.Instance.GetSpellDamage(target, SpellSlot.E))
-
+                        if (Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana"))
                         {
-                            _e.Cast(_e.GetPrediction(target).CastPosition);
+                            if (target.Health + target.AttackShield <
+                                Player.Instance.GetSpellDamage(target, SpellSlot.E))
+
+                            {
+                                _e.Cast(_e.GetPrediction(target).CastPosition);
+                            }
                         }
                     }
 
-                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
-                    {
-                        if (target.Health + target.AttackShield <
-                            Player.Instance.GetSpellDamage(target, SpellSlot.R))
-
+                    if (Value.Use("killsteal.r") && _r.IsReady())
                         {
-                            _r.Cast(_r.GetPrediction(target).CastPosition);
+                            if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
+                            {
+                                if (target.Health + target.AttackShield <
+                                    Player.Instance.GetSpellDamage(target, SpellSlot.R))
+
+                                {
+                                    _r.Cast(_r.GetPrediction(target).CastPosition);
+                                }
+                            }
                         }
                     }
-                }
 
             }
 
@@ -466,7 +487,9 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
             }
         }
+        #endregion
 
+        #region CatchAxe
         private static void CatchAxe()
         {
             if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Flee)) return;
@@ -520,9 +543,61 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Damage
+        private static float ComboDamage(Obj_AI_Base enemy)
+        {
+            float damage = Player.Instance.GetAutoAttackDamage(enemy);
 
+            if (AxeCount > 0)
+            {
+                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.Q);
+            }
 
+            if (_e.IsReady())
+            {
+                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.E);
+            }
+
+            if (_r.IsReady())
+            {
+                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.R);
+            }
+
+            return damage;
+        }
+        #endregion 
+
+        #region Various check
+        private static Axe GetBestAxe
+        {
+            get
+            {
+                return Axes.Where(h => h.Object.Position.Distance(Game.CursorPos) <= Value.Get("misc.axe.range")).
+                        OrderBy(h => h.Object.Position.Distance(Player.Instance.ServerPosition)).
+                        ThenBy(x => x.Object.Distance(Game.CursorPos)).
+                        FirstOrDefault();
+            }
+        }
+        public static bool IsUnderTurret(Vector3 position)
+        {
+            return ObjectManager.Get<Obj_AI_Turret>().Any(turret => turret.IsValidTarget(950) && turret.IsEnemy);
+        }
+
+        public class Axe
+        {
+            public double ExpireTime { get; set; }
+
+            public GameObject Object { get; set; }
+        }
+        #endregion
+
+        #endregion 
+
+        #region Gamerelated Logic
+
+        #region Combo
         public override void Combo()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
@@ -554,7 +629,9 @@ namespace OKTRAIO.Champions
             }
             
         }
+        #endregion
 
+        #region Harass
         public override void Harass()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
@@ -586,7 +663,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Laneclear
         public override void Laneclear()
         {
             var count =
@@ -626,7 +705,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Jungleclear
         public override void Jungleclear()
         {
             var monsters =
@@ -700,7 +781,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Flee
         public override void Flee()
         {
             var target = TargetSelector.GetTarget(_e.Range, DamageType.Physical);
@@ -721,7 +804,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Lasthit
         public override void LastHit()
         {
             var source =
@@ -738,53 +823,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
-        private static float ComboDamage(Obj_AI_Base enemy)
-        {
-            float damage = Player.Instance.GetAutoAttackDamage(enemy);
+        #endregion
 
-            if (AxeCount > 0)
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.Q);
-            }
-
-            if (_e.IsReady())
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.E);
-            }
-
-            if (_r.IsReady())
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.R);
-            }
-
-            return damage;
-        }
-
-        private static Axe GetBestAxe
-        {
-            get
-            {
-                return Axes.Where(h =>h.Object.Position.Distance(Game.CursorPos) <=Value.Get("misc.axe.range")).
-                        OrderBy(h => h.Object.Position.Distance(Player.Instance.ServerPosition)).
-                        ThenBy(x => x.Object.Distance(Game.CursorPos)).
-                        FirstOrDefault();
-            }
-        }
-
-        public static bool IsUnderTurret(Vector3 position)
-        {
-            return ObjectManager.Get<Obj_AI_Turret>().Any(turret => turret.IsValidTarget(950) && turret.IsEnemy);
-        }
-
-        public class Axe
-        {
-            public double ExpireTime { get; set; }
-
-            public GameObject Object { get; set; }
-        }
-        
-
+        #region Drawings
         private static void GameOnDraw(EventArgs args)
         {
             var colorQ = MainMenu._draw.GetColor("color.q");
@@ -873,5 +916,7 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion 
+
     }
 }

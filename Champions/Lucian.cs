@@ -6,18 +6,19 @@ using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
+using MarksmanAIO;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
 using SharpDX;
 using Color = System.Drawing.Color;
-using SpellData = OKTRAIO.Spell_Library.SpellData;
+using SpellDamage = OKTRAIO.Database.Spell_Library.SpellDamage;
 
 namespace OKTRAIO.Champions
 {
-    internal class Lucian : AIOChampion
+    class Lucian : AIOChampion
     {
-        #region Initialize and Declare
 
+        #region Initialize and Declare
         private static Spell.Targeted _q;
         private static Spell.Skillshot _q1, _w, _e, _r;
         private static bool _passive;
@@ -86,9 +87,8 @@ namespace OKTRAIO.Champions
             MainMenu._draw.AddColorItem("color.qw");
             MainMenu._draw.AddWidthItem("width.qw");
             MainMenu.DamageIndicator(true);
-
+            
             MainMenu.FleeKeys(false, false, true, false);
-
             Value.Init();
             UpdateSlider(1);
             UpdateSlider(2);
@@ -111,87 +111,9 @@ namespace OKTRAIO.Champions
 
         #endregion
 
-       #region Gamerelated Logic
+        #region Gamerelated Logic
 
-        public override void Combo()
-        {
-            if (!_passive && Value.Use("combo.q") && Value.Use("combo.eq") && Value.Get("combo.mode") == 1)
-            {
-                QExtendLogic(TargetSelector.GetTarget(_q1.Range, DamageType.Physical));
-            }
-            if (Value.Use("combo.egap") && Value.Use("combo.e"))
-            {
-                var chaseTarget = TargetSelector.GetTarget(Player.Instance.AttackRange + _e.Range,
-                    DamageType.Physical);
-                if (chaseTarget != null &&
-                    Player.Instance.Position.Extend(chaseTarget.Position, _e.Range)
-                        .CountEnemiesInRange(1200) == 1)
-                {
-                    _e.Cast(Player.Instance.Position.Extend(chaseTarget.Position, _e.Range).To3D());
-                }
-            }
-        }
-
-        public override void Harass()
-        {
-            if (!_passive && Value.Use("harass.eq") && Player.Instance.ManaPercent > Value.Get("harass.mana"))
-            {
-                QExtendLogic(TargetSelector.GetTarget(_q1.Range, DamageType.Physical));
-            }
-        }
-
-        public override void Laneclear()
-        {
-            if (!_passive && Value.Use("lane.qharass") && Value.Use("lane.q") &&
-                Player.Instance.ManaPercent > Value.Get("lane.mana"))
-            {
-                QExtendLogic(TargetSelector.GetTarget(_q1.Range, DamageType.Physical));
-            }
-        }
-
-        public override void Flee()
-        {
-            if (Value.Use("flee.e") && _e.IsReady())
-            {
-                _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
-            }
-        }
-
-        private static void OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
-        {
-            if (sender.NetworkId != Player.Instance.NetworkId) return;
-            if (args.Slot == SpellSlot.R)
-            {
-                if (Player.Instance.InventoryItems.Any(i => i.Id == ItemId.Youmuus_Ghostblade))
-                    Player.Instance.InventoryItems.First(i => i.Id == ItemId.Youmuus_Ghostblade).Cast();
-            }
-            if (args.Slot == SpellSlot.E)
-            {
-                Orbwalker.ResetAutoAttack();
-            }
-            if (args.Slot == SpellSlot.Q || args.Slot == SpellSlot.W || args.Slot == SpellSlot.E)
-            {
-                _passive = true;
-
-            }
-        }
-
-        private static void OrbwalkerOnPostAttack(AttackableUnit target, EventArgs args)
-        {
-            if (target.IsValidTarget())
-            {
-                if (Value.Mode(Orbwalker.ActiveModes.Combo) ||
-                    Value.Mode(Orbwalker.ActiveModes.Harass) ||
-                    Value.Mode(Orbwalker.ActiveModes.LaneClear) ||
-                    Value.Mode(Orbwalker.ActiveModes.JungleClear))
-                {
-                    Core.DelayAction(SpellLogic, GetSpellDelay);
-                    _target = target;
-                }
-            }
-            _passive = false;
-        }
-
+        #region SpellLogic
         private static void SpellLogic()
         {
             if (_target is AIHeroClient)
@@ -316,18 +238,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
-        private static void OnUltButton(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
-        {
-            if (args.NewValue && TargetSelector.GetTarget(_r.Range, DamageType.Physical) != null)
-                _r.Cast(TargetSelector.GetTarget(_r.Range, DamageType.Physical).ServerPosition);
-        }
-
-        private void Game_OnTick(EventArgs args)
-        {
-            if (Value.Mode(Orbwalker.ActiveModes.Harass)) Harass();
-            if (Value.Use("killsteal.e")) Killsteal();
-        }
+        #region QLogic
 
         private static void QLogic()
         {
@@ -356,99 +269,6 @@ namespace OKTRAIO.Champions
             }).Where(@t => @t.polygon.IsInside(qPred.CastPosition)).Select(@t => @t.minion))
             {
                 _q.Cast(minion);
-            }
-        }
-
-        private static void WLogic()
-        {
-            if ((Value.Use("combo.wcol") && Value.Mode(Orbwalker.ActiveModes.Combo)) ||
-                (Value.Use("harass.wcol") && Value.Mode(Orbwalker.ActiveModes.Harass)))
-            {
-                var wpred = _w.GetPrediction(_target as Obj_AI_Base);
-                if (wpred.HitChance <= HitChance.Collision) return;
-                _w.Cast(wpred.CastPosition);
-            }
-            else
-            {
-                _w.Cast(_target.Position);
-            }
-        }
-
-        private static void ELogic()
-        {
-            if (Value.Mode(Orbwalker.ActiveModes.Combo))
-            {
-                if (Value.Get("combo.emode") == 0)
-                {
-                    var ePos = OKTRGeometry.SafeDashLogic(_e.Range);
-                    if (ePos != Vector3.Zero)
-                        _e.Cast(ePos);
-                }
-                else if (Value.Get("combo.emode") == 1)
-                {
-                    if (Game.CursorPos.Distance(Player.Instance.Position) >
-                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2 &&
-                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
-                    {
-                        _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
-                    }
-                    else
-                    {
-                        if (InsideCone())
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), -65)
-                                    .To3D());
-                        }
-                        else
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                    .To3D());
-                        }
-                    }
-                }
-                else if (Value.Get("combo.emode") == 2)
-                {
-                    _e.Cast(Game.CursorPos);
-                }
-            }
-            else
-            {
-                if (Value.Get("harass.emode") == 0)
-                {
-                    var ePos = OKTRGeometry.SafeDashLogic(_e.Range);
-                    if (ePos != Vector3.Zero)
-                        _e.Cast(ePos);
-                }
-                else if (Value.Get("harass.emode") == 1)
-                {
-                    if (Game.CursorPos.Distance(Player.Instance.Position) >
-                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2 &&
-                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
-                    {
-                        _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
-                    }
-                    else
-                    {
-                        if (InsideCone())
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 255)
-                                    .To3D());
-                        }
-                        else
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                    .To3D());
-                        }
-                    }
-                }
-                else if (Value.Get("harass.emode") == 2)
-                {
-                    _e.Cast(Game.CursorPos);
-                }
             }
         }
 
@@ -485,54 +305,294 @@ namespace OKTRAIO.Champions
             return null;
         }
 
+        #endregion
 
+        #region WLogic
+        private static void WLogic()
+        {
+            if ((Value.Use("combo.wcol") && Value.Mode(Orbwalker.ActiveModes.Combo)) ||
+                (Value.Use("harass.wcol") && Value.Mode(Orbwalker.ActiveModes.Harass)))
+            {
+                var wpred = _w.GetPrediction(_target as Obj_AI_Base);
+                if (wpred.HitChance <= HitChance.Collision) return;
+                _w.Cast(wpred.CastPosition);
+            }
+            else
+            {
+                _w.Cast(_target.Position);
+            }
+        }
+        #endregion
+
+        #region ELogic
+        private static void ELogic()
+        {
+            if (Value.Mode(Orbwalker.ActiveModes.Combo))
+            {
+                if (Value.Get("combo.emode") == 0)
+                {
+                    var ePos = OKTRGeometry.SafeDashPos(_e.Range);
+                    if (ePos != Vector3.Zero)
+                        _e.Cast(ePos);
+                    else
+                    {
+                        if (Game.CursorPos.Distance(Player.Instance.Position) >
+                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2 &&
+                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
+                        {
+                            _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
+                        }
+                        else
+                        {
+                            if (InsideCone())
+                            {
+                                _e.Cast(
+                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), -65)
+                                        .To3D());
+                            }
+                            else
+                            {
+                                _e.Cast(
+                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
+                                        .To3D());
+                            }
+                        }
+                    }
+                }
+                else if (Value.Get("combo.emode") == 1)
+                {
+                    if (Game.CursorPos.Distance(Player.Instance.Position) >
+                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2 &&
+                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
+                    {
+                        _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
+                    }
+                    else
+                    {
+                        if (InsideCone())
+                        {
+                            _e.Cast(
+                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), -65)
+                                    .To3D());
+                        }
+                        else
+                        {
+                            _e.Cast(
+                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
+                                    .To3D());
+                        }
+                    }
+                }
+                else if (Value.Get("combo.emode") == 2)
+                {
+                    _e.Cast(Game.CursorPos);
+                }
+            }
+            else
+            {
+                if (Value.Get("harass.emode") == 0)
+                {
+                    var ePos = OKTRGeometry.SafeDashPos(_e.Range);
+                    if (ePos != Vector3.Zero)
+                        _e.Cast(ePos);
+                }
+                else if (Value.Get("harass.emode") == 1)
+                {
+                    if (Game.CursorPos.Distance(Player.Instance.Position) >
+                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2 &&
+                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
+                    {
+                        _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
+                    }
+                    else
+                    {
+                        if (InsideCone())
+                        {
+                            _e.Cast(
+                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 255)
+                                    .To3D());
+                        }
+                        else
+                        {
+                            _e.Cast(
+                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
+                                    .To3D());
+                        }
+                    }
+                }
+                else if (Value.Get("harass.emode") == 2)
+                {
+                    _e.Cast(Game.CursorPos);
+                }
+            }
+        }
+        #endregion
+
+        #region Combo
+        public override void Combo()
+        {
+            if (!_passive && Value.Use("combo.q") && Value.Use("combo.eq") && Value.Get("combo.mode") == 1)
+            {
+                QExtendLogic(TargetSelector.GetTarget(_q1.Range, DamageType.Physical));
+            }
+            if (Value.Use("combo.egap") && Value.Use("combo.e"))
+            {
+                var chaseTarget = TargetSelector.GetTarget(Player.Instance.AttackRange + _e.Range,
+                    DamageType.Physical);
+                if (chaseTarget != null &&
+                    Player.Instance.Position.Extend(chaseTarget.Position, _e.Range)
+                        .CountEnemiesInRange(1200) == 1)
+                {
+                    _e.Cast(Player.Instance.Position.Extend(chaseTarget.Position, _e.Range).To3D());
+                }
+            }
+        }
+        #endregion
+
+        #region Harass
+        public override void Harass()
+        {
+            if (!_passive && Value.Use("harass.eq") && Player.Instance.ManaPercent > Value.Get("harass.mana"))
+            {
+                QExtendLogic(TargetSelector.GetTarget(_q1.Range, DamageType.Physical));
+            }
+        }
+        #endregion
+
+        #region Laneclear
+        public override void Laneclear()
+        {
+            if (!_passive && Value.Use("lane.qharass") && Value.Use("lane.q") &&
+                Player.Instance.ManaPercent > Value.Get("lane.mana"))
+            {
+                QExtendLogic(TargetSelector.GetTarget(_q1.Range, DamageType.Physical));
+            }
+        }
+        #endregion
+
+        #region Flee
+        public override void Flee()
+        {
+            if (Value.Use("flee.e") && _e.IsReady())
+            {
+                _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
+            }
+        }
+        #endregion
+
+        #endregion
+
+        #region Utils
+
+        #region OnTick
+        private void Game_OnTick(EventArgs args)
+        {
+            if (Value.Mode(Orbwalker.ActiveModes.Harass)) Harass();
+            if (Value.Use("killsteal.e")) Killsteal();
+        }
+        #endregion
+
+        #region OnUltButton
+        private static void OnUltButton(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
+        {
+            if (args.NewValue && TargetSelector.GetTarget(_r.Range, DamageType.Physical) != null)
+                _r.Cast(TargetSelector.GetTarget(_r.Range, DamageType.Physical).ServerPosition);
+        }
+        #endregion
+
+        #region KillSteal
         private static void Killsteal()
         {
-            if (KSTarget() == null) return;
+            if (KsTarget() == null) return;
             if (Value.Use("killsteal.e") && _e.IsReady())
-                if (Prediction.Health.GetPrediction(KSTarget(), Game.Ping + _e.CastDelay) <
-                    Player.Instance.GetAutoAttackDamage(KSTarget()) + SpellData.LucianPassive())
+                if (Prediction.Health.GetPrediction(KsTarget(), Game.Ping + _e.CastDelay) <
+                    Player.Instance.GetAutoAttackDamage(KsTarget()) + SpellDamage.LucianPassive())
                 {
-                    var safeE = OKTRGeometry.SafeDashLogic(_e.Range);
+                    var safeE = OKTRGeometry.SafeDashPos(_e.Range);
                     if (safeE != Vector3.Zero)
                     {
                         _e.Cast(safeE);
                     }
                 }
             if (Value.Use("killsteal.q") & _q.IsReady())
-                if (Prediction.Health.GetPrediction(KSTarget(), Game.Ping + _q.CastDelay) <
-                    Player.Instance.GetSpellDamage(KSTarget(), SpellSlot.Q))
+                if (Prediction.Health.GetPrediction(KsTarget(), Game.Ping + _q.CastDelay) <
+                    Player.Instance.GetSpellDamage(KsTarget(), SpellSlot.Q))
                 {
-                    QExtendLogic(KSTarget());
+                    QExtendLogic(KsTarget());
                 }
-            if (KSTarget().Distance(Player.Instance) < Player.Instance.GetAutoAttackRange())
+            if (KsTarget().Distance(Player.Instance) < Player.Instance.GetAutoAttackRange())
             {
-                if (!Orbwalker.IsAutoAttacking && _passive && Prediction.Health.GetPrediction(KSTarget(), Game.Ping + _e.CastDelay) <
-                    Player.Instance.GetAutoAttackDamage(KSTarget()) + SpellData.LucianPassive())
+                if (!Orbwalker.IsAutoAttacking && _passive && Prediction.Health.GetPrediction(KsTarget(), Game.Ping + _e.CastDelay) <
+                    Player.Instance.GetAutoAttackDamage(KsTarget()) + SpellDamage.LucianPassive())
                 {
                     ToggleOrb();
-                    Player.IssueOrder(GameObjectOrder.AttackUnit, KSTarget());
-                    Core.DelayAction(ToggleOrb, (int) (Player.Instance.AttackCastDelay*1000));
+                    Player.IssueOrder(GameObjectOrder.AttackUnit, KsTarget());
+                    Core.DelayAction(ToggleOrb, (int)(Player.Instance.AttackCastDelay * 1000));
                 }
-                else if (!Orbwalker.IsAutoAttacking && Prediction.Health.GetPrediction(KSTarget(), Game.Ping + _e.CastDelay) <
-                    Player.Instance.GetAutoAttackDamage(KSTarget()))
+                else if (!Orbwalker.IsAutoAttacking && Prediction.Health.GetPrediction(KsTarget(), Game.Ping + _e.CastDelay) <
+                    Player.Instance.GetAutoAttackDamage(KsTarget()))
                 {
                     ToggleOrb();
-                    Player.IssueOrder(GameObjectOrder.AttackUnit, KSTarget(), true);
+                    Player.IssueOrder(GameObjectOrder.AttackUnit, KsTarget(), true);
                     Core.DelayAction(ToggleOrb, (int)(Player.Instance.AttackCastDelay * 1000));
                 }
             }
         }
 
-        private static AIHeroClient KSTarget()
+
+        private static AIHeroClient KsTarget()
         {
-            return Variables.CloseEnemies(Player.Instance.AttackRange + _e.Range * 1.1f).OrderBy(e=>e.Distance(Player.Instance)).ThenBy(e=>e.Health).FirstOrDefault();
+            return Variables.CloseEnemies(Player.Instance.AttackRange + _e.Range * 1.1f).OrderBy(e => e.Distance(Player.Instance)).ThenBy(e => e.Health).FirstOrDefault();
+        }
+        #endregion
+
+        #region OnSpellCast
+        private static void OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (sender.NetworkId != Player.Instance.NetworkId) return;
+            if (args.Slot == SpellSlot.R)
+            {
+                if (Player.Instance.InventoryItems.Any(i => i.Id == ItemId.Youmuus_Ghostblade))
+                    Player.Instance.InventoryItems.First(i => i.Id == ItemId.Youmuus_Ghostblade).Cast();
+            }
+            if (args.Slot == SpellSlot.E)
+            {
+                Orbwalker.ResetAutoAttack();
+            }
+            if (args.Slot == SpellSlot.Q || args.Slot == SpellSlot.W || args.Slot == SpellSlot.E)
+            {
+                _passive = true;
+
+            }
+        }
+        #endregion
+
+        #region Orbwalker
+        private static void OrbwalkerOnPostAttack(AttackableUnit target, EventArgs args)
+        {
+            if (target.IsValidTarget())
+            {
+                if (Value.Mode(Orbwalker.ActiveModes.Combo) ||
+                    Value.Mode(Orbwalker.ActiveModes.Harass) ||
+                    Value.Mode(Orbwalker.ActiveModes.LaneClear) ||
+                    Value.Mode(Orbwalker.ActiveModes.JungleClear))
+                {
+                    Core.DelayAction(SpellLogic, GetSpellDelay);
+                    _target = target;
+                }
+            }
+            _passive = false;
+        }
+
+        public static void ToggleOrb()
+        {
+            Orbwalker.DisableMovement = !Orbwalker.DisableMovement;
+            Orbwalker.DisableAttacking = !Orbwalker.DisableAttacking;
         }
 
         #endregion
 
-        #region Utils
-
+        #region Geometry-Cone
         private static bool InsideCone()
         {
             if (_target == null) return false;
@@ -541,7 +601,9 @@ namespace OKTRAIO.Champions
                             (Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2));
             return cone.IsInside(Game.CursorPos.To2D());
         }
+        #endregion
 
+        #region Humanized Delay
         public static int GetSpellDelay
         {
             get { return Game.Ping * (new Random().Next(_randomizerOne, _randomizerTwo) / 10); }
@@ -551,7 +613,9 @@ namespace OKTRAIO.Champions
         {
             UpdateSlider(1);
         }
+        #endregion
 
+        #region Slider
         private static void ComboEModeSlider(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
         {
             UpdateSlider(2);
@@ -653,13 +717,9 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code anal)</font>");
             }
         }
+        #endregion
 
-        public static void ToggleOrb()
-        {
-            Orbwalker.DisableMovement = !Orbwalker.DisableMovement;
-            Orbwalker.DisableAttacking = !Orbwalker.DisableAttacking;
-        }
-        
+        #region Damage
         internal static float GetRawDamage(Obj_AI_Base target)
         {
             float damage = 0;
@@ -669,22 +729,23 @@ namespace OKTRAIO.Champions
                 {
                     damage += Player.Instance.GetSpellDamage(target, SpellSlot.Q);
                     damage += Player.Instance.GetAutoAttackDamage(target);
-                    damage += SpellData.LucianPassive();
+                    damage += SpellDamage.LucianPassive();
                 }
                 if (_w.IsReady())
                 {
                     damage += Player.Instance.GetSpellDamage(target, SpellSlot.W);
                     damage += Player.Instance.GetAutoAttackDamage(target);
-                    damage += SpellData.LucianPassive();
+                    damage += SpellDamage.LucianPassive();
                 }
                 if (_e.IsReady())
                 {
                     damage += Player.Instance.GetAutoAttackDamage(target);
-                    damage += SpellData.LucianPassive();
+                    damage += SpellDamage.LucianPassive();
                 }
             }
             return damage;
         }
+        #endregion 
 
         #endregion
 
@@ -732,5 +793,6 @@ namespace OKTRAIO.Champions
         }
 
         #endregion
+
     }
 }

@@ -184,6 +184,8 @@ namespace OKTRAIO.Champions
         #endregion
 
         #region Gamerelated Logic
+
+        #region Combo
         public override void Combo()
         {
             var targetq = TargetSelector.GetTarget(_q.MaximumRange, DamageType.Physical);
@@ -274,7 +276,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Harass
         public override void Harass()
         {
             var targetq = TargetSelector.GetTarget(_q.MaximumRange, DamageType.Physical);
@@ -341,7 +345,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Laneclear
         public override void Laneclear()
         {
             if (Player.Instance.CountEnemiesInRange(_q.MaximumRange) == 0)
@@ -454,7 +460,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Jungleclear
         public override void Jungleclear()
         {
             if (_q.IsReady())
@@ -526,7 +534,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Flee
         public override void Flee()
         {
             var targete = TargetSelector.GetTarget(_e.Range, DamageType.Physical);
@@ -539,7 +549,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Lasthit
         public override void LastHit()
         {
             var siege =
@@ -565,7 +577,13 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #endregion
+
+        #region Utils
+
+        #region OnUpdate
         private static void GameOnUpdate(EventArgs args)
         {
             if (_move && (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) || Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear) || Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Harass) || Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LastHit)))
@@ -579,7 +597,9 @@ namespace OKTRAIO.Champions
 
             RAsssist();
         }
+        #endregion
 
+        #region AntiGapCloser
         private static void GameObject_OnCreate(GameObject sender, EventArgs args)
         {
             var rengar = EntityManager.Heroes.Enemies.Find(r => r.ChampionName.Equals("Rengar"));
@@ -615,12 +635,14 @@ namespace OKTRAIO.Champions
                 return;
             }
 
-            if (_e.IsReady() &&_e.IsInRange(sender) && e.End.Distance(Player.Instance.Position) <= 100)
+            if (_e.IsReady() && _e.IsInRange(sender) && e.End.Distance(Player.Instance.Position) <= 100)
             {
                 _e.Cast(_e.GetPrediction(sender).CastPosition);
             }
         }
+        #endregion
 
+        #region Interrupter
         private static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
             if (sender.IsAlly || e.Slot == SpellSlot.R && sender.BaseSkinName == "Katarina" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Janna" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Fiddlesticks" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Velkoz" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Pantheon" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Karthus" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Nunu" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Malzahar" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Caitlyn" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Galio" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Xerath" || e.Slot == SpellSlot.R && sender.BaseSkinName == "Miss Fortune")
@@ -636,7 +658,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Buffs
         private static void Obj_AI_Base_OnBuffLose(Obj_AI_Base sender, Obj_AI_BaseBuffLoseEventArgs args)
         {
             if (sender.IsMe && args.Buff.Name == "VarusQ")
@@ -644,7 +668,6 @@ namespace OKTRAIO.Champions
                 _move = false;
             }
         }
-
         private static void Player_OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
             if (sender.IsMe && args.Buff.Name == "VarusQ")
@@ -654,7 +677,7 @@ namespace OKTRAIO.Champions
         }
         #endregion
 
-        #region Utils
+        #region Damage
         private static float ComboDamage(Obj_AI_Base target)
         {
             var damage = Player.Instance.GetAutoAttackDamage(target);
@@ -707,7 +730,9 @@ namespace OKTRAIO.Champions
             }
             return enemy.TotalShieldHealth() <= damage;
         }
+        #endregion
 
+        #region KillSteal
         private static void Ks()
         {
             var targetq = TargetSelector.GetTarget(_q.MaximumRange, DamageType.Physical);
@@ -750,7 +775,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Ultimate Assistant
         private static void RAsssist()
         {
             var targetr = TargetSelector.GetTarget(_r.Range, DamageType.Magical);
@@ -763,7 +790,9 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion
 
+        #region Autospell
         private static void AutoQr()
         {
             var targetq =
@@ -810,6 +839,8 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+        #endregion 
+
         #endregion
 
         #region Drawings
