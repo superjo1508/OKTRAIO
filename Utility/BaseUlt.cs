@@ -151,7 +151,7 @@ namespace OKTRAIO.Utility
 
         static int BarHeight = 10;
 
-        public static void DrawRect(float x, float y, float width, float height, float thickness, System.Drawing.Color color)
+        public static void DrawRect(float x, float y, float width, float height, float thickness, Color color)
         {
             for (int i = 0; i < height; i++)
                 Drawing.DrawLine(x, y + i, x + width, y + i, thickness, color);

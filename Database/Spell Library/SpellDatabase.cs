@@ -1002,7 +1002,7 @@ namespace OKTRAIO.Database.Spell_Library
         IsInterruptableSpell = true,
         DangerLevel = Spell.InterruptableDangerLevel.Medium,
         Slot = SpellSlot.W,
-        BuffName = "Drain",
+        BuffName = "Drain"
     });
 
             //Max rank Drain had different buff name
@@ -1014,7 +1014,7 @@ namespace OKTRAIO.Database.Spell_Library
                     IsInterruptableSpell = true,
                     DangerLevel = Spell.InterruptableDangerLevel.Medium,
                     Slot = SpellSlot.W,
-                    BuffName = "fearmonger_marker",
+                    BuffName = "fearmonger_marker"
                 });
             #endregion
 
@@ -1122,7 +1122,7 @@ namespace OKTRAIO.Database.Spell_Library
                     IsDangerous = true,
                     MissileSpellName = "",
                     IsInterruptableSpell = true,
-                    DangerLevel = Spell.InterruptableDangerLevel.High,
+                    DangerLevel = Spell.InterruptableDangerLevel.High
                 });
 
             #endregion Galio
@@ -1482,7 +1482,7 @@ namespace OKTRAIO.Database.Spell_Library
         BuffName = "ReapTheWhirlwind",
         Slot = SpellSlot.R,
         IsInterruptableSpell = true,
-        DangerLevel = Spell.InterruptableDangerLevel.Low,
+        DangerLevel = Spell.InterruptableDangerLevel.Low
     });
             #endregion Janna
 
@@ -2417,7 +2417,7 @@ namespace OKTRAIO.Database.Spell_Library
         BuffName = "Meditate",
         Slot = SpellSlot.W,
         IsInterruptableSpell = true,
-        DangerLevel = Spell.InterruptableDangerLevel.Low,
+        DangerLevel = Spell.InterruptableDangerLevel.Low
     });
             #endregion
 
@@ -2430,7 +2430,7 @@ namespace OKTRAIO.Database.Spell_Library
         IsInterruptableSpell = true,
         DangerLevel = Spell.InterruptableDangerLevel.High,
         Slot = SpellSlot.R,
-        BuffName = "missfortunebulletsound",
+        BuffName = "missfortunebulletsound"
     });
             #endregion
 
@@ -2477,7 +2477,7 @@ namespace OKTRAIO.Database.Spell_Library
                      DangerValue = 1,
                      IsDangerous = false,
                      MissileSpellName = "TormentedSoil",
-                     CanBeRemoved = false,
+                     CanBeRemoved = false
                  });
 
             #endregion Morgana
@@ -2611,7 +2611,7 @@ namespace OKTRAIO.Database.Spell_Library
                     IsInterruptableSpell = true,
                     DangerLevel = Spell.InterruptableDangerLevel.High,
                     Slot = SpellSlot.R,
-                    BuffName = "AbsoluteZero",
+                    BuffName = "AbsoluteZero"
                 });
             #endregion
 
@@ -3654,7 +3654,7 @@ namespace OKTRAIO.Database.Spell_Library
                     MissileSpellName = "VarusQMissile",
                     CollisionObjects = new[] { Spell.CollisionObjectTypes.YasuoWall },
                     IsInterruptableSpell = true,
-                    DangerLevel = Spell.InterruptableDangerLevel.Low,
+                    DangerLevel = Spell.InterruptableDangerLevel.Low
 
                 });
 
@@ -3775,7 +3775,7 @@ namespace OKTRAIO.Database.Spell_Library
         IsInterruptableSpell = true,
         DangerLevel = Spell.InterruptableDangerLevel.High,
         Slot = SpellSlot.R,
-        BuffName = "VelkozR",
+        BuffName = "VelkozR"
     });
 
             Spells.Add(
@@ -4011,7 +4011,7 @@ namespace OKTRAIO.Database.Spell_Library
         BuffName = "XerathLocusOfPower2",
         Slot = SpellSlot.R,
         IsInterruptableSpell = true,
-        DangerLevel = Spell.InterruptableDangerLevel.Low,
+        DangerLevel = Spell.InterruptableDangerLevel.Low
     });
 
             #endregion Xerath

@@ -34,26 +34,29 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EloBuddy">
-      <HintPath>..\..\..\..\Desktop\Elobuddy\System\EloBuddy.dll</HintPath>
+    <Reference Include="EloBuddy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7339047cb10f6e86, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Elobuddy\System\EloBuddy.dll</HintPath>
     </Reference>
-    <Reference Include="EloBuddy.Sandbox">
-      <HintPath>..\..\..\..\Desktop\Elobuddy\System\EloBuddy.Sandbox.dll</HintPath>
+    <Reference Include="EloBuddy.Sandbox, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d671ef5d8e7e69a5, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Elobuddy\System\EloBuddy.Sandbox.dll</HintPath>
     </Reference>
-    <Reference Include="EloBuddy.Sandbox">
-      <HintPath>D:\Program Files (x86)\EloBuddy\System\EloBuddy.Sandbox.dll</HintPath>
+    <Reference Include="EloBuddy.SDK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6b574a82b1ea937e, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Elobuddy\System\EloBuddy.SDK.dll</HintPath>
     </Reference>
-    <Reference Include="EloBuddy.SDK">
-      <HintPath>..\..\..\..\Desktop\Elobuddy\System\EloBuddy.SDK.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX">
-      <HintPath>..\..\..\..\Desktop\Elobuddy\System\SharpDX.dll</HintPath>
+    <Reference Include="SharpDX, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Direct3D9">
-      <HintPath>..\..\..\..\Desktop\Elobuddy\System\SharpDX.Direct3D9.dll</HintPath>
+    <Reference Include="SharpDX.Direct3D9, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -67,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Champions\Katarina.cs" />
+    <Compile Include="Champions\Zed.cs" />
     <Compile Include="Database\Spell Library\SpellDatabase.cs" />
     <Compile Include="Database\Spell Library\Values.cs" />
     <Compile Include="Database\Spell Library\SpellDamage.cs" />
@@ -94,6 +98,7 @@
     <Compile Include="Champions\Draven.cs" />
     <Compile Include="Utility\AutoLVLUP\AutoLVLUP.cs" />
     <Compile Include="Utility\AutoLVLUP\Mobafire\Mobafire.cs" />
+    <Compile Include="Utility\BushRevealer.cs" />
     <Compile Include="Utility\SkinManager\SkinManager.cs" />
     <Compile Include="Utility\DamageIndicator.cs" />
     <Compile Include="Geometry.cs" />
@@ -146,6 +151,9 @@
     <Folder Include="Utility\AutoLVLUP\Metalol\" />
     <Folder Include="Utility\AutoLVLUP\Probuilds\" />
     <Folder Include="Utility\AutoLVLUP\Solomid\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

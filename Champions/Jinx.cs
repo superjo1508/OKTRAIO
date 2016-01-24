@@ -9,7 +9,7 @@ using EloBuddy.SDK.Rendering;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
 using SharpDX;
-using MainMenu = OKTRAIO.Menu_Settings.MainMenu;
+using Color = System.Drawing.Color;
 
 namespace OKTRAIO.Champions
 {
@@ -135,7 +135,7 @@ namespace OKTRAIO.Champions
                 Orbwalker.OnPreAttack += OnPreAttack;
                 Obj_AI_Base.OnProcessSpellCast += OnProcessSpellCast;
                 BaseUlt.Initialize();
-                Chat.Print("Jinx Loaded!", System.Drawing.Color.Chartreuse);
+                Chat.Print("Jinx Loaded!", Color.Chartreuse);
             }
             catch (Exception e)
             {

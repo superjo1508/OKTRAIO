@@ -6,7 +6,6 @@ using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
-using MarksmanAIO;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
 using SharpDX;

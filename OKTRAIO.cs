@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Media;
 using System.Net;
@@ -7,13 +8,11 @@ using EloBuddy;
 using EloBuddy.Sandbox;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
-using MarksmanAIO.Champions;
 using OKTRAIO.Champions;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
 using OKTRAIO.Utility.SkinManager;
 using Activator = OKTRAIO.Utility.Activator;
-using Color = System.Drawing.Color;
 
 namespace OKTRAIO
 {
@@ -103,6 +102,9 @@ namespace OKTRAIO
                 case "Katarina":
                     Champion = new Katarina();
                     break;
+                //case "Zed":
+                    //Champion = new Zed();
+                    //break;
                     //case "Vayne": champion = new Vayne(); break; //etc
             }
             if (Champion != null)
@@ -114,7 +116,8 @@ namespace OKTRAIO
                 Activator.LoadSpells();
                 Activator.Init();
                 Humanizer.Init();
-                try {SkinManagement.Init();} catch (Exception e) { Chat.Print("Failed to load Skin manager" + e.ToString());}
+                BushRevealer.Init();
+                SkinManagement.Init();
                 if (MainMenu._menu["playsound"].Cast<CheckBox>().CurrentValue) PlayWelcome();
                 Chat.Print("MarksmanAIO: " + Player.Instance.ChampionName + " Loaded", Color.CornflowerBlue);
             }
@@ -157,7 +160,7 @@ namespace OKTRAIO
             }
             catch (Exception e)
             {
-                Chat.Print("Failed to load Sound File: \"" + Player.Instance.ChampionName + ".wav\": " + e.ToString());
+                Chat.Print("Failed to load Sound File: \"" + Player.Instance.ChampionName + ".wav\": " + e);
             }
 
         }

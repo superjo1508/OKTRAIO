@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
-using MarksmanAIO.Champions;
-using OKTRAIO;
 using SharpDX;
-using RectangleF = SharpDX.RectangleF;
+
 //ReSharper disable InconsistentNaming
 //ReSharper disable CompareOfFloatsByEqualityOperator
 
-namespace MarksmanAIO
+namespace OKTRAIO
 {
     public class OKTRGeometry
     {
@@ -500,7 +498,7 @@ namespace MarksmanAIO
             var step = (degrees * 2) / positionAmount;
             for (var i = -degrees; i <= degrees; i += step)
             {
-                var rotatedPosition = OKTRGeometry.Deviation(rotateAround.To2D(), realRotateTowards, i);
+                var rotatedPosition = Deviation(rotateAround.To2D(), realRotateTowards, i);
                 posList.Add(rotatedPosition.To3D());
             }
             return posList;
@@ -512,7 +510,7 @@ namespace MarksmanAIO
             if (Variables.CloseEnemies().Count <= 1)
             {
                 var dashPos = (Player.Instance.ServerPosition.To2D() + range * Player.Instance.Direction.To2D()).To3D();
-                if (!dashPos.IsUnderTurret())
+                if (!dashPos.IsUnderTurret() && (!Variables.JinxTrap(dashPos) || !Variables.CaitTrap(dashPos)))
                 {
                     return dashPos;
                 }
@@ -525,7 +523,6 @@ namespace MarksmanAIO
                          Player.Instance.GetAutoAttackDamage(t) + Player.Instance.GetSpellDamage(t, SpellSlot.Q)
                          && t.Distance(Player.Instance) < Player.Instance.AttackRange + 80f))
                 {
-                    Chat.Print("1 high 1 low");
                     var dashPos =
                         Player.Instance.ServerPosition.Extend(
                             Variables.CloseEnemies()
@@ -544,7 +541,6 @@ namespace MarksmanAIO
                 Variables.CloseEnemies(Player.Instance.AttackRange + range * 1.1f).Count(e => e.HealthPercent > 10) <=
                 2)
             {
-                Chat.Print("2 high");
                 var dashPos = (Player.Instance.ServerPosition.To2D() + range * Player.Instance.Direction.To2D()).To3D();
                 if (!dashPos.IsUnderTurret())
                 {
@@ -565,7 +561,7 @@ namespace MarksmanAIO
             var bestPos = Player.Instance.ServerPosition.Extend(Game.CursorPos, range).To3D();
             foreach (
                 var pos in
-                    OKTRGeometry.RotatedPositions(Player.Instance.ServerPosition, Game.CursorPos, 20, 0, range)
+                    RotatedPositions(Player.Instance.ServerPosition, Game.CursorPos, 20, 0, range)
                         .Where(p => !EnemyPoints().Contains(p.To2D())))
             {
                 if (pos.CountEnemiesInRange(1150) == 0 ||
@@ -626,12 +622,12 @@ namespace MarksmanAIO
             return SafeCheckTwo(pos)
                    && SafeCheckThree(pos)
                    && EntityManager.Heroes.Enemies.All(e => e.Distance(pos) > 350f)
-                   && (!pos.IsUnderTurret()) || Player.Instance.IsUnderTurret() && pos.IsUnderTurret() && Player.Instance.HealthPercent > 10;
+                   && (!pos.IsUnderTurret() && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos))) || Player.Instance.IsUnderTurret() && pos.IsUnderTurret() && Player.Instance.HealthPercent > 10 && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos));
         }
 
         public static bool SafeCheckTwo(Vector3 pos)
         {
-            return (!pos.IsUnderTurret() || Player.Instance.IsUnderTurret()) &&
+            return (!pos.IsUnderTurret() && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos)) || Player.Instance.IsUnderTurret()) && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos)) &&
                    Variables.CloseAllies(1000).Count(a => a.HealthPercent > 10) +
                    EntityManager.Turrets.Allies.Count(t => t.Distance(Player.Instance) < 1000) * 2 >=
                    Variables.CloseEnemies(1000).Count(e => e.HealthPercent > 10) +

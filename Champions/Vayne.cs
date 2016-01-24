@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu.Values;
+using EloBuddy.SDK.Rendering;
 using OKTRAIO;
 using OKTRAIO.Champions;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
 using SharpDX;
+using Color = System.Drawing.Color;
 
-namespace MarksmanAIO.Champions
+namespace OKTRAIO.Champions
 {
     class Vayne : AIOChampion
     {
@@ -52,13 +52,15 @@ namespace MarksmanAIO.Champions
             MainMenu._draw.AddWidthItem("width.qw");
             MainMenu.DamageIndicator(true);
 
-            MainMenu.FleeKeys(false, false, true, false);
+            MainMenu.FleeKeys(true, false, true, false);
 
             Value.Init();
 
+            _randomizerOne = 5;
+            _randomizerTwo = 12;
             DamageIndicator.DamageToUnit += GetRawDamage;
             Drawing.OnDraw += Draw;
-            if (MainMenu._menu["useonupdate"].Cast<EloBuddy.SDK.Menu.Values.CheckBox>().CurrentValue)
+            if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
             {
                 Game.OnUpdate += Game_OnTick;
             }
@@ -76,6 +78,11 @@ namespace MarksmanAIO.Champions
 
         public override void Combo()
         {
+            if (!_e.IsReady() || !Value.Use("combo.e")) return;
+            foreach (var enemy in Variables.CloseEnemies(_e.Range))
+            {
+                CondemnLogic(enemy);
+            }
         }
 
         public override void Harass()
@@ -92,51 +99,66 @@ namespace MarksmanAIO.Champions
 
         public override void Flee()
         {
+            if (Value.Use("flee.q") && _q.IsReady())
+            {
+                _q.Cast(Player.Instance.Position.Extend(Game.CursorPos, _q.Range).To3D());
+            }
+            else if (Value.Use("flee.e") && _e.IsReady())
+            {
+                if (EntityManager.Heroes.Enemies.Any(e => e.IsValidTarget(_e.Range)))
+                    _e.Cast(EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(Player.Instance)).First());
+            }
         }
 
         public override void LastHit()
         {
+            //no need
         }
 
         private void OrbwalkerOnPostAttack(AttackableUnit target, EventArgs args)
         {
-            if (target.IsValidTarget())
-            {
-                if (Value.Mode(Orbwalker.ActiveModes.Combo) ||
-                    Value.Mode(Orbwalker.ActiveModes.Harass) ||
-                    Value.Mode(Orbwalker.ActiveModes.LaneClear) ||
-                    Value.Mode(Orbwalker.ActiveModes.JungleClear))
-                {
-                    _target = target;
-                    Core.DelayAction(SpellLogic, GetSpellDelay);
-                }
-            }
+            _target = target;
+            Core.DelayAction(QLogic, GetSpellDelay);
         }
 
-        private void SpellLogic()
+        private static void QLogic()
         {
             if (_target is AIHeroClient)
             {
                 if (Value.Mode(Orbwalker.ActiveModes.Combo))
                 {
+                    if (_q.IsReady() && Value.Use("combo.q"))
+                    {
+                        _q.Cast(Player.Instance.ServerPosition.Extend(Game.CursorPos, _q.Range).To3D());
+                    }
+                    /* for nobs
                     var qPos = OKTRGeometry.SafeDashPos(_q.Range);
                     if (qPos != Vector3.Zero)
                         _q.Cast(qPos);
                     else
                     {
-                        if (InsideCone())
+                        if (Game.CursorPos.Distance(Player.Instance.Position) >
+                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2 &&
+                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
                         {
-                            _q.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), -65)
-                                    .To3D());
+                            _q.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
                         }
                         else
                         {
-                            _q.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                    .To3D());
+                            if (InsideCone())
+                            {
+                                _q.Cast(
+                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), -65)
+                                        .To3D());
+                            }
+                            else
+                            {
+                                _q.Cast(
+                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
+                                        .To3D());
+                            }
                         }
-                    }
+                    }*/
                 }
             }
             if (_target is Obj_AI_Base)
@@ -152,25 +174,12 @@ namespace MarksmanAIO.Champions
                     if (!targets.Any()) return;
                     if (_q.IsReady() && Value.Use("jungle.q"))
                     {
-                        Chat.Print("2");
-                        var qPos = OKTRGeometry.SafeDashPos(_q.Range);
-                        if (qPos != Vector3.Zero)
-                            _q.Cast(qPos);
-                        else
-                        {
-                            if (InsideCone())
-                            {
-                                _q.Cast(
-                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), -65)
-                                        .To3D());
-                            }
-                            else
-                            {
-                                _q.Cast(
-                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                        .To3D());
-                            }
-                        }
+                        _q.Cast(Player.Instance.ServerPosition.Extend(Game.CursorPos, _q.Range).To3D());
+                    }
+                    else if (_e.IsReady() && Value.Use("jungle.e"))
+                    {
+                        if (targets.Any(t => Variables.SummonerRiftJungleList.Contains(t.BaseSkinName)))
+                            CondemnLogic(targets.First(t => Variables.SummonerRiftJungleList.Contains(t.BaseSkinName)));
                     }
                 }
                 else if ((_target as Obj_AI_Base).IsMinion && Value.Get("lane.mana") < Player.Instance.ManaPercent &&
@@ -182,24 +191,7 @@ namespace MarksmanAIO.Champions
                     if (!targets.Any()) return;
                     if (_q.IsReady() && Value.Use("lane.q"))
                     {
-                        var qPos = OKTRGeometry.SafeDashPos(_q.Range);
-                        if (qPos != Vector3.Zero)
-                            _q.Cast(qPos);
-                        else
-                        {
-                            if (InsideCone())
-                            {
-                                _q.Cast(
-                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), -65)
-                                        .To3D());
-                            }
-                            else
-                            {
-                                _q.Cast(
-                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                        .To3D());
-                            }
-                        }
+                        _q.Cast(Player.Instance.ServerPosition.Extend(Game.CursorPos, _q.Range).To3D());
                     }
                 }
             }
@@ -218,6 +210,21 @@ namespace MarksmanAIO.Champions
 
         #region Utils
 
+        private static void CondemnLogic(Obj_AI_Base target)
+        {
+            for (var i = 1; i <= 25; i++)
+            {
+                var pos = Player.Instance.ServerPosition.Extend(Prediction.Position.PredictUnitPosition(target, (int)(target.ServerPosition.Distance(Player.Instance.ServerPosition) / 1200)),
+                    target.ServerPosition.Distance(Player.Instance.ServerPosition) + (((400 - target.BoundingRadius) / 25)) * i)
+                    .To3D();
+                var circ = new Geometry.Polygon.Circle(pos, target.BoundingRadius * 0.4f);
+                if (circ.Points.Any(point => point.ToNavMeshCell().CollFlags.HasFlag(CollisionFlags.Wall) || point.ToNavMeshCell().CollFlags.HasFlag(CollisionFlags.Building)))
+                {
+                    _e.Cast(target);
+                }
+            }
+        }
+
         private static bool InsideCone()
         {
             if (_target == null) return false;
@@ -234,7 +241,7 @@ namespace MarksmanAIO.Champions
 
         public static int GetSpellDelay
         {
-            get { return Game.Ping * (new Random().Next(_randomizerOne, _randomizerTwo) / 10); }
+            get { return 50 * (new Random().Next(_randomizerOne, _randomizerTwo) / 10); }
         }
 
         #endregion

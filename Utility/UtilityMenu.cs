@@ -6,22 +6,24 @@ using EloBuddy.SDK.Menu.Values;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility.AutoLVLUP;
 using OKTRAIO.Utility.SkinManager;
+using MainMenu = EloBuddy.SDK.Menu.MainMenu;
 
 namespace OKTRAIO.Utility
 {
     public static class UtilityMenu
     {
-        public static Menu Menu, Activator, Autolvlup, Skinmanager, Baseult, Randomult;
+        public static Menu Menu, Activator, Autolvlup, Skinmanager, Baseult, Randomult, Bushreveal;
 
         public static void Init()
         {
             try
             {
-                Menu = EloBuddy.SDK.Menu.MainMenu.AddMenu("OKTR Utility", "marks.aio.utility.menu",
+                Menu = MainMenu.AddMenu("OKTR Utility", "marks.aio.utility.menu",
                     Player.Instance.ChampionName);
                 Menu.AddGroupLabel("OKTR Utilities for " + Player.Instance.ChampionName);
                 ActivatorMenu();
                 SkinManager();
+                BushRevealerMenu();
             }
             catch (Exception e)
             {
@@ -101,6 +103,15 @@ namespace OKTRAIO.Utility
             Skinmanager.Add("skinmanager.resetSkin", new CheckBox("Reset Skin", false)).OnValueChange +=
                 SkinManagement.SkinManager_OnResetSkin;
             Skinmanager.AddSeparator();
+        }
+
+        private static void BushRevealerMenu()
+        {
+            Bushreveal = Menu.AddSubMenu("Bush Reveal", "bushreveal");
+            Bushreveal.AddGroupLabel("OKTR AIO - Bush Revealer for " + Player.Instance.ChampionName,
+                "bushreveal.grouplabel.utilitymenu");
+            Bushreveal.AddCheckBox("bushreveal.use", "Use Bush Revealer");
+            Bushreveal.AddCheckBox("bushreveal.humanize", "Humanize the Bush Reveal");
         }
 
         public static void BaseUltMenu()

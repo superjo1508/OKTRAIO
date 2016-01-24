@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EloBuddy;
 using EloBuddy.SDK;
 
@@ -12,15 +9,16 @@ namespace OKTRAIO.Utility
     {
         public static bool CanUseItem(string name)
         {
-            foreach (var slot in ObjectManager.Player.InventoryItems.Where(slot => slot.Name == name))
-            {
-                var inst = ObjectManager.Player.Spellbook.Spells.FirstOrDefault(spell =>
-                    (int)spell.Slot == slot.Slot + (int)SpellSlot.Item1);
-                return inst != null && inst.State == SpellState.Ready;
-            }
-
-            return false;
+            return
+                ObjectManager.Player.InventoryItems.Where(slot => slot.Name == name)
+                    .Select(
+                        slot =>
+                            ObjectManager.Player.Spellbook.Spells.FirstOrDefault(
+                                spell => (int) spell.Slot == slot.Slot + (int) SpellSlot.Item1))
+                    .Select(inst => inst != null && inst.State == SpellState.Ready)
+                    .FirstOrDefault();
         }
+
         public static bool CanUseItem(int id)
         {
             foreach (var slot in ObjectManager.Player.InventoryItems.Where(slot => slot.Id == (ItemId)id))

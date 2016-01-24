@@ -24,9 +24,10 @@ namespace OKTRAIO.Menu_Settings
             if (UtilityMenu.Activator != null) MenuList.Add(UtilityMenu.Activator);
             if (UtilityMenu.Baseult != null) MenuList.Add(UtilityMenu.Baseult);
             if (UtilityMenu.Randomult != null) MenuList.Add(UtilityMenu.Randomult);
+            if (UtilityMenu.Bushreveal != null) MenuList.Add(UtilityMenu.Bushreveal);
         }
 
-        public static readonly string[] MenuStrings = { "combo", "lane", "jungle", "lasthit", "harass", "flee", "misc", "killsteal", "draw", "activator", "baseult", "randomult" };
+        public static readonly string[] MenuStrings = { "combo", "lane", "jungle", "lasthit", "harass", "flee", "misc", "killsteal", "draw", "activator", "baseult", "randomult", "bushreveal" };
         public static List<string> AdvancedMenuItemUiDs = new List<string>();
         public static List<Menu> MenuList = new List<Menu>();
 

@@ -2,6 +2,7 @@
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
+using EloBuddy.SDK.Menu.Values;
 using OKTRAIO.Menu_Settings;
 using SharpDX;
 
@@ -13,22 +14,6 @@ namespace OKTRAIO.Utility
         #region Initialize
 
         public static void Init()
-        {
-            if (MainMenu._menu["useonupdate"].Cast<EloBuddy.SDK.Menu.Values.CheckBox>().CurrentValue)
-            {
-                Game.OnUpdate += GameOnUpdate;
-            }
-            else
-            {
-                Game.OnTick += GameOnUpdate;
-            }
-
-            Obj_AI_Base.OnProcessSpellCast += OnProcessSpellCast;
-
-            Shop.OnBuyItem += Shop_OnBuyItem;
-        }
-
-        private static void Shop_OnBuyItem(AIHeroClient sender, ShopActionEventArgs args)
         {
             if (Botrk.IsOwned())
             {
@@ -61,6 +46,62 @@ namespace OKTRAIO.Utility
             }
 
             if (Hunter.IsOwned() || Refillable.IsOwned() || Potion.IsOwned() || Biscuit.IsOwned() || Corrupting.IsOwned())
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.potions", "Use Potions");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Potions Manager:", "activator.label.utilitymenu.potions", true);
+                UtilityMenu.Activator.AddSlider("activator.potions.hp", "Use POTIONS if HP are under {0}", 20, 0, 100, true);
+                UtilityMenu.Activator.AddSlider("activator.potions.mana", "Use POTIONS if mana is under {0}", 20, 0, 100, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
+
+            if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+            {
+                Game.OnUpdate += GameOnUpdate;
+            }
+            else
+            {
+                Game.OnTick += GameOnUpdate;
+            }
+
+            Obj_AI_Base.OnProcessSpellCast += OnProcessSpellCast;
+
+            Shop.OnBuyItem += Shop_OnBuyItem;
+        }
+
+        private static void Shop_OnBuyItem(AIHeroClient sender, ShopActionEventArgs args)
+        {
+            if (args.Id == (int)Botrk.Id && UtilityMenu.Activator["activator.botrk"] == null)
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.botrk", "Use BOTRK");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Blade of The Ruined King Manager:", "activator.label.utilitymenu.botrk", true);
+                UtilityMenu.Activator.AddCheckBox("activator.botrk.combo", "Use BOTRK (COMBO Mode)", true, true);
+                UtilityMenu.Activator.AddCheckBox("activator.botrk.ks", "Use BOTRK (KS Mode)", false, true);
+                UtilityMenu.Activator.AddCheckBox("activator.botrk.lifesave", "Use BOTRK (LifeSave)", false, true);
+                UtilityMenu.Activator.AddSlider("activator.botrk.hp", "Use BOTRK (LifeSave) if HP are under {0}", 20, 0, 100, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
+            if (args.Id == (int)Cutlass.Id && UtilityMenu.Activator["activator.bilgewater"] == null)
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.bilgewater", "Use BC");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Bilgewater Cutlass Manager:", "activator.label.utilitymenu.bilgewater", true);
+                UtilityMenu.Activator.AddCheckBox("activator.bilgewater.combo", "Use BC (COMBO Mode)", true, true);
+                UtilityMenu.Activator.AddCheckBox("activator.bilgewater.ks", "Use BC (KS Mode)", false, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
+
+            if (args.Id == (int)Youmuus.Id && UtilityMenu.Activator["activator.youmus"] == null)
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.youmus", "Use Youmus");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Youmus Manager:", "activator.label.utilitymenu.youmus", true);
+                UtilityMenu.Activator.AddCheckBox("activator.youmusspellonly", "Use Youmus only on spell cast", false, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
+
+            if ((args.Id == (int)Hunter.Id || args.Id == (int)Refillable.Id || args.Id == (int)Potion.Id || args.Id == (int)Biscuit.Id || args.Id == (int)Corrupting.Id) && UtilityMenu.Activator["activator.potions"] == null)
             {
                 UtilityMenu.Activator.AddCheckBox("activator.potions", "Use Potions");
                 UtilityMenu.Activator.AddSeparator();
@@ -118,11 +159,11 @@ namespace OKTRAIO.Utility
                 if (t.IsValidTarget())
                 {
                     if (Value.Use("activator.botrk.ks") &&
-                        Player.Instance.CalculateDamageOnUnit(t, DamageType.Physical, t.MaxHealth*(float) 0.1) >
+                        Player.Instance.CalculateDamageOnUnit(t, DamageType.Physical, t.MaxHealth * (float)0.1) >
                         t.Health)
                         Botrk.Cast(t);
-                    if (Value.Use("activator.botrk.lifesave") && 
-                        Player.Instance.HealthPercent < Value.Get("activator.botrk.hp") )
+                    if (Value.Use("activator.botrk.lifesave") &&
+                        Player.Instance.HealthPercent < Value.Get("activator.botrk.hp"))
                         Botrk.Cast(t);
                     if (Value.Use("activator.botrk.combo") &&
                         Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.Combo)
@@ -144,7 +185,7 @@ namespace OKTRAIO.Utility
                 }
             }
 
-            if (Youmuus.IsReady() && Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.Combo && Value.Use("activator.youmus") )
+            if (Youmuus.IsReady() && Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.Combo && Value.Use("activator.youmus"))
             {
                 var t = Orbwalker.LastTarget;
 
@@ -159,7 +200,8 @@ namespace OKTRAIO.Utility
         {
             if (Player.Instance.IsInFountain() || Player.Instance.IsRecalling() ||
                 Player.Instance.IsUsingPotion() || (!Hunter.IsOwned() && !Refillable.IsOwned() && !Potion.IsOwned() && !Biscuit.IsOwned() &&
-                 !Corrupting.IsOwned()) || !Value.Use("activator.potions")) return;
+                 !Corrupting.IsOwned()) || !Value.Use("activator.potions"))
+                return;
 
             if (Player.Instance.HealthPercent < Value.Get("activator.potions.hp"))
             {
@@ -291,7 +333,7 @@ namespace OKTRAIO.Utility
 
                     if (Value.Use("activator.ignite.killsteal"))
                     {
-                        if (target.Health <= DamageLibrary.GetSpellDamage(Player.Instance, target, Ignite.Slot))
+                        if (target.Health <= Player.Instance.GetSpellDamage(target, Ignite.Slot))
                         {
                             Ignite.Cast(target);
                         }
@@ -322,10 +364,10 @@ namespace OKTRAIO.Utility
         #endregion
 
 
-                #region Util
+        #region Util
 
-            public static
-            bool IsInFountain(this AIHeroClient hero)
+        public static
+        bool IsInFountain(this AIHeroClient hero)
         {
             float fountainRange = 562500; //750 * 750
             var vec3 = (hero.Team == GameObjectTeam.Order)

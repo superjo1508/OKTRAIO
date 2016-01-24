@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
@@ -7,8 +8,6 @@ using OKTRAIO.Menu_Settings;
 
 namespace OKTRAIO.Utility
 {
-    using Color = System.Drawing.Color;
-
     public class DamageIndicator
     {
         private static int _height;

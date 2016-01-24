@@ -6,9 +6,12 @@ using EloBuddy.SDK;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
+using OKTRAIO.Database.Spell_Library;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
+using Extensions = OKTRAIO.Utility.Extensions;
 using MainMenu = OKTRAIO.Menu_Settings.MainMenu;
+using Spell = EloBuddy.SDK.Spell;
 
 namespace OKTRAIO.Champions
 {
@@ -22,7 +25,7 @@ namespace OKTRAIO.Champions
         private static Spell.Active _r;
         #endregion
         private static bool _isChannelingImportantSpell;
-        Database.Spell_Library.InterrupterExtensions ext = new Database.Spell_Library.InterrupterExtensions();
+        InterrupterExtensions ext = new InterrupterExtensions();
 
         private static bool IsUlting
         {
@@ -477,13 +480,13 @@ namespace OKTRAIO.Champions
                     {
                         try
                         {
-                            if (Utility.Extensions.GetWardSlot() == null || !Utility.Extensions.GetWardSlot().IsWard)
+                            if (Extensions.GetWardSlot() == null || !Extensions.GetWardSlot().IsWard)
                                 return;
 
-                            if (Value.Use("flee.ward") && Utility.Extensions.GetWardSlot().CanUseItem() && _e.IsReady() && Value.Use("flee.e"))
+                            if (Value.Use("flee.ward") && Extensions.GetWardSlot().CanUseItem() && _e.IsReady() && Value.Use("flee.e"))
                             {
                                 var pos = Player.Instance.Position.Extend(Game.CursorPos, 600);
-                                Utility.Extensions.GetWardSlot().Cast(pos.To3D());
+                                Extensions.GetWardSlot().Cast(pos.To3D());
                             }
                         }
                         catch (Exception e)
@@ -757,11 +760,11 @@ namespace OKTRAIO.Champions
                         if (Value.Use("draw.ready"))
                         {
                             if (!_r.IsOnCooldown)
-                                new Circle() { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = _r.Range }.Draw(Player.Instance.Position);
+                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = _r.Range }.Draw(Player.Instance.Position);
                         }
                         else
                         {
-                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = _r.Range }.Draw(Player.Instance.Position);
+                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = _r.Range }.Draw(Player.Instance.Position);
                         }
                     }
                     #endregion
@@ -779,9 +782,9 @@ namespace OKTRAIO.Champions
                     if (Value.Use("draw.flash"))
                     {
                         if (Player.CanUseSpell(GetFlashSpellSlot()) == SpellState.Ready)
-                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("width.flash"), Color = MainMenu._draw.GetColor("color.flash"), Radius = flashrange }.Draw(Player.Instance.Position);
+                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.flash"), Color = MainMenu._draw.GetColor("color.flash"), Radius = flashrange }.Draw(Player.Instance.Position);
                         if (Player.CanUseSpell(GetFlashSpellSlot()) == SpellState.Cooldown)
-                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("width.flash"), Color = MainMenu._draw.GetColor("color.flash"), Radius = flashrange }.Draw(Player.Instance.Position);
+                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.flash"), Color = MainMenu._draw.GetColor("color.flash"), Radius = flashrange }.Draw(Player.Instance.Position);
                     }
                     #endregion
                 }
@@ -797,9 +800,9 @@ namespace OKTRAIO.Champions
                     if (Value.Use("draw.ignite"))
                     {
                         if (Player.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready)
-                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("color.flash"), Color = MainMenu._draw.GetColor("color.ignite"), Radius = igniterange }.Draw(Player.Instance.Position);
+                            new Circle { BorderWidth = MainMenu._draw.GetWidth("color.flash"), Color = MainMenu._draw.GetColor("color.ignite"), Radius = igniterange }.Draw(Player.Instance.Position);
                         if (Player.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Cooldown)
-                            new Circle() { BorderWidth = MainMenu._draw.GetWidth("color.flash"), Color = MainMenu._draw.GetColor("color.ignite"), Radius = igniterange }.Draw(Player.Instance.Position);
+                            new Circle { BorderWidth = MainMenu._draw.GetWidth("color.flash"), Color = MainMenu._draw.GetColor("color.ignite"), Radius = igniterange }.Draw(Player.Instance.Position);
                     }
                     #endregion
                 }

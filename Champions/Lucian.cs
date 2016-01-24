@@ -6,12 +6,12 @@ using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
-using MarksmanAIO;
+using OKTRAIO.Database.Spell_Library;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
 using SharpDX;
 using Color = System.Drawing.Color;
-using SpellDamage = OKTRAIO.Database.Spell_Library.SpellDamage;
+using Spell = EloBuddy.SDK.Spell;
 
 namespace OKTRAIO.Champions
 {
@@ -606,7 +606,7 @@ namespace OKTRAIO.Champions
         #region Humanized Delay
         public static int GetSpellDelay
         {
-            get { return Game.Ping * (new Random().Next(_randomizerOne, _randomizerTwo) / 10); }
+            get { return 50 * (new Random().Next(_randomizerOne, _randomizerTwo) / 10); }
         }
 
         private static void SpeedSlider(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)

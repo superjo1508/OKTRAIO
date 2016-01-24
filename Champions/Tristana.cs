@@ -4,8 +4,8 @@ using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
-using MarksmanAIO;
 using OKTRAIO.Menu_Settings;
 using SharpDX;
 using Color = System.Drawing.Color;
@@ -144,7 +144,7 @@ namespace OKTRAIO.Champions
                 Gapcloser.OnGapcloser += AntiGapCloser;
                 GameObject.OnCreate += GameObject_OnCreate;
 
-                if (MainMenu._menu["useonupdate"].Cast<EloBuddy.SDK.Menu.Values.CheckBox>().CurrentValue)
+                if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
                 {
                     Game.OnUpdate += GameOnUpdate;
                 }

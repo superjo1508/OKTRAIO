@@ -178,7 +178,7 @@ namespace OKTRAIO.Champions
             try
             {
                 DamageIndicator.DamageToUnit = GetActualDamage;
-                if (MainMenu._menu["useonupdate"].Cast<EloBuddy.SDK.Menu.Values.CheckBox>().CurrentValue)
+                if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
                 {
                     Game.OnUpdate += GameOnUpdate;
                 }

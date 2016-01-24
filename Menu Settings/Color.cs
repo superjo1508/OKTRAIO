@@ -1,6 +1,7 @@
-﻿using System.Linq;
+﻿using System.Drawing;
+using System.Linq;
+using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
-using Color = System.Drawing.Color;
 
 namespace OKTRAIO.Menu_Settings
 {
@@ -57,14 +58,14 @@ namespace OKTRAIO.Menu_Settings
             "YellowGreen"
         };
 
-        public static void AddColorItem(this EloBuddy.SDK.Menu.Menu menu, string uniqueId, int defaultColour = 0)
+        public static void AddColorItem(this Menu menu, string uniqueId, int defaultColour = 0)
         {
             var a = menu.Add(uniqueId, new Slider("Color Picker: ", defaultColour, 0, Colors.Count() - 1));
             a.DisplayName = "Color Picker: " + ColorsName[a.CurrentValue];
             a.OnValueChange += delegate { a.DisplayName = "Colour Picker: " + ColorsName[a.CurrentValue]; };
         }
 
-        public static Color GetColor(this EloBuddy.SDK.Menu.Menu m, string id)
+        public static Color GetColor(this Menu m, string id)
         {
             var number = m[id].Cast<Slider>();
             if (number != null)

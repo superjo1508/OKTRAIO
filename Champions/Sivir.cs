@@ -6,9 +6,11 @@ using EloBuddy.SDK.Constants;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
+using OKTRAIO.Database.Spell_Library;
 using OKTRAIO.Menu_Settings;
 using SharpDX;
 using Color = System.Drawing.Color;
+using Spell = EloBuddy.SDK.Spell;
 
 namespace OKTRAIO.Champions
 {
@@ -16,8 +18,7 @@ namespace OKTRAIO.Champions
     {
         #region Initialize and Declare
 
-        private static Spell.Targeted _w;
-        private static Spell.Active _r, _e;
+        private static Spell.Active _r, _w, _e;
         private static Spell.Skillshot _q;
         private static readonly Vector2 Offset = new Vector2(1, 0);
         private static float _qmana, _wmana, _emana, _rmana;
@@ -28,8 +29,11 @@ namespace OKTRAIO.Champions
             try
             {
                 //spells
-                _q = new Spell.Skillshot(SpellSlot.Q, 1200, SkillShotType.Linear, 250, 1350, 70);
-                _w = new Spell.Targeted(SpellSlot.W, (uint)Player.Instance.GetAutoAttackRange());
+                _q = new Spell.Skillshot(SpellSlot.Q, 1200, SkillShotType.Linear, 250, 1350, 90)
+                {
+                    AllowedCollisionCount = int.MaxValue
+                };
+                _w = new Spell.Active(SpellSlot.W, (uint)Player.Instance.GetAutoAttackRange());
                 _e = new Spell.Active(SpellSlot.E);
                 _r = new Spell.Active(SpellSlot.R, 1000);
 
@@ -40,6 +44,8 @@ namespace OKTRAIO.Champions
                 MainMenu.ComboKeys(true, true, false, true);
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
+                MainMenu._combo.AddSlider("combo.r.enemy", "Min. {0} Enemies in Range for R", 3, 0, 5, true);
+                MainMenu._combo.AddSlider("combo.r.ally", "Min. {0} Allys in Range for R", 3, 0, 5, true);
                 MainMenu._combo.AddCheckBox("combo.mana.management", "Smart Mana Management", true, true);
 
                 //flee
@@ -57,16 +63,18 @@ namespace OKTRAIO.Champions
                 //laneclear
                 MainMenu.LaneKeys(true, true, false, false);
                 MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddSlider("lane.q.min", "Min. {0} minions for Q", 3, 1, 7, true);
+                MainMenu._lane.AddSlider("lane.q.min", "Min. {0} Minions for Q", 3, 1, 7, true);
+                MainMenu._lane.AddSlider("lane.w.min", "Min. {0} Minions for W", 3, 1, 7, true);
                 MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
                 MainMenu.LaneManaManager(true, true, false, false, 60, 60, 0, 0);
 
                 //jungleclear
                 MainMenu.JungleKeys(true, true, false, false);
                 MainMenu._jungle.AddSeparator();
-                MainMenu._jungle.AddSlider("jungle.q.min", "Min. {0} minions for Q", 3, 1, 4, true);
+                MainMenu._jungle.AddSlider("jungle.q.min", "Min. {0} Minions for Q", 3, 1, 4, true);
+                MainMenu._jungle.AddSlider("jungle.w.min", "Min. {0} Minions for W", 3, 1, 4, true);
                 MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
-                MainMenu.JungleManaManager(true, false, false, false, 60, 60, 0, 0);
+                MainMenu.JungleManaManager(true, true, false, false, 60, 60, 0, 0);
 
                 //harass
                 MainMenu.HarassKeys(true, false, false, false);
@@ -82,16 +90,27 @@ namespace OKTRAIO.Champions
 
                 //misc
                 MainMenu.MiscMenu();
-                MainMenu._misc.AddGroupLabel("Auto E - Targetted Spells Settings", "misc.grouplabel.addonmenu", true);
+                MainMenu._misc.AddGroupLabel("Auto E - Spell Settings", "misc.grouplabel.addonmenu", true);
                 MainMenu._misc.AddSeparator();
-                foreach (var enemy in EntityManager.Heroes.Enemies)
+                foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => a.Team != Player.Instance.Team))
                 {
-                    for (var i = 0; i < 5; i++)
+                    foreach (var spell in enemy.Spellbook.Spells.Where(a => (a.SData.TargettingType == SpellDataTargetType.Unit || a.SData.TargettingType == SpellDataTargetType.Cone || a.SData.TargettingType == SpellDataTargetType.Location || a.SData.TargettingType == SpellDataTargetType.Location2 || a.SData.TargettingType == SpellDataTargetType.Location3 || a.SData.TargettingType == SpellDataTargetType.LocationAoe || a.SData.TargettingType == SpellDataTargetType.LocationVector || a.SData.TargettingType == SpellDataTargetType.LocationSummon || a.SData.TargettingType == SpellDataTargetType.LocationTunnel) && !a.Name.Contains("summoner")))
                     {
-                        var spell = enemy.Spellbook.Spells[i];
-                        if (spell.SData.TargettingType == SpellDataTargetType.Unit && !spell.Name.Contains("summoner"))
+                        if (spell.Slot == SpellSlot.Q)
                         {
-                            MainMenu._misc.AddCheckBox(spell.SData.Name, enemy.ChampionName + " - " + spell.Name, false, true);
+                            MainMenu._misc.Add("spell" + spell.SData.Name, new CheckBox(enemy.BaseSkinName + " - Q - " + spell.SData.Name));
+                        }
+                        else if (spell.Slot == SpellSlot.W)
+                        {
+                            MainMenu._misc.Add("spell" + spell.SData.Name, new CheckBox(enemy.BaseSkinName + " - W - " + spell.SData.Name));
+                        }
+                        else if (spell.Slot == SpellSlot.E)
+                        {
+                            MainMenu._misc.Add("spell" + spell.SData.Name, new CheckBox(enemy.BaseSkinName + " - E - " + spell.SData.Name));
+                        }
+                        else if (spell.Slot == SpellSlot.R)
+                        {
+                            MainMenu._misc.Add("spell" + spell.SData.Name, new CheckBox(enemy.BaseSkinName + " - R - " + spell.SData.Name));
                         }
                     }
                 }
@@ -135,11 +154,11 @@ namespace OKTRAIO.Champions
                 {
                     Game.OnTick += GameOnUpdate;
                 }
-                Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+                AIHeroClient.OnProcessSpellCast += AIHeroClient_OnProcessSpellCast;
+                Orbwalker.OnPostAttack += Orbwalker_OnPostAttack;
                 Drawing.OnDraw += GameOnDraw;
                 Drawing.OnEndScene += Drawing_OnEndScene;
-
-            }
+             }
 
             catch (Exception e)
             {
@@ -153,46 +172,177 @@ namespace OKTRAIO.Champions
         #region Gamerelated Logic
         public override void Combo()
         {
-            throw new NotImplementedException();
+            var targetq = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
+            var targetr = EntityManager.Heroes.Enemies.Where(a => a.IsValidTarget(1400));
+            var ally = EntityManager.Heroes.Allies.Where(a => a.IsValidTarget(_r.Range - 50));
+            if (targetq ==  null) { return;}
+            var qpred = _q.GetPrediction(targetq);
+
+            if (_q.IsReady() && Value.Use("combo.q") && Player.Instance.Mana > _qmana + _rmana)
+            {
+                if (qpred.HitChancePercent >= Value.Get("misc.q.prediction"))
+                {
+                    _q.Cast(qpred.CastPosition);
+                }
+            }
+
+            if (_r.IsReady() && Value.Use("combo.r"))
+            {
+                if (ally.Count() >= Value.Get("combo.r.ally") && targetr.Count() >= Value.Get("combo.r.enemy"))
+                {
+                    _r.Cast();
+                }
+            }
         }
 
         public override void Harass()
         {
-            throw new NotImplementedException();
+            var targetq = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
+            if (targetq == null) { return; }
+            var qpred = _q.GetPrediction(targetq);
+
+            if (_q.IsReady() && Value.Use("harass.q") && Player.Instance.ManaPercent >= Value.Get("harass.q.mana"))
+            {
+                if (qpred.HitChancePercent >= Value.Get("misc.q.prediction"))
+                {
+                    _q.Cast(qpred.CastPosition);
+                }
+            }
         }
 
         public override void Laneclear()
         {
-            throw new NotImplementedException();
+            var minionq = EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy,
+                Player.Instance.Position, _q.Range);
+            var qfarm = EntityManager.MinionsAndMonsters.GetLineFarmLocation(minionq, _q.Width, (int) _q.Range);
+
+            if (_q.IsReady() && Value.Use("lane.q") && Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
+            {
+                if (qfarm.HitNumber >= Value.Get("lane.q.min"))
+                {
+                    _q.Cast(qfarm.CastPosition);
+                }
+            }
         }
 
         public override void Jungleclear()
         {
-            throw new NotImplementedException();
+            var monsterq = EntityManager.MinionsAndMonsters.GetJungleMonsters(Player.Instance.Position, _q.Range);
+            var qfarm = EntityManager.MinionsAndMonsters.GetLineFarmLocation(monsterq, _q.Width, (int) _q.Range);
+            var dragon =
+                EntityManager.MinionsAndMonsters.Monsters.FirstOrDefault(
+                    a => a.IsValidTarget(_q.Range) && (a.BaseSkinName == "SRU_Dragon" || a.BaseSkinName == "SRU_Dragon"));
+
+            if (_q.IsReady() && Value.Use("jungle.q") && Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
+            {
+                if (qfarm.HitNumber >= Value.Get("jungle.q.min"))
+                {
+                    _q.Cast(qfarm.CastPosition);
+                }
+            }
+
+            else if (_q.IsReady() && Value.Use("jungle.q") && Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
+            {
+                if (dragon != null)
+                {
+                    _q.Cast(dragon);
+                }
+            }
         }
 
         public override void Flee()
         {
-            throw new NotImplementedException();
+            
         }
 
         public override void LastHit()
         {
-            throw new NotImplementedException();
+            var minionq =
+                EntityManager.MinionsAndMonsters.GetLaneMinions()
+                    .OrderByDescending(a => a.MaxHealth)
+                    .FirstOrDefault(a => a.IsValidTarget(_q.Range) && a.Health <= Player.Instance.GetSpellDamage(a, SpellSlot.Q));
+
+            if (_q.IsReady() && Value.Use("lasthit.q") && Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
+            {
+                if (minionq != null && Player.Instance.IsInAutoAttackRange(minionq) &&
+                    minionq.Health > Player.Instance.GetAutoAttackDamage(minionq, true))
+                {
+                    _q.Cast(minionq);
+                }
+                else if (minionq != null)
+                {
+                    _q.Cast(minionq);
+                }
+            }
         }
 
         private static void GameOnUpdate(EventArgs args)
         {
+            Ks();
+
             AutoQcc();
 
             ManaManagement();
         }
 
-        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs spell)
+        private static void Orbwalker_OnPostAttack(AttackableUnit target, EventArgs args)
         {
-            if (sender.IsAlly || sender.IsMe) { return; }
+            if (Player.Instance.IsInAutoAttackRange(target))
+            {
+                if (_w.IsReady() && Value.Use("combo.w") && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) && Player.Instance.Mana > _wmana + _rmana)
+                {
+                    _w.Cast();
+                    Orbwalker.ResetAutoAttack();
+                }
 
-            if (MainMenu._misc[spell.SData.Name].Cast<CheckBox>().CurrentValue && spell.Target.IsMe && spell.SData.TargettingType == SpellDataTargetType.Unit && !spell.IsAutoAttack())
+                if (_w.IsReady() && Value.Use("jungle.w") && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.JungleClear) && Player.Instance.ManaPercent >= Value.Get("jungle.w.mana"))
+                {
+                    var monsterw = EntityManager.MinionsAndMonsters.GetJungleMonsters(Player.Instance.Position, _q.Range);
+                    var dragon =
+                        EntityManager.MinionsAndMonsters.Monsters.FirstOrDefault(
+                            a =>
+                                a.IsValidTarget(_q.Range) &&
+                                (a.BaseSkinName == "SRU_Dragon" || a.BaseSkinName == "SRU_Dragon"));
+
+                    if (monsterw.Count() >= Value.Get("jungle.w.min"))
+                    {
+                        _w.Cast();
+                        Orbwalker.ResetAutoAttack();
+                    }
+
+                    else if (dragon != null && target.NetworkId == dragon.NetworkId)
+                    {
+                        _w.Cast();
+                        Orbwalker.ResetAutoAttack();
+                    }
+                }
+
+                if (_w.IsReady() && Value.Use("lane.w") && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear) && Player.Instance.ManaPercent >= Value.Get("lane.w.mana"))
+                {
+                    var minionw = EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy,
+                        Player.Instance.Position, _q.Range);
+
+                    if (minionw.Count() >= Value.Get("lane.w.min"))
+                    {
+                        _w.Cast();
+                        Orbwalker.ResetAutoAttack();
+                    }
+                }
+            }
+        }
+
+        private static void AIHeroClient_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (!MainMenu._misc["spell" + args.SData.Name].Cast<CheckBox>().CurrentValue || args.Target == null || sender == null || sender.IsAlly || sender.IsMe || args.SData.IsAutoAttack() || !_e.IsReady())
+            {
+                return;
+            }
+
+            if (args.Target == Player.Instance)
+            {
+                Core.DelayAction(() => _e.Cast(), Value.Get("misc.e.delay"));
+            }
+            else if (args.End.Distance(Player.Instance.ServerPosition) < Player.Instance.BoundingRadius * 2)
             {
                 Core.DelayAction(() => _e.Cast(), Value.Get("misc.e.delay"));
             }
@@ -201,7 +351,7 @@ namespace OKTRAIO.Champions
         #endregion
         #region Utils
 
-        private static float QDamage(Obj_AI_Base target)
+        private static float QMaxDamage(Obj_AI_Base target)
         {
             if (_q.IsLearned)
             {
@@ -215,10 +365,9 @@ namespace OKTRAIO.Champions
         {
             var damage = Player.Instance.GetAutoAttackDamage(target);
 
-
             if (_q.IsReady())
             {
-                damage += QDamage(target);
+                damage += QMaxDamage(target);
             }
             return damage;
         }
@@ -243,6 +392,23 @@ namespace OKTRAIO.Champions
                     Value.Use("misc.q.taunt") && targetq.IsTaunted)
                 {
                     _q.Cast(_q.GetPrediction(targetq).CastPosition);
+                }
+            }
+        }
+
+        private static void Ks()
+        {
+            var ksq =
+                EntityManager.Heroes.Enemies.FirstOrDefault(
+                    a =>
+                        a.IsValidTarget(_q.Range) && !a.IsZombie && !a.IsDead &&
+                        !a.HasBuffOfType(BuffType.Invulnerability) && !a.HasBuff("ChronoShift") && a.TotalShieldHealth() <= QMaxDamage(a));
+
+            if (_q.IsReady() && Value.Use("killsteal.q") && Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
+            {
+                if (ksq != null)
+                {
+                    _q.Cast(_q.GetPrediction(ksq).CastPosition);
                 }
             }
         }
@@ -315,6 +481,5 @@ namespace OKTRAIO.Champions
             }
         }
         #endregion     
-
     }
 }

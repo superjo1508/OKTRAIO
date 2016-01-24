@@ -65,7 +65,6 @@ namespace OKTRAIO.Utility.SkinManager
 
                     using (var infoReader = new StreamReader(infoStream))
                     {
-                        Chat.Print(infoStream.Length);
                         InfoXml = new XmlDocument();
                         InfoXml.LoadXml(infoReader.ReadToEnd());
                     }
@@ -109,14 +108,14 @@ namespace OKTRAIO.Utility.SkinManager
             var model = GetModelByIndex(UtilityMenu.Skinmanager["skinmanager.models"].Cast<Slider>().CurrentValue);
             var skin = model.Skins[UtilityMenu.Skinmanager["skinmanager.skins"].Cast<Slider>().CurrentValue];
             UtilityMenu.Skinmanager["skinmanager.skins"].Cast<Slider>().DisplayName = "Skin - " + skin.Name;
-            EloBuddy.Player.SetSkinId(skin.Index);
+            Player.SetSkinId(skin.Index);
         }
 
         public static void SkinManager_OnModelSliderChange(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
         {
             var model = GetModelByIndex(UtilityMenu.Skinmanager["skinmanager.models"].Cast<Slider>().CurrentValue);
             UtilityMenu.Skinmanager["skinmanager.models"].Cast<Slider>().DisplayName = "Model - " + model.Name;
-            EloBuddy.Player.SetModel(model.Name);
+            Player.SetModel(model.Name);
             UtilityMenu.Skinmanager["skinmanager.skins"].Cast<Slider>().CurrentValue = 0;
             UtilityMenu.Skinmanager["skinmanager.skins"].Cast<Slider>().MaxValue = model.Skins.Length - 1;
         }

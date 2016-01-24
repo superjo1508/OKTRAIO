@@ -1,10 +1,10 @@
-﻿using EloBuddy;
-using EloBuddy.SDK.Enumerations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using OKTRAIO.Utility;
+using EloBuddy;
 using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using OKTRAIO.Utility;
 
 namespace OKTRAIO.Database.Spell_Library
 {
@@ -47,17 +47,17 @@ namespace OKTRAIO.Database.Spell_Library
         {
             Minion,
             Champions,
-            YasuoWall,
+            YasuoWall
         }
 
         public enum InterruptableDangerLevel
         {
             Low,
             Medium,
-            High,
+            High
         }
 
-        public Spell.CollisionObjectTypes[] CollisionObjects = { };
+        public CollisionObjectTypes[] CollisionObjects = { };
         public bool AddHitbox;
         public bool CanBeRemoved = false;
         public bool Centered;
@@ -100,7 +100,7 @@ namespace OKTRAIO.Database.Spell_Library
         private int _radius;
         private int _range;
         public string BuffName;
-        public Spell.InterruptableDangerLevel DangerLevel;
+        public InterruptableDangerLevel DangerLevel;
         public bool IsInterruptableSpell;
 
         public Spell()
@@ -165,8 +165,8 @@ namespace OKTRAIO.Database.Spell_Library
             {
                 for (int i = 0; i < CollisionObjects.Length; i++)
                 {
-                    if (CollisionObjects[i] == Spell.CollisionObjectTypes.Champions ||
-                        CollisionObjects[i] == Spell.CollisionObjectTypes.Minion)
+                    if (CollisionObjects[i] == CollisionObjectTypes.Champions ||
+                        CollisionObjects[i] == CollisionObjectTypes.Minion)
                         return true;
                 }
                 return false;
@@ -184,7 +184,7 @@ namespace OKTRAIO.Database.Spell_Library
                 Spells.Any(
                     spell =>
                         spell.ChampionName == unit.ChampionName &&
-                        spell.IsInterruptableSpell == true &&
+                        spell.IsInterruptableSpell &&
                         ((unit.LastCastedspell() != null &&
                             String.Equals(
                                 unit.LastCastedspell().Name, spell.SpellName, StringComparison.CurrentCultureIgnoreCase) &&

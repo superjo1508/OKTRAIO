@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 
 namespace OKTRAIO.Menu_Settings
@@ -15,14 +16,14 @@ namespace OKTRAIO.Menu_Settings
             "Tiny", "Small", "Normal", "Larger Than Normal", "Large", "Larger", "Largest"
         };
 
-        public static void AddWidthItem(this EloBuddy.SDK.Menu.Menu menu, string uniqueId, int defaultWidth = 2)
+        public static void AddWidthItem(this Menu menu, string uniqueId, int defaultWidth = 2)
         {
             var a = menu.Add(uniqueId, new Slider("Width: ", defaultWidth, 0, Values.Count() - 1));
             a.DisplayName = "Width: " + ValuesName[a.CurrentValue];
             a.OnValueChange += delegate { a.DisplayName = "Width: " + ValuesName[a.CurrentValue]; };
         }
 
-        public static float GetWidth(this EloBuddy.SDK.Menu.Menu m, string id)
+        public static float GetWidth(this Menu m, string id)
         {
             var number = m[id].Cast<Slider>();
             if (number != null)

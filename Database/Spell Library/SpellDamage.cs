@@ -33,7 +33,7 @@ namespace OKTRAIO.Database.Spell_Library
                 {
                     charName = "Ashe",
                     spellKey = "Q",
-                    damage = AD*(23 + (GetSpellLevel(SpellSlot.Q) - 1))/100,
+                    damage = AD*(23 + (GetSpellLevel(SpellSlot.Q) - 1))/100
                 });
             Spells.Add(
                 new SpellDb
@@ -42,7 +42,7 @@ namespace OKTRAIO.Database.Spell_Library
                     spellKey = "W",
                     damage =
                         20 + (GetSpellLevel(SpellSlot.W) - 1)*15 +
-                        AD,
+                        AD
                 });
             Spells.Add(
                 new SpellDb
@@ -51,7 +51,7 @@ namespace OKTRAIO.Database.Spell_Library
                     spellKey = "R",
                     damage =
                         250 + (GetSpellLevel(SpellSlot.R) - 1)*175 +
-                        AP,
+                        AP
                 });
 
             #endregion
@@ -66,7 +66,7 @@ namespace OKTRAIO.Database.Spell_Library
                     damage =
                         25 + (GetSpellLevel(SpellSlot.Q) - 1)*75 +
                         AD*
-                        (130 + (GetSpellLevel(SpellSlot.Q) - 1)*10)/100,
+                        (130 + (GetSpellLevel(SpellSlot.Q) - 1)*10)/100
                 });
             Spells.Add(
                 new SpellDb
@@ -336,7 +336,7 @@ namespace OKTRAIO.Database.Spell_Library
                 {
                     charName = "Miss Fortune",
                     spellKey = "E",
-                    damage = (new float[] { (float) 11.25 , (float) 18.125 , 25 , (float) 31.875 , (float) 38.75 }[GetSpellLevel(SpellSlot.Q)] + AP * 0.20f) * 4
+                    damage = (new[] { (float) 11.25 , (float) 18.125 , 25 , (float) 31.875 , (float) 38.75 }[GetSpellLevel(SpellSlot.Q)] + AP * 0.20f) * 4
                 });
             #endregion
 
