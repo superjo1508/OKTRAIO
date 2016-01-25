@@ -6,7 +6,6 @@ using EloBuddy.SDK.Constants;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
-using OKTRAIO.Database.Spell_Library;
 using OKTRAIO.Menu_Settings;
 using SharpDX;
 using Color = System.Drawing.Color;
@@ -71,6 +70,7 @@ namespace OKTRAIO.Champions
                 MainMenu._lane.AddSlider("lane.w.min", "Min. {0} Minions for W", 3, 1, 7, true);
                 MainMenu._lane.AddSeparator();
                 MainMenu._lane.AddCheckBox("lane.q.harass", "Use Q for Harass", true, true);
+                MainMenu._lane.AddCheckBox("lane.w.turret", "Use W on Turret/Inhib/Nexus", true, true);
                 MainMenu._lane.AddSeparator();
                 MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
                 MainMenu.LaneManaManager(true, true, false, false, 60, 60, 0, 0);
@@ -396,19 +396,28 @@ namespace OKTRAIO.Champions
                                 a.IsValidTarget(_q.Range) && Variables.SummonerRiftJungleList.Contains(a.BaseSkinName) &&
                                 a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
 
-
+                    
                     if (bigboys != null && target.NetworkId == bigboys.NetworkId)
                     {
                         _w.Cast();
                         Orbwalker.ResetAutoAttack();
                     }
+                    
                 }
 
                 if (_w.IsReady() && Value.Use("lane.w") &&
                     Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear) &&
                     Player.Instance.ManaPercent >= Value.Get("lane.w.mana"))
                 {
+                    var turrets = EntityManager.Turrets.Enemies.Find(a => a.IsValidTarget(_w.Range));
+
                     if (LaneWFarm() >= Value.Get("lane.w.min"))
+                    {
+                        _w.Cast();
+                        Orbwalker.ResetAutoAttack();
+                    }
+
+                    else if (Value.Use("lane.w.turret") && turrets != null && turrets.NetworkId == target.NetworkId)
                     {
                         _w.Cast();
                         Orbwalker.ResetAutoAttack();
@@ -423,7 +432,6 @@ namespace OKTRAIO.Champions
 
         private static void AIHeroClient_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-
             if (sender == null || args.Target == null || sender.IsStructure() || sender.IsAlly || sender.IsMinion ||
                 sender.IsMonster || sender.IsMe || args.SData.IsAutoAttack() || !_e.IsReady() ||
                 (args.Slot != SpellSlot.Q && args.Slot != SpellSlot.W && args.Slot != SpellSlot.E && args.Slot != SpellSlot.R) ||
@@ -443,7 +451,14 @@ namespace OKTRAIO.Champions
                 return;
             }
 
-            if (MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue && (args.Target == Player.Instance || args.End.Distance(Player.Instance.ServerPosition) <= 250))
+            //var castvector = new Geometry.Polygon.Rectangle(args.Start, args.End, args.SData.LineWidth);
+
+            //if (MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue && castvector.IsInside(Player.Instance.ServerPosition))
+            //{
+            //    _e.Cast();
+            //}
+
+            if (MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue && (args.Target.NetworkId == Player.Instance.NetworkId && args.Time < 1.5 || args.End.Distance(Player.Instance.Position) <= Player.Instance.BoundingRadius * 3))
             {
                 _e.Cast();
             }
