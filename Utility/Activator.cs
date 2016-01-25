@@ -362,8 +362,7 @@ namespace OKTRAIO.Utility
         }
 
         #endregion
-
-
+        
         #region Util
 
         public static
@@ -388,5 +387,6 @@ namespace OKTRAIO.Utility
                    hero.HasBuff("ItemDarkCrystalFlask");
         }
         #endregion
+
     }
 }

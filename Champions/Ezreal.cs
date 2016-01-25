@@ -142,7 +142,6 @@ namespace OKTRAIO.Champions
                 MainMenu.DrawKeys(true, true, true, true);
                 MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
                 MainMenu.DamageIndicator(true);
-                UtilityMenu.BaseUltMenu();
                 //Value
                 Value.Init();
             }
@@ -167,7 +166,6 @@ namespace OKTRAIO.Champions
                     Game.OnTick += GameOnUpdate;
                 }
                 Drawing.OnEndScene += Drawing_OnEndScene;
-                BaseUlt.Initialize();
 
             }
             catch (Exception e)

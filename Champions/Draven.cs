@@ -171,9 +171,6 @@ namespace OKTRAIO.Champions
                     MainMenu._draw.AddSeparator();
                     MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
 
-                    //BaseUlt
-                    UtilityMenu.BaseUltMenu();
-
                     Value.Init();
                 }
                 catch (Exception e)
@@ -208,7 +205,6 @@ namespace OKTRAIO.Champions
                 }
                 Drawing.OnDraw += GameOnDraw;
                 Drawing.OnEndScene += Drawing_OnEndScene;
-                BaseUlt.Initialize();
             }
             catch (Exception e)
             {

@@ -99,6 +99,7 @@
     <Compile Include="Utility\AutoLVLUP\AutoLVLUP.cs" />
     <Compile Include="Utility\AutoLVLUP\Mobafire\Mobafire.cs" />
     <Compile Include="Utility\BushRevealer.cs" />
+    <Compile Include="Utility\RandomUlt.cs" />
     <Compile Include="Utility\SkinManager\SkinManager.cs" />
     <Compile Include="Utility\DamageIndicator.cs" />
     <Compile Include="Geometry.cs" />

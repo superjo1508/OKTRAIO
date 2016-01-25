@@ -110,16 +110,19 @@ namespace OKTRAIO.Champions
                     MainMenu.KsKeys(true, true, true, true);
                     MainMenu._ks.AddSeparator();
                     MainMenu._ks.AddGroupLabel("KillSteal Preferences: ", "killsteal.groulabel.1", true);
-                    MainMenu._ks.AddCheckBox("ks.spells.flee", "Prevent to killsteal with spells if fleeing", false, true);
-                    MainMenu._ks.AddSlider("ks.r.enemies", "Prevent to killsteal with R if there are more then {0} enemies", 3, 1, 5, true);
-                    MainMenu._ks.AddSlider("ks.r.safe", "Use R only if the target leaves {0} range", 1500, 800, 3000, true);
+                    MainMenu._ks.AddCheckBox("killsteal.spells.flee", "Prevent to killsteal with spells if fleeing", false, true);
+                    MainMenu._ks.AddSlider("killsteal.r.enemies", "Prevent to killsteal with R if there are more then {0} enemies", 3, 0, 5, true);
+                    MainMenu._ks.AddSlider("killsteal.r.safe", "Use R only if the target leaves {0} range", 1500, 800, 3000, true);
                     MainMenu._ks.AddSeparator();
                     MainMenu._ks.AddGroupLabel("Prediction Settings", "killsteal.grouplabel.2", true);
-                    MainMenu._ks.AddSlider("ks.q.prediction", "Use Q if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._ks.AddSlider("ks.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._ks.AddSlider("ks.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu._ks.AddSlider("killsteal.q.prediction", "Use Q if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu._ks.AddSlider("killsteal.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu._ks.AddSlider("killsteal.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.3", true);
+                    MainMenu.KsManaManager(true, true, true, false, 10, 10, 20, 0);
 
                     //Misc Menu
+                    MainMenu.MiscMenu();
                     MainMenu._misc.AddCheckBox("misc.q", "Use Auto Q");
                     MainMenu._misc.AddCheckBox("misc.w", "Use Auto W");
                     MainMenu._misc.AddCheckBox("misc.e", "Use Auto E", false);
@@ -208,6 +211,8 @@ namespace OKTRAIO.Champions
         public override void Combo()
         {
             var target = TargetSelector.GetTarget(_r.Range, DamageType.Physical);
+
+            if (target == null) return;
 
             if (Value.Use("combo.melee"))
             {
@@ -308,6 +313,8 @@ namespace OKTRAIO.Champions
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
 
+            if (target == null) return;
+
             if (Value.Use("harass.q"))
             {
                 if (Player.Instance.ManaPercent >= Value.Get("harass.q.mana"))
@@ -353,7 +360,7 @@ namespace OKTRAIO.Champions
             var source =
                 EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy, Player.Instance.ServerPosition,
                     Player.Instance.AttackRange).OrderBy(a => a.MaxHealth).FirstOrDefault();
-            if (count != 0)
+            if (count != 0 && source != null)
             {
                 if (Value.Use("lane.q") && _q.IsReady())
                 {
@@ -433,24 +440,29 @@ namespace OKTRAIO.Champions
         public override void Flee()
         {
             Vector3 pred = Game.CursorPos + (Player.Instance.Position - Game.CursorPos);
-            var target = _w.GetPrediction(TargetSelector.GetTarget(_w.Range, DamageType.Magical)).CastPosition;
 
-            if (Value.Use("flee.w"))
-            {
-                if (Player.Instance.ManaPercent >= Value.Get("flee.w.mana"))
-                {
-                    _w.Cast(target);
-                }
-            }
-
-            if (Value.Use("flee.e"))
+            if (Value.Use("flee.e") && _e.IsReady())
             {
                 if (Player.Instance.ManaPercent >= Value.Get("flee.e.mana"))
                 {
                     _e.Cast(pred);
                 }
             }
+
+            if (Value.Use("flee.w") && _w.IsReady())
+            {
+                var target = TargetSelector.GetTarget(_w.Range, DamageType.Magical);
+
+                if (target == null) return;
+
+                if (Player.Instance.ManaPercent >= Value.Get("flee.w.mana"))
+                {
+                    _w.Cast(_w.GetPrediction(target).CastPosition);
+                }
+            }
         }
+
+
 
         #endregion 
 
@@ -461,6 +473,8 @@ namespace OKTRAIO.Champions
             var source =
                 EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(
                     m => m.IsValidTarget(_q.Range));
+
+            if (source == null) return;
 
             if (Value.Use("lasthit.q") && _q.IsReady())
             {
@@ -574,7 +588,7 @@ namespace OKTRAIO.Champions
 
             if (Value.Use("harass.auto"))
             {
-                if (Value.Use("harass.q"))
+                if (Value.Use("harass.q") && _q.IsReady())
                 {
                     if (Value.Get("harass.q.mana") >= Player.Instance.ManaPercent)
                     {
@@ -585,7 +599,7 @@ namespace OKTRAIO.Champions
                     }
                 }
 
-                if (Value.Use("harass.w"))
+                if (Value.Use("harass.w") && _w.IsReady())
                 {
                     if (Value.Get("harass.w.mana") >= Player.Instance.ManaPercent)
                     {
@@ -596,7 +610,7 @@ namespace OKTRAIO.Champions
                         }
                     }
                 }
-                if (Value.Use("harass.e"))
+                if (Value.Use("harass.e") && _e.IsReady())
                 {
                     if (Value.Get("harass.e.mana") >= Player.Instance.ManaPercent)
                     {
@@ -726,7 +740,7 @@ namespace OKTRAIO.Champions
         {
             try
             {
-                if (Value.Use("ks.spells.flee") && Value.Mode(Orbwalker.ActiveModes.Flee)) return;
+                if (Value.Use("killsteal.spells.flee") && Value.Mode(Orbwalker.ActiveModes.Flee)) return;
 
                 foreach (
                     var target in
@@ -735,69 +749,57 @@ namespace OKTRAIO.Champions
                                 hero.IsValidTarget(_r.Range) && !hero.IsDead && !hero.IsZombie &&
                                 hero.HealthPercent <= 25))
                 {
-                    if (Value.Use("ks.q"))
+                    if (Value.Use("killsteal.q") && _q.IsReady())
                     {
-                        if (_q.IsReady())
+                        if (Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana") &&
+                            _q.GetPrediction(target).HitChancePercent >= Value.Get("killsteal.q.prediction"))
                         {
-                            if (Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana") &&
-                                _q.GetPrediction(target).HitChancePercent >= Value.Get("ks.q.prediction"))
+                            if (target.Health + target.AttackShield <
+                                Player.Instance.GetSpellDamage(target, SpellSlot.Q))
                             {
-                                if (target.Health + target.AttackShield <
-                                    Player.Instance.GetSpellDamage(target, SpellSlot.Q))
-                                {
-                                    _q.Cast(_q.GetPrediction(target).CastPosition);
-                                }
+                                _q.Cast(_q.GetPrediction(target).CastPosition);
                             }
                         }
                     }
 
-                    if (Value.Use("ks.w"))
+                    if (Value.Use("killsteal.w") && _w.IsReady())
                     {
-                        if (_w.IsReady())
+                        if (Player.Instance.ManaPercent >= Value.Get("killsteal.w.mana") &&
+                            _w.GetPrediction(target).HitChancePercent >= Value.Get("killsteal.w.prediction"))
                         {
-                            if (Player.Instance.ManaPercent >= Value.Get("killsteal.w.mana") &&
-                                _w.GetPrediction(target).HitChancePercent >= Value.Get("ks.w.prediction"))
+                            if (target.Health + target.AttackShield <
+                                Player.Instance.GetSpellDamage(target, SpellSlot.W))
                             {
-                                if (target.Health + target.AttackShield <
-                                    Player.Instance.GetSpellDamage(target, SpellSlot.W))
-                                {
-                                    _w.Cast(_w.GetPrediction(target).CastPosition);
-                                }
+                                _w.Cast(_w.GetPrediction(target).CastPosition);
                             }
                         }
                     }
 
-                    if (Value.Use("ks.e"))
+                    if (Value.Use("killsteal.e") && _e.IsReady())
                     {
-                        if (_e.IsReady())
+                        if (Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana") &&
+                            _e.GetPrediction(target).HitChancePercent >= Value.Get("killsteal.e.prediction"))
                         {
-                            if (Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana") &&
-                                _e.GetPrediction(target).HitChancePercent >= Value.Get("ks.e.prediction"))
+                            if (target.Health + target.AttackShield <
+                                Player.Instance.GetSpellDamage(target, SpellSlot.E))
                             {
-                                if (target.Health + target.AttackShield <
-                                    Player.Instance.GetSpellDamage(target, SpellSlot.E))
-                                {
-                                    _e.Cast(_e.GetPrediction(target).CastPosition);
-                                }
+                                _e.Cast(_e.GetPrediction(target).CastPosition);
                             }
                         }
                     }
 
-                    if (Value.Use("ks.r"))
+                    if (Value.Use("killsteal.r") && _r.IsReady())
                     {
-                        if (_r.IsReady())
+                        if (Player.Instance.CountEnemiesInRange(800) >= Value.Get("killsteal.r.enemies") &&
+                            Player.Instance.Distance(target) >= Value.Get("killsteal.r.safe"))
                         {
-                            if (Player.Instance.CountEnemiesInRange(800) >= Value.Get("ks.r.enemies") &&
-                                Player.Instance.Distance(target) >= Value.Get("ks.r.safe"))
+                            if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
                             {
-                                if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
-                                {
-                                    if (target.Health + target.AttackShield <
-                                        Player.Instance.GetSpellDamage(target, SpellSlot.R))
+                                if (target.Health + target.AttackShield <
+                                    Player.Instance.GetSpellDamage(target, SpellSlot.R))
 
-                                    {
-                                        _r.Cast(target);
-                                    }
+                                {
+                                    _r.Cast(target);
                                 }
                             }
                         }

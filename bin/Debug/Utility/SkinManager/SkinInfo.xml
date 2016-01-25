@@ -1,7 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?> 
 <Data>
-  string[] resourceNames =
-  Assembly.GetExecutingAssembly().GetManifestResourceNames();
   <Model name="Aatrox">
     <Skin name="Classic" index="0" />
   </Model>

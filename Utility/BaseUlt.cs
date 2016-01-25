@@ -22,6 +22,15 @@ namespace OKTRAIO.Utility
         private static readonly List<BaseUltUnit> BaseUltUnits = new List<BaseUltUnit>();
         private static readonly List<BaseUltSpell> BaseUltSpells = new List<BaseUltSpell>();
         private static Font Text;
+        public static readonly List<Champion> CompatibleChampions = new List<Champion>
+                                                                     {
+                                                                         Champion.Ashe, Champion.Draven, Champion.Ezreal,
+                                                                         Champion.Jinx
+                                                                     };
+        public static bool IsCompatibleChamp()
+        {
+            return CompatibleChampions.Any(x => x.Equals(Player.Instance.Hero));
+        }
 
         public static void Initialize()
         {
@@ -405,6 +414,7 @@ namespace OKTRAIO.Utility
         public float FireTime { get; set; }
         public bool Collision { get; set; }
         public float LastSeen { get; set; }
+        public float PredictedPos { get; set; }
     }
 
     public class BaseUltSpell

@@ -25,7 +25,14 @@ namespace OKTRAIO.Champions
         private static bool WIsSwitch;
         private static bool RIsSwitch;
 
+        private static bool IsValidNotNull(Obj_AI_Base target)
+        {
+            if (target != null && target.IsValid)
+                return true;
+            return false;
+        }
         #region Initialization
+
         public override void Init()
         {
             try
@@ -33,7 +40,7 @@ namespace OKTRAIO.Champions
                 try
                 {
                     Q = new Spell.Skillshot(SpellSlot.Q, 900, SkillShotType.Linear, 250, 1700, 50);
-                    W = new Spell.Skillshot(SpellSlot.Q, 900, SkillShotType.Linear, 250, 1760, 50);
+                    W = new Spell.Skillshot(SpellSlot.W, 650, SkillShotType.Linear, 250, 1400);
                     E = new Spell.Active(SpellSlot.E, 280);
                     R = new Spell.Targeted(SpellSlot.Q, 625);
 
@@ -41,7 +48,8 @@ namespace OKTRAIO.Champions
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code SPELLS)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code SPELLS)</font>");
                 }
 
                 try
@@ -77,7 +85,8 @@ namespace OKTRAIO.Champions
 
                     // last hit
                     MainMenu.LastHitKeys(true, true, true, false);
-                    MainMenu._lasthit.AddCheckBox("lasthit.notkillablebyaa", "Only use spells if minion is not killable by AA", false, true);
+                    MainMenu._lasthit.AddCheckBox("lasthit.notkillablebyaa",
+                        "Only use spells if minion is not killable by AA", false, true);
 
                     // harass
                     MainMenu.HarassKeys(true, true, true, false);
@@ -88,7 +97,8 @@ namespace OKTRAIO.Champions
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 2)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 2)</font>");
                 }
 
                 try
@@ -98,46 +108,87 @@ namespace OKTRAIO.Champions
                     Game.OnUpdate += Game_OnUpdate;
                     Obj_AI_Base.OnBuffGain += delegate (Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
                     {
-                        Obj_AI_Minion shadow = (Obj_AI_Minion)sender;
+                        var shadow = sender as Obj_AI_Minion;
                         if (shadow == null || !shadow.IsValid || !args.Buff.Caster.IsMe || !args.Buff.IsValid)
                             return;
 
                         if (shadow.IsAlly && shadow.BaseSkinName.ToLower() == "zedshadow")
                         {
                             if (args.Buff.Name == "zedwshadowbuff")
+                            {
                                 WShadow = shadow;
+                                if (!ActiveShadows.Contains(shadow))
+                                    ActiveShadows.Add(shadow);
+                            }
                             if (args.Buff.Name == "zedrshadowbuff")
+                            {
                                 RShadow = shadow;
+                                if (!ActiveShadows.Contains(shadow))
+                                    ActiveShadows.Add(shadow);
+                            }
                         }
                     };
                     Obj_AI_Base.OnBuffLose += delegate (Obj_AI_Base sender, Obj_AI_BaseBuffLoseEventArgs args)
                     {
-                        Obj_AI_Minion shadow = (Obj_AI_Minion)sender;
+                        var shadow = sender as Obj_AI_Minion;
                         if (shadow == null || !shadow.IsValid || !args.Buff.Caster.IsMe || !args.Buff.IsValid)
                             return;
 
                         if (shadow.IsAlly && shadow.BaseSkinName.ToLower() == "zedshadow")
                         {
                             if (args.Buff.Name == "zedwshadowbuff")
-                                WShadow = shadow;
+                            {
+                                WShadow = null;
+                                if (ActiveShadows.Contains(shadow))
+                                    ActiveShadows.Remove(shadow);
+                            }
                             if (args.Buff.Name == "zedrshadowbuff")
-                                RShadow = shadow;
+                            {
+                                RShadow = null;
+                                if (ActiveShadows.Contains(shadow))
+                                    ActiveShadows.Remove(shadow);
+                            }
+                        }
+                    };
+
+                    GameObject.OnCreate += delegate (GameObject sender, EventArgs args)
+                    {
+                        var shadow = sender as Obj_AI_Minion;
+                        if (shadow.IsValid && shadow != null && shadow.CharData.BaseSkinName.ToLower() == "zedshadow" ||
+                            shadow.CharData.BaseSkinName.ToLower() == "zedwshadow" ||
+                            shadow.CharData.BaseSkinName.ToLower() == "zedrshadow" && shadow.IsAlly && shadow.IsVisible)
+                        {
+                            if (!ActiveShadows.Contains(shadow))
+                                ActiveShadows.Add(shadow);
+                        }
+                    };
+                    GameObject.OnDelete += delegate (GameObject sender, EventArgs args)
+                    {
+                        var shadow = sender as Obj_AI_Minion;
+                        if (shadow.IsValid && shadow != null && shadow.CharData.BaseSkinName.ToLower() == "zedshadow" ||
+                            shadow.CharData.BaseSkinName.ToLower() == "zedwshadow" ||
+                            shadow.CharData.BaseSkinName.ToLower() == "zedrshadow" && shadow.IsAlly && shadow.IsVisible)
+                        {
+                            if (ActiveShadows.Contains(shadow))
+                                ActiveShadows.Remove(shadow);
                         }
                     };
                     Utility.DamageIndicator.DamageToUnit = GetRawComboDamage;
                     Drawing.OnDraw += Drawing_OnDraw;
-                    
+
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 5)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 5)</font>");
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 503)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 503)</font>");
             }
         }
 
@@ -145,6 +196,7 @@ namespace OKTRAIO.Champions
         {
             UpdateSlider(1);
         }
+
         private static void UpdateSlider(int id)
         {
             try
@@ -173,7 +225,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code UPDATESLIDER)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code UPDATESLIDER)</font>");
             }
         }
 
@@ -190,21 +243,51 @@ namespace OKTRAIO.Champions
                     {
                         if (Q.IsReady())
                         {
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = Q.Range }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.q"),
+                                Color = MainMenu._draw.GetColor("color.q"),
+                                Radius = Q.Range
+                            }.Draw(Player.Instance.Position);
                             if (WShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.w.q"))
-                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = Q.Range }.Draw(WShadow.Position);
+                                new Circle
+                                {
+                                    BorderWidth = MainMenu._draw.GetWidth("width.q"),
+                                    Color = MainMenu._draw.GetColor("color.q"),
+                                    Radius = Q.Range
+                                }.Draw(WShadow.Position);
                             if (RShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.r.q"))
-                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = Q.Range }.Draw(RShadow.Position);
+                                new Circle
+                                {
+                                    BorderWidth = MainMenu._draw.GetWidth("width.q"),
+                                    Color = MainMenu._draw.GetColor("color.q"),
+                                    Radius = Q.Range
+                                }.Draw(RShadow.Position);
 
                         }
                     }
                     else
                     {
-                        new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = Q.Range }.Draw(Player.Instance.Position);
+                        new Circle
+                        {
+                            BorderWidth = MainMenu._draw.GetWidth("width.q"),
+                            Color = MainMenu._draw.GetColor("color.q"),
+                            Radius = Q.Range
+                        }.Draw(Player.Instance.Position);
                         if (WShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.w.q"))
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = Q.Range }.Draw(WShadow.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.q"),
+                                Color = MainMenu._draw.GetColor("color.q"),
+                                Radius = Q.Range
+                            }.Draw(WShadow.Position);
                         if (RShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.r.q"))
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = Q.Range }.Draw(RShadow.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.q"),
+                                Color = MainMenu._draw.GetColor("color.q"),
+                                Radius = Q.Range
+                            }.Draw(RShadow.Position);
                     }
                 }
                 if (Value.Use("draw.w"))
@@ -213,12 +296,22 @@ namespace OKTRAIO.Champions
                     {
                         if (W.IsReady())
                         {
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.w"), Color = MainMenu._draw.GetColor("color.w"), Radius = W.Range }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.w"),
+                                Color = MainMenu._draw.GetColor("color.w"),
+                                Radius = W.Range
+                            }.Draw(Player.Instance.Position);
                         }
                     }
                     else
                     {
-                        new Circle { BorderWidth = MainMenu._draw.GetWidth("width.w"), Color = MainMenu._draw.GetColor("color.w"), Radius = W.Range }.Draw(Player.Instance.Position);
+                        new Circle
+                        {
+                            BorderWidth = MainMenu._draw.GetWidth("width.w"),
+                            Color = MainMenu._draw.GetColor("color.w"),
+                            Radius = W.Range
+                        }.Draw(Player.Instance.Position);
                     }
                 }
                 if (Value.Use("draw.e"))
@@ -227,20 +320,50 @@ namespace OKTRAIO.Champions
                     {
                         if (E.IsReady())
                         {
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = E.Range }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.e"),
+                                Color = MainMenu._draw.GetColor("color.e"),
+                                Radius = E.Range
+                            }.Draw(Player.Instance.Position);
                             if (WShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.w.e"))
-                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = E.Range }.Draw(WShadow.Position);
+                                new Circle
+                                {
+                                    BorderWidth = MainMenu._draw.GetWidth("width.e"),
+                                    Color = MainMenu._draw.GetColor("color.e"),
+                                    Radius = E.Range
+                                }.Draw(WShadow.Position);
                             if (RShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.r.e"))
-                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = E.Range }.Draw(RShadow.Position);
+                                new Circle
+                                {
+                                    BorderWidth = MainMenu._draw.GetWidth("width.e"),
+                                    Color = MainMenu._draw.GetColor("color.e"),
+                                    Radius = E.Range
+                                }.Draw(RShadow.Position);
                         }
                     }
                     else
                     {
-                        new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = E.Range }.Draw(Player.Instance.Position);
+                        new Circle
+                        {
+                            BorderWidth = MainMenu._draw.GetWidth("width.e"),
+                            Color = MainMenu._draw.GetColor("color.e"),
+                            Radius = E.Range
+                        }.Draw(Player.Instance.Position);
                         if (WShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.w.e"))
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = E.Range }.Draw(WShadow.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.e"),
+                                Color = MainMenu._draw.GetColor("color.e"),
+                                Radius = E.Range
+                            }.Draw(WShadow.Position);
                         if (RShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.r.e"))
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = E.Range }.Draw(RShadow.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.e"),
+                                Color = MainMenu._draw.GetColor("color.e"),
+                                Radius = E.Range
+                            }.Draw(RShadow.Position);
                     }
                 }
                 if (Value.Use("draw.r"))
@@ -249,23 +372,35 @@ namespace OKTRAIO.Champions
                     {
                         if (R.IsReady())
                         {
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = R.Range }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.r"),
+                                Color = MainMenu._draw.GetColor("color.r"),
+                                Radius = R.Range
+                            }.Draw(Player.Instance.Position);
                         }
                     }
                     else
                     {
-                        new Circle { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = R.Range }.Draw(Player.Instance.Position);
+                        new Circle
+                        {
+                            BorderWidth = MainMenu._draw.GetWidth("width.r"),
+                            Color = MainMenu._draw.GetColor("color.r"),
+                            Radius = R.Range
+                        }.Draw(Player.Instance.Position);
                     }
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAWING_.ONDRAW)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAWING_.ONDRAW)</font>");
             }
         }
 
         #endregion
+
         public override void Combo()
         {
             try
@@ -311,7 +446,8 @@ namespace OKTRAIO.Champions
                         catch (Exception e)
                         {
                             Console.WriteLine(e);
-                            Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO.1)</font>");
+                            Chat.Print(
+                                "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO.1)</font>");
                         }
                         break;
                     case 2:
@@ -329,19 +465,24 @@ namespace OKTRAIO.Champions
                                 if (WShadow == null || !WShadow.IsValid)
                                     return;
 
-                                var pos = RShadow.ServerPosition.Extend(WShadow, RShadow.Distance(WShadow) / 2).Perpendicular().Extend(Player.Instance, E.Range / 1.75f);
+                                var pos =
+                                    RShadow.ServerPosition.Extend(WShadow, RShadow.Distance(WShadow) / 2)
+                                        .Perpendicular()
+                                        .Extend(Player.Instance, E.Range / 1.75f);
                                 W.Cast(pos.To3D());
                             }
                             if (Q.IsReady())
                             {
-                                if (WShadow.IsInRange(Target, Q.Range) || RShadow.IsInRange(Target, Q.Range) || Q.IsInRange(Target))
+                                if (WShadow.IsInRange(Target, Q.Range) || RShadow.IsInRange(Target, Q.Range) ||
+                                    Q.IsInRange(Target))
                                 {
                                     Q.Cast(Target);
                                 }
                             }
                             if (E.IsReady())
                             {
-                                if (WShadow.IsInRange(Target, E.Range) || RShadow.IsInRange(Target, E.Range) || E.IsInRange(Target))
+                                if (WShadow.IsInRange(Target, E.Range) || RShadow.IsInRange(Target, E.Range) ||
+                                    E.IsInRange(Target))
                                 {
                                     E.Cast();
                                 }
@@ -357,11 +498,12 @@ namespace OKTRAIO.Champions
                         catch (Exception e)
                         {
                             Console.WriteLine(e);
-                            Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO.2)</font>");
+                            Chat.Print(
+                                "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO.2)</font>");
                         }
                         break;
 
-                        //Distant
+                    //Distant
                     case 3:
                         try
                         {
@@ -387,14 +529,16 @@ namespace OKTRAIO.Champions
                             {
                                 W.Cast();
                             }
-                            if (WShadow.IsInRange(Target, Q.Range) || RShadow.IsInRange(Target, Q.Range) || Q.IsInRange(Target))
+                            if (WShadow.IsInRange(Target, Q.Range) || RShadow.IsInRange(Target, Q.Range) ||
+                                Q.IsInRange(Target))
                             {
                                 if (Q.IsReady())
                                 {
                                     Q.Cast(Target);
                                 }
                             }
-                            if (WShadow.IsInRange(Target, E.Range) || RShadow.IsInRange(Target, E.Range) || E.IsInRange(Target))
+                            if (WShadow.IsInRange(Target, E.Range) || RShadow.IsInRange(Target, E.Range) ||
+                                E.IsInRange(Target))
                             {
                                 if (E.IsReady())
                                 {
@@ -409,7 +553,8 @@ namespace OKTRAIO.Champions
                         catch (Exception e)
                         {
                             Console.WriteLine(e);
-                            Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO.3)</font>");
+                            Chat.Print(
+                                "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO.3)</font>");
                         }
                         break;
                 }
@@ -417,24 +562,29 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO)</font>");
             }
         }
+
         public override void Harass()
         {
             try
             {
                 var Target = TargetSelector.GetTarget(1000, DamageType.Physical);
 
-                if (W.IsReady() && Player.Instance.IsInRange(Target.ServerPosition, W.Range - E.Range - 50) && !WIsSwitch && Value.Use("harass.w"))
+                if (W.IsReady() && Player.Instance.IsInRange(Target.ServerPosition, W.Range - E.Range - 50) &&
+                    !WIsSwitch && Value.Use("harass.w"))
                 {
-                    W.Cast(Target.Position);
+                    W.Cast(W.GetPrediction(Target).UnitPosition);
                 }
-                if (Q.IsReady() && Value.Use("harass.q") && (WShadow.IsInRange(Target, Q.Range) && WShadow.IsValid && WShadow != null) || (Q.IsInRange(Target)))
+                if (Q.IsReady() && Value.Use("harass.q") &&
+                    (WShadow.IsInRange(Target, Q.Range) && WShadow.IsValid && WShadow != null) || (Q.IsInRange(Target)))
                 {
-                    Q.Cast(Target);
+                    Q.Cast(Q.GetPrediction(Target).UnitPosition);
                 }
-                if (E.IsReady() && Value.Use("harass.e") && (WShadow.IsInRange(Target, E.Range) && WShadow.IsValid && WShadow != null) || (E.IsInRange(Target)))
+                if (E.IsReady() && Value.Use("harass.e") &&
+                    (WShadow.IsInRange(Target, E.Range) && WShadow.IsValid && WShadow != null) || (E.IsInRange(Target)))
                 {
                     E.Cast();
                 }
@@ -442,7 +592,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code HARASS)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code HARASS)</font>");
             }
         }
 
@@ -452,15 +603,20 @@ namespace OKTRAIO.Champions
             {
                 foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions)
                 {
-                    if (W.IsReady() && !WIsSwitch && Value.Use("lane.w") && Value.Get("lane.w.mana") <= Player.Instance.ManaPercent)
+                    if (W.IsReady() && !WIsSwitch && Value.Use("lane.w") &&
+                        Value.Get("lane.w.mana") <= Player.Instance.ManaPercent)
                     {
                         W.Cast(minion.ServerPosition.Extend(Player.Instance, Player.Instance.Distance(minion) * 2).To3D());
                     }
-                    if (E.IsReady() && Value.Use("lane.e") && Value.Get("lane.e.mana") <= Player.Instance.ManaPercent && (WShadow.IsInRange(minion, E.Range) && WShadow.IsValid && WShadow != null) || (E.IsInRange(minion)))
+                    if (E.IsReady() && Value.Use("lane.e") && Value.Get("lane.e.mana") <= Player.Instance.ManaPercent &&
+                        (WShadow.IsInRange(minion, E.Range) && WShadow.IsValid && WShadow != null) ||
+                        (E.IsInRange(minion)))
                     {
                         E.Cast();
                     }
-                    if (Q.IsReady() && Value.Use("lane.q") && Value.Get("lane.q.mana") <= Player.Instance.ManaPercent && (WShadow.IsInRange(minion, Q.Range) && WShadow.IsValid && WShadow != null) || (Q.IsInRange(minion)))
+                    if (Q.IsReady() && Value.Use("lane.q") && Value.Get("lane.q.mana") <= Player.Instance.ManaPercent &&
+                        (WShadow.IsInRange(minion, Q.Range) && WShadow.IsValid && WShadow != null) ||
+                        (Q.IsInRange(minion)))
                     {
                         Q.Cast();
                     }
@@ -469,7 +625,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LANECLEAR)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LANECLEAR)</font>");
             }
         }
 
@@ -508,7 +665,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code FLEE)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code FLEE)</font>");
             }
         }
 
@@ -522,20 +680,43 @@ namespace OKTRAIO.Champions
                     {
                         if (Orbwalker.UnKillableMinionsList.Contains(minion))
                         {
-                            if (Prediction.Health.GetPrediction(minion, W.CastDelay + (Game.Ping / 4) + (Q.CastDelay + E.CastDelay) / 2) <= Player.Instance.GetSpellDamage(minion, SpellSlot.Q) && Prediction.Health.GetPrediction(minion, Q.CastDelay + (Game.Ping / 4) + (Q.CastDelay + E.CastDelay) / 2) >= 1 && Value.Use("lasthit.w"))
+                            if ((Prediction.Health.GetPrediction(minion, W.CastDelay + Q.CastDelay) <=
+                                 Player.Instance.GetSpellDamage(minion, SpellSlot.Q) * 1.5 && Q.IsReady() &&
+                                 Value.Use("lasthit.q")) ||
+                                (Prediction.Health.GetPrediction(minion, W.CastDelay + E.CastDelay) <=
+                                 Player.Instance.GetSpellDamage(minion, SpellSlot.E) * 1.5 && E.IsReady() &&
+                                 Value.Use("lasthit.e")) &&
+                                Value.Use("lasthit.w") && !WIsSwitch)
                             {
+                                if (WIsSwitch)
+                                    return;
+
                                 W.Cast(minion);
                             }
-                            if (Prediction.Health.GetPrediction(minion, Q.CastDelay + Game.Ping / 4) <= Player.Instance.GetSpellDamage(minion, SpellSlot.Q) * ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() && Prediction.Health.GetPrediction(minion, Q.CastDelay + Game.Ping / 4) >= 1 && Value.Use("lasthit.q"))
+                            if (Prediction.Health.GetPrediction(minion, Q.CastDelay) <=
+                                Player.Instance.GetSpellDamage(minion, SpellSlot.Q) *
+                                ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() +
+                                1 &&
+                                Prediction.Health.GetPrediction(minion, Q.CastDelay) >= 1 &&
+                                Value.Use("lasthit.q"))
                             {
-                                if (Q.IsInRange(minion) || (WShadow != null && WShadow.IsValid && WShadow.IsInRange(minion, Q.Range)) || (RShadow != null && RShadow.IsValid && RShadow.IsInRange(minion, Q.Range)))
+                                if (Q.IsInRange(minion) ||
+                                    (WShadow != null && WShadow.IsValid && WShadow.IsInRange(minion, Q.Range)) ||
+                                    (RShadow != null && RShadow.IsValid && RShadow.IsInRange(minion, Q.Range)))
                                 {
                                     Q.Cast(minion);
                                 }
                             }
-                            if (Prediction.Health.GetPrediction(minion, E.CastDelay + Game.Ping / 4) <= Player.Instance.GetSpellDamage(minion, SpellSlot.E) * ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() && Prediction.Health.GetPrediction(minion, E.CastDelay + Game.Ping / 4) >= 1 && Value.Use("lasthit.e"))
+                            if (Prediction.Health.GetPrediction(minion, E.CastDelay) <=
+                                Player.Instance.GetSpellDamage(minion, SpellSlot.E) *
+                                ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() +
+                                1 &&
+                                Prediction.Health.GetPrediction(minion, E.CastDelay) >= 1 &&
+                                Value.Use("lasthit.e") && !WIsSwitch)
                             {
-                                if (E.IsInRange(minion) || (WShadow != null && WShadow.IsValid && WShadow.IsInRange(minion, E.Range)) || (RShadow != null && RShadow.IsValid && RShadow.IsInRange(minion, E.Range)))
+                                if (E.IsInRange(minion) ||
+                                    (WShadow != null && WShadow.IsValid && WShadow.IsInRange(minion, E.Range)) ||
+                                    (RShadow != null && RShadow.IsValid && RShadow.IsInRange(minion, E.Range)))
                                 {
                                     E.Cast();
                                 }
@@ -544,22 +725,63 @@ namespace OKTRAIO.Champions
                     }
                     else
                     {
-                        if (Prediction.Health.GetPrediction(minion, W.CastDelay + (Game.Ping / 4) + (Q.CastDelay + E.CastDelay) / 2) <= Player.Instance.GetSpellDamage(minion, SpellSlot.Q) && Prediction.Health.GetPrediction(minion, Q.CastDelay + (Game.Ping / 4) + (Q.CastDelay + E.CastDelay) / 2) >= 1 && (Q.IsReady() || E.IsReady()) && Value.Use("lasthit.w"))
+                        if ((Prediction.Health.GetPrediction(minion, W.CastDelay + Q.CastDelay) <=
+                             Player.Instance.GetSpellDamage(minion, SpellSlot.Q) * 1.5 && Q.IsReady() &&
+                             Value.Use("lasthit.q")) ||
+                            (Prediction.Health.GetPrediction(minion, W.CastDelay + E.CastDelay) <=
+                             Player.Instance.GetSpellDamage(minion, SpellSlot.E) * 1.5 && E.IsReady() &&
+                             Value.Use("lasthit.e")) &&
+                            Value.Use("lasthit.w") && !WIsSwitch)
                         {
+                            if (WIsSwitch)
+                                return;
+
                             W.Cast(minion);
                         }
-                        if (Prediction.Health.GetPrediction(minion, Q.CastDelay + Game.Ping / 4) <= Player.Instance.GetSpellDamage(minion, SpellSlot.Q) * ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() && Prediction.Health.GetPrediction(minion, Q.CastDelay + Game.Ping / 4) >= 1 && Value.Use("lasthit.q"))
+                        if (Prediction.Health.GetPrediction(minion, Q.CastDelay) <=
+                            Player.Instance.GetSpellDamage(minion, SpellSlot.Q) *
+                            ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() + 1 &&
+                            Prediction.Health.GetPrediction(minion, Q.CastDelay) >= 1 &&
+                            Value.Use("lasthit.q"))
                         {
-                            if (Q.IsInRange(minion) || (WShadow != null && WShadow.IsValid && WShadow.IsInRange(minion, Q.Range)) || (RShadow != null && RShadow.IsValid && RShadow.IsInRange(minion, Q.Range)))
+                            if (Q.IsInRange(minion) ||
+                                (WShadow != null && WShadow.IsValid && WShadow.IsInRange(minion, Q.Range)) ||
+                                (RShadow != null && RShadow.IsValid && RShadow.IsInRange(minion, Q.Range)))
                             {
                                 Q.Cast(minion);
                             }
                         }
-                        if (Prediction.Health.GetPrediction(minion, E.CastDelay + Game.Ping / 4) <= Player.Instance.GetSpellDamage(minion, SpellSlot.E) * ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() && Prediction.Health.GetPrediction(minion, E.CastDelay + Game.Ping / 4) >= 1 && Value.Use("lasthit.e"))
+                        if (Prediction.Health.GetPrediction(minion, E.CastDelay) <=
+                            Player.Instance.GetSpellDamage(minion, SpellSlot.E) *
+                            ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() + 1 &&
+                            Prediction.Health.GetPrediction(minion, E.CastDelay) >= 1 &&
+                            Value.Use("lasthit.e"))
                         {
-                            if (E.IsInRange(minion) || (WShadow != null && WShadow.IsValid && WShadow.IsInRange(minion, E.Range)) || (RShadow != null && RShadow.IsValid && RShadow.IsInRange(minion, E.Range)))
+                            if (E.IsInRange(minion) ||
+                                (WShadow != null && WShadow.IsValid && WShadow.IsInRange(minion, E.Range)) ||
+                                (RShadow != null && RShadow.IsValid && RShadow.IsInRange(minion, E.Range)))
                             {
                                 E.Cast();
+                            }
+                        }
+
+                        if (Value.Use("lasthit.e") &&
+                            minion.Health <= Player.Instance.GetSpellDamage(minion, SpellSlot.E) &&
+                            (IsValidNotNull(WShadow) && WShadow.IsInRange(minion, E.Range)) || (IsValidNotNull(RShadow) && RShadow.IsInRange(minion, E.Range)))
+                        {
+                            if (E.IsReady())
+                            {
+                                Chat.Print("EEEEE");
+                                Player.Instance.Spellbook.CastSpell(SpellSlot.E);
+                            }
+                        }
+                        if (Value.Use("lasthit.q") &&
+                            minion.Health <= Player.Instance.GetSpellDamage(minion, SpellSlot.Q) &&
+                            (IsValidNotNull(WShadow) && WShadow.IsInRange(minion, Q.Range)) || (IsValidNotNull(RShadow) && RShadow.IsInRange(minion, Q.Range)))
+                        {
+                            if (Q.IsReady())
+                            {
+                                Player.Instance.Spellbook.CastSpell(SpellSlot.Q, minion);
                             }
                         }
                     }
@@ -568,7 +790,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT)</font>");
             }
         }
 
@@ -576,17 +799,14 @@ namespace OKTRAIO.Champions
         {
             try
             {
-                foreach (var shadow in ObjectManager.Get<Obj_AI_Base>().Where(o => o.IsAlly && o.BaseSkinName.ToLower() == "zedshadow"))
-                {
-                    ActiveShadows.Add(shadow);
-                }
                 WIsSwitch = W.Name.ToLower() == "zedw2";
                 RIsSwitch = R.Name.ToLower() == "zedr2";
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ONUPDATE.SHADOWMANAGER)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ONUPDATE.SHADOWMANAGER)</font>");
             }
             AutoE();
         }
@@ -617,7 +837,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code AUTOE)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code AUTOE)</font>");
             }
         }
 
@@ -629,10 +850,12 @@ namespace OKTRAIO.Champions
 
                 foreach (var enemy in e)
                 {
-                    var damage = Player.Instance.CalculateDamageOnUnit(enemy, DamageType.Physical, GetRawComboDamage(enemy), true, true);
+                    var damage = Player.Instance.CalculateDamageOnUnit(enemy, DamageType.Physical,
+                        GetRawComboDamage(enemy), true, true);
                     if (enemy.Health <= damage)
                     {
-                        if (Q.IsReady() && (Q.IsInRange(enemy) || enemy.IsInRange(WShadow, Q.Range)) && Value.Use("killsteal.q"))
+                        if (Q.IsReady() && (Q.IsInRange(enemy) || enemy.IsInRange(WShadow, Q.Range)) &&
+                            Value.Use("killsteal.q"))
                         {
                             Q.Cast(Q.GetPrediction(enemy).UnitPosition);
                         }
@@ -640,7 +863,8 @@ namespace OKTRAIO.Champions
                         {
                             W.Cast(enemy);
                         }
-                        if (E.IsReady() && (E.IsInRange(enemy) || enemy.IsInRange(WShadow, E.Range)) && Value.Use("killsteal.e"))
+                        if (E.IsReady() && (E.IsInRange(enemy) || enemy.IsInRange(WShadow, E.Range)) &&
+                            Value.Use("killsteal.e"))
                         {
                             E.Cast();
                         }
@@ -650,13 +874,15 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
             }
         }
-        static private float[] QBaseDamage = new float[6] { 0, 75, 115, 155, 195, 235 };
-        static private float[] QFirstHitBonusDamage = new float[6] { 0, 45, 69, 93, 117, 141 };
-        static private float[] EBaseDamage = new float[6] { 0, 60, 90, 120, 150, 180 };
-        static private float[] RBasePercentDamage = new float[4] { 0, 30, 40, 50 };
+
+        private static readonly float[] QBaseDamage = new float[6] { 0, 75, 115, 155, 195, 235 };
+        private static readonly float[] QFirstHitBonusDamage = new float[6] { 0, 45, 69, 93, 117, 141 };
+        private static readonly float[] EBaseDamage = new float[6] { 0, 60, 90, 120, 150, 180 };
+        private static readonly float[] RBasePercentDamage = new float[4] { 0, 30, 40, 50 };
 
         private static float GetRawSpellDamage(SpellSlot slot)
         {
@@ -686,10 +912,12 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETRAWSPELLDAMAGE)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETRAWSPELLDAMAGE)</font>");
                 return 0f;
             }
         }
+
         private static float GetRawComboDamage(Obj_AI_Base enemy)
         {
             try
@@ -701,12 +929,16 @@ namespace OKTRAIO.Champions
                 spells.Add(SpellSlot.W);
                 spells.Add(SpellSlot.E);
                 spells.Add(SpellSlot.R);
-                foreach (var spell in spells.Where(s => Player.Instance.Spellbook.CanUseSpell(s) == SpellState.Ready && s != SpellSlot.R))
+                foreach (
+                    var spell in
+                        spells.Where(
+                            s => Player.Instance.Spellbook.CanUseSpell(s) == SpellState.Ready && s != SpellSlot.R))
                 {
                     if (Player.Instance.Spellbook.CanUseSpell(spell) == SpellState.Ready)
                         damage += GetRawSpellDamage(spell);
                 }
-                if (Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready && GetIgniteSpellSlot() != SpellSlot.Unknown)
+                if (Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready &&
+                    GetIgniteSpellSlot() != SpellSlot.Unknown)
                 {
                     damage += Player.Instance.GetSummonerSpellDamage(enemy, DamageLibrary.SummonerSpells.Ignite);
                 }
@@ -726,7 +958,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETRAWCOMBODAMAGE)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETRAWCOMBODAMAGE)</font>");
                 return 0f;
             }
         }
@@ -744,7 +977,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETIGNITESPELLSLOT)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETIGNITESPELLSLOT)</font>");
                 return SpellSlot.Unknown;
             }
         }

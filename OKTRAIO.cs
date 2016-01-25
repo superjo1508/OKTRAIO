@@ -1,31 +1,35 @@
-﻿using System;
-using System.ComponentModel;
-using System.Drawing;
-using System.IO;
-using System.Media;
-using System.Net;
-using EloBuddy;
-using EloBuddy.Sandbox;
-using EloBuddy.SDK.Events;
-using EloBuddy.SDK.Menu.Values;
-using OKTRAIO.Champions;
-using OKTRAIO.Menu_Settings;
-using OKTRAIO.Utility;
-using OKTRAIO.Utility.SkinManager;
-using Activator = OKTRAIO.Utility.Activator;
-
-namespace OKTRAIO
+﻿namespace OKTRAIO
 {
+    using System;
+    using System.ComponentModel;
+    using System.Drawing;
+    using System.IO;
+    using System.Media;
+    using System.Net;
+
+    using EloBuddy;
+    using EloBuddy.Sandbox;
+    using EloBuddy.SDK.Events;
+    using EloBuddy.SDK.Menu.Values;
+
+    using OKTRAIO.Champions;
+    using OKTRAIO.Menu_Settings;
+    using OKTRAIO.Utility;
+    using OKTRAIO.Utility.SkinManager;
+
+    using Activator = System.Activator;
+
     internal class Brain
     {
         public static AIOChampion Champion;
+
         private static SoundPlayer _welcomeSound;
+
         private static void Main(string[] args)
         {
             try
             {
                 Loading.OnLoadingComplete += Loading_OnLoadingComplete;
-
             }
             catch (Exception e)
             {
@@ -37,99 +41,41 @@ namespace OKTRAIO
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
-            switch (Player.Instance.ChampionName)
+            var champion = Type.GetType("OKTRAIO.Champions." + Player.Instance.ChampionName);
+            if (champion != null)
             {
-                case "Ashe":
-                    Champion = new Ashe();
-                    break;
-                case "Caitlyn":
-                    Champion = new Caitlyn();
-                    break;
-                case "Corki":
-                    Champion = new Corki();
-                    break;
-                case "Draven":
-                    Champion = new Draven();
-                    break;
-                case "Ezreal":
-                    Champion = new Ezreal();
-                    break;
-                case "Graves":
-                    Champion = new Graves();
-                    break;
-                case "Jinx":
-                    Champion = new Jinx();
-                    break;
-                case "Kalista":
-                    Champion = new Kalista();
-                    break;
-                case "Kindred":
-                    Champion = new Kindred();
-                    break;
-                case "Kog'Maw":
-                    Champion = new KogMaw();
-                    break;
-                case "Lucian":
-                    Champion = new Lucian();
-                    break;
-                case "MissFortune":
-                    Champion = new MissFortune();
-                    break;
-                case "Quinn":
-                    Champion = new Quinn();
-                    break;
-                case "Sivir":
-                    Champion = new Sivir();
-                    break;
-                case "Teemo":
-                    Champion = new Teemo();
-                    break;
-                case "Tristana":
-                    Champion = new Tristana();
-                    break;
-                case "Twitch":
-                    Champion = new Twitch();
-                    break;
-                case "Urgot":
-                    Champion = new Urgot();
-                    break;
-                case "Varus":
-                    Champion = new Varus();
-                    break;
-                case "Vayne":
-                    Champion = new Vayne();
-                    break;
-                case "Katarina":
-                    Champion = new Katarina();
-                    break;
-                //case "Zed":
-                    //Champion = new Zed();
-                    //break;
-                    //case "Vayne": champion = new Vayne(); break; //etc
-            }
-            if (Champion != null)
-            {
+                Console.Write("[MarksmanAIO] " + Player.Instance.ChampionName + " Loaded");
+                Champion = (AIOChampion)Activator.CreateInstance(champion);
                 Events.Init();
                 MainMenu.Init();
                 UtilityMenu.Init();
                 Champion.Init();
-                Activator.LoadSpells();
-                Activator.Init();
+                Utility.Activator.LoadSpells();
+                Utility.Activator.Init();
                 Humanizer.Init();
-                BushRevealer.Init();
                 SkinManagement.Init();
-                if (MainMenu._menu["playsound"].Cast<CheckBox>().CurrentValue) PlayWelcome();
+                if (MainMenu._menu["playsound"].Cast<CheckBox>().CurrentValue) { PlayWelcome(); }
                 Chat.Print("MarksmanAIO: " + Player.Instance.ChampionName + " Loaded", Color.CornflowerBlue);
             }
             else
             {
                 Chat.Print("MarksmanAIO doesn't support: " + Player.Instance.ChampionName);
             }
+            if (BaseUlt.IsCompatibleChamp())
+            {
+                UtilityMenu.BaseUltMenu();
+                BaseUlt.Initialize();
+            }
+            if (RandomUlt.IsCompatibleChamp())
+            {
+                UtilityMenu.RandomUltMenu();
+                RandomUlt.Initialize();
+            }
+            Value.Init();
         }
 
         private static void PlayWelcome()
         {
-
             try
             {
                 var sandBox = SandboxConfig.DataDirectory + @"\OKTR\";
@@ -142,7 +88,8 @@ namespace OKTRAIO
                 if (!File.Exists(sandBox + Player.Instance.ChampionName + ".wav"))
                 {
                     var client = new WebClient();
-                    client.DownloadFile("http://oktraio.com/VoiceAssistant/" + Player.Instance.ChampionName + ".wav",
+                    client.DownloadFile(
+                        "http://oktraio.com/VoiceAssistant/" + Player.Instance.ChampionName + ".wav",
                         sandBox + Player.Instance.ChampionName + ".wav");
                     client.DownloadFileCompleted += Client_DownloadFileCompleted;
                 }
@@ -150,9 +97,11 @@ namespace OKTRAIO
                 if (File.Exists(sandBox + Player.Instance.ChampionName + ".wav"))
                 {
                     _welcomeSound = new SoundPlayer
-                    {
-                        SoundLocation = SandboxConfig.DataDirectory + @"\OKTR\" + Player.Instance.ChampionName + ".wav"
-                    };
+                                        {
+                                            SoundLocation =
+                                                SandboxConfig.DataDirectory + @"\OKTR\" + Player.Instance.ChampionName
+                                                + ".wav"
+                                        };
                     _welcomeSound.Load();
 
                     _welcomeSound.Play();
@@ -162,15 +111,15 @@ namespace OKTRAIO
             {
                 Chat.Print("Failed to load Sound File: \"" + Player.Instance.ChampionName + ".wav\": " + e);
             }
-
         }
 
         private static void Client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
             _welcomeSound = new SoundPlayer
-            {
-                SoundLocation = SandboxConfig.DataDirectory + @"\OKTR\" + Player.Instance.ChampionName + ".wav"
-            };
+                                {
+                                    SoundLocation =
+                                        SandboxConfig.DataDirectory + @"\OKTR\" + Player.Instance.ChampionName + ".wav"
+                                };
             _welcomeSound.Load();
             _welcomeSound.Play();
         }

@@ -27,13 +27,26 @@ namespace OKTRAIO.Champions
         private static bool _isChannelingImportantSpell;
         InterrupterExtensions ext = new InterrupterExtensions();
 
-        private static bool IsUlting
+        private static bool _isUlting;
+        private static void OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
-            get { return Player.Instance.HasBuff("katarinarsound") || Player.Instance.HasBuff("KatarinaR") || _isChannelingImportantSpell; }
+            if (args.Buff.Name.ToLower() == "katarinarsound" || args.Buff.Name.ToLower() == "katarinar" ||
+                _isChannelingImportantSpell)
+            {
+                Orbwalker.DisableMovement = true;
+                Orbwalker.DisableAttacking = true;
+                _isUlting = true;
+            }
         }
-        private static double _QMarkBuff(Obj_AI_Base target)
+
+        private static void OnBuffLose(Obj_AI_Base sender, Obj_AI_BaseBuffLoseEventArgs args)
         {
-            return target.HasBuff("katarinaqmark") ? Player.Instance.GetSpellDamage(target, SpellSlot.Q) : 0;
+            if (args.Buff.Name.ToLower() == "katarinarsound" || args.Buff.Name.ToLower() == "katarinar")
+            {
+                Orbwalker.DisableMovement = false;
+                Orbwalker.DisableAttacking = false;
+                _isUlting = false;
+            }
         }
 
         private static Menu _humanizerMenu;
@@ -128,6 +141,8 @@ namespace OKTRAIO.Champions
                 }
 
                 #region UtilityInit
+                Obj_AI_Base.OnBuffGain += OnBuffGain;
+                Obj_AI_Base.OnBuffLose += OnBuffLose;
                 DamageIndicator.DamageToUnit = GetActualRawComboDamage;
                 Value.Init();
                 Value.MenuList.Add(_humanizerMenu);
@@ -188,14 +203,15 @@ namespace OKTRAIO.Champions
                 try
                 {
                     #region AutoW
+                    if (_isUlting) return;
                     if (MainMenu._harass["harass.autow"].Cast<CheckBox>().CurrentValue)
                     {
                         var e = EntityManager.Heroes.Enemies.Where(ee => !ee.IsDead && ee.IsValid);
                         foreach (var enemy in e)
                         {
-                            if (_w.IsInRange(enemy) && _w.IsReady() && !IsUlting)
+                            if (_w.IsInRange(enemy) && _w.IsReady())
                             {
-                                _w.Cast();
+                                _w.Cast(); 
                             }
                         }
                     }

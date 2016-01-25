@@ -108,9 +108,6 @@ namespace OKTRAIO.Champions
                 MainMenu.DrawKeys(false, true, false, false);
                 MainMenu._draw.AddSeparator();
                 MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
-
-                //BaseUlt
-                UtilityMenu.BaseUltMenu();
             }
 
             catch (Exception e)
@@ -138,7 +135,6 @@ namespace OKTRAIO.Champions
                 Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
                 Drawing.OnDraw += GameOnDraw;
                 Drawing.OnEndScene += Drawing_OnEndScene;
-                BaseUlt.Initialize();
             }
 
             catch (Exception e)

@@ -96,9 +96,7 @@ namespace OKTRAIO.Champions
 
                     //Killsteal Menu
                     MainMenu.KsKeys(false, false, false, true);
-
-                    //BaseUlt
-                    UtilityMenu.BaseUltMenu();
+                    
 
                     //Misc Menu
                     MainMenu.MiscMenu();
@@ -134,7 +132,6 @@ namespace OKTRAIO.Champions
                 Drawing.OnDraw += OnDraw;
                 Orbwalker.OnPreAttack += OnPreAttack;
                 Obj_AI_Base.OnProcessSpellCast += OnProcessSpellCast;
-                BaseUlt.Initialize();
                 Chat.Print("Jinx Loaded!", Color.Chartreuse);
             }
             catch (Exception e)

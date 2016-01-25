@@ -10,6 +10,8 @@ using MainMenu = EloBuddy.SDK.Menu.MainMenu;
 
 namespace OKTRAIO.Utility
 {
+    using EloBuddy.SDK.Enumerations;
+
     public static class UtilityMenu
     {
         public static Menu Menu, Activator, Autolvlup, Skinmanager, Baseult, Randomult, Bushreveal;
@@ -38,38 +40,24 @@ namespace OKTRAIO.Utility
             Activator = Menu.AddSubMenu("Activator", "activator");
             Activator.AddGroupLabel("OKTR AIO - Activator for " + Player.Instance.ChampionName,
                 "activator.grouplabel.utilitymenu");
+            Activator.AddCheckBox("activator.heal", "Use Heal");
+            Activator.AddCheckBox("activator.barrier", "Use Barrier");
+            Activator.AddCheckBox("activator.ignite", "Use Ignite");
             Activator.Add("activator.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
-
-            if (Utility.Activator.Heal != null)
-            {
-                Activator.AddCheckBox("activator.heal", "Use Heal");
-                Activator.AddSeparator();
-                Activator.AddGroupLabel("Heal Manager:", "activator.label.utilitymenu.heal", true);
-                Activator.AddCheckBox("activator.heal.lifesave", "Use Heal for Allies", false, true);
-                Activator.AddSlider("activator.heal.hp", "Use Heal if HP are under {0}", 15, 0, 100, true);
-                Activator.AddSeparator();
-            }
-
-            if (Utility.Activator.Barrier != null)
-            {
-                Activator.AddCheckBox("activator.barrier", "Use Barrier");
-                Activator.AddSeparator();
-                Activator.AddGroupLabel("Barrier Manager:", "activator.label.utilitymenu.barrier", true);
-                Activator.AddSlider("activator.barrier.hp", "Use Heal if HP are under {0}", 15, 0, 100, true);
-                Activator.AddSeparator();
-            }
-
-            if (Utility.Activator.Ignite != null)
-            {
-                Activator.AddCheckBox("activator.ignite", "Use Ignite");
-                Activator.AddSeparator();
-                Activator.AddGroupLabel("Ignite Manager:", "activator.label.utilitymenu.ignite", true);
-                Activator.AddCheckBox("activator.ignite.progressive", "Use Ignite for Progressive Damage", false, true);
-                Activator.AddCheckBox("activator.ignite.burst", "Use Ignite for Burst Damage", false, true);
-                Activator.AddCheckBox("activator.ignite.killsteal", "Use Ignite for Killsteal", true, true);
-                Activator.AddSeparator();
-            }
+            Activator.AddSeparator();
+            Activator.AddGroupLabel("Heal Manager:", "activator.label.utilitymenu.heal", true);
+            Activator.AddCheckBox("activator.heal.lifesave", "Use Heal for Allies", false, true);
+            Activator.AddSlider("activator.heal.hp", "Use Heal if HP are under {0}", 15, 0, 100, true);
+            Activator.AddSeparator();
+            Activator.AddGroupLabel("Barrier Manager:", "activator.label.utilitymenu.barrier", true);
+            Activator.AddSlider("activator.barrier.hp", "Use Heal if HP are under {0}", 15, 0, 100, true);
+            Activator.AddSeparator();
+            Activator.AddGroupLabel("Ignite Manager:", "activator.label.utilitymenu.ignite", true);
+            Activator.AddCheckBox("activator.ignite.progressive", "Use Ignite for Progressive Damage", false, true);
+            Activator.AddCheckBox("activator.ignite.burst", "Use Ignite for Burst Damage", false, true);
+            Activator.AddCheckBox("activator.ignite.killsteal", "Use Ignite for Killsteal", true, true);
+            Activator.AddSeparator();
         }
 
         public static void LvlUpMenu()
@@ -141,15 +129,14 @@ namespace OKTRAIO.Utility
                 "randomult.grouplabel.utilitymenu");
             Randomult.AddCheckBox("randomult.use", "Use RandomUlt");
             Randomult.Add("randomult.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
-            Randomult.AddCheckBox("randomult.recallsEnemy", "Show enemy recalls", true, true);
-            Randomult.AddSlider("randomult.x", "Recall location X", (int)(Drawing.Width * 0.4), 0, Drawing.Width, true);
-            Randomult.AddSlider("randomult.y", "Recall location Y", (int)(Drawing.Height * 0.75), 0, Drawing.Height, true);
-            Randomult.AddSlider("randomult.width", "Recall width", 300, 200, 500, true);
             Randomult.AddSeparator();
-            Randomult.AddLabel("Use RandomULT for:", 25, "randomult.label", true);
+            Randomult.AddSlider("randomult.range", "Don't Ult When Enemies In Range", 1000, 0, 2000, true);
+            Randomult.AddSlider("randomult.delay", "Delay Before Ulting", 600, 0, 3000, true);
+            Randomult.AddSlider("randomult.hitchance", "RandomUlt Hitchance (1 - More Ults, 5 - Less Ults)", 3, 1, 5, true);
+            Randomult.AddLabel("Who To RandomUlt:", 25, "randomult.label", true);
             foreach (var enemy in EntityManager.Heroes.Enemies)
             {
-                Baseult.AddCheckBox("randomult." + enemy.ChampionName, enemy.ChampionName, true, true);
+                Randomult.AddCheckBox("randomult." + enemy.ChampionName, enemy.ChampionName, true, true);
             }
         }
         }
