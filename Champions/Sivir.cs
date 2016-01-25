@@ -325,7 +325,7 @@ namespace OKTRAIO.Champions
                 EntityManager.MinionsAndMonsters.GetLaneMinions()
                     .OrderByDescending(a => a.MaxHealth)
                     .FirstOrDefault(
-                        a => a.IsValidTarget(_q.Range) && a.Health <= Player.Instance.GetSpellDamage(a, SpellSlot.Q));
+                        a => a.IsValidTarget(_q.Range) && a.Health <= QDamage(a));
 
             if (_q.IsReady() && Value.Use("lasthit.q") && Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
             {
@@ -478,7 +478,18 @@ namespace OKTRAIO.Champions
             {
                 return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical,
                     new[] {46.25f, 83.25f, 120.25f, 159.1f, 194.25f}[_q.Level - 1] +
-                    new[] {1.295f, 1.48f, 1.665f, 1.85f, 2.035f}[_q.Level - 1]*Player.Instance.TotalAttackDamage);
+                    (new[] {1.295f, 1.48f, 1.665f, 1.85f, 2.035f}[_q.Level - 1]*Player.Instance.TotalAttackDamage + .925f * Player.Instance.TotalMagicalDamage));
+            }
+            return 0f;
+        }
+
+        private static float QDamage(Obj_AI_Base target)
+        {
+            if (_q.IsLearned)
+            {
+                return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical,
+                    new[] { 25f, 45f, 65f, 85f, 105f }[_q.Level - 1] +
+                    (new[] { .7f, .8f, .9f, 1f, 1.1f }[_q.Level - 1] * Player.Instance.TotalAttackDamage + .925f * Player.Instance.TotalMagicalDamage));
             }
             return 0f;
         }
