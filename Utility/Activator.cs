@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
@@ -101,6 +102,28 @@ namespace OKTRAIO.Utility
                 UtilityMenu.Activator.AddSeparator();
             }
 
+            if (args.Id == (int)Zhonya.Id && UtilityMenu.Activator["activator.zhonya"] == null)
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.zhonya", "Use Zhonya - WIP");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Zhonya Manager:", "activator.label.utilitymenu.zhonya", true);
+                UtilityMenu.Activator.AddCheckBox("activator.zhonya.prevent", "Prevent to use Zhonya", true, true);
+                UtilityMenu.Activator.AddSlider("activator.zhonya.prevent.enemies", "Prevent to use Zhonya if there are more then {0} enemies", 3, 0, 5, true);
+                UtilityMenu.Activator.AddSlider("activator.zhonya.hp", "Use Zhonys if HP are under {0}", 20, 0, 100, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
+
+            if (args.Id == (int)Seraph.Id && UtilityMenu.Activator["activator.seraph"] == null)
+            {
+                UtilityMenu.Activator.AddCheckBox("activator.seraph", "Use Seraph - WIP");
+                UtilityMenu.Activator.AddSeparator();
+                UtilityMenu.Activator.AddGroupLabel("Seraph Manager:", "activator.label.utilitymenu.zhonya", true);
+                UtilityMenu.Activator.AddCheckBox("activator.seraph.prevent", "Prevent to use Seraph", true, true);
+                UtilityMenu.Activator.AddSlider("activator.seraph.prevent.enemies", "Prevent to use Seraph if there are more then {0} enemies", 3, 0, 5, true);
+                UtilityMenu.Activator.AddSlider("activator.seraph.hp", "Use Seraph if HP are under {0}", 20, 0, 100, true);
+                UtilityMenu.Activator.AddSeparator();
+            }
+
             if ((args.Id == (int)Hunter.Id || args.Id == (int)Refillable.Id || args.Id == (int)Potion.Id || args.Id == (int)Biscuit.Id || args.Id == (int)Corrupting.Id) && UtilityMenu.Activator["activator.potions"] == null)
             {
                 UtilityMenu.Activator.AddCheckBox("activator.potions", "Use Potions");
@@ -115,25 +138,28 @@ namespace OKTRAIO.Utility
         #endregion
 
         #region Gamerelated Events
-
         private static void OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-
             if (sender.IsMe && Youmuus.IsOwned() && Value.Use("activator.youmusspellonly"))
             {
-                if (((Player.Instance.ChampionName == "Lucian" || Player.Instance.ChampionName == "Twitch") &&
-                     args.Slot == SpellSlot.R) || (Player.Instance.ChampionName == "Ashe" && args.Slot == SpellSlot.Q))
-                {
+                if (((Player.Instance.ChampionName == "Lucian" || 
+                         Player.Instance.ChampionName == "Twitch" ||
+                             Player.Instance.ChampionName == "Zed" ||
+                                 Player.Instance.ChampionName == "Varus") && args.Slot == SpellSlot.R) || 
+                                    (Player.Instance.ChampionName == "Ashe" && args.Slot == SpellSlot.Q))
+
+               {
                     Youmuus.Cast();
-                }
+               }
+
             }
         }
 
         private static void GameOnUpdate(EventArgs args)
         {
             OffensiveItems();
-            Potions();
-            ActivatorSpells();
+            DefensiveItems();
+            PlayerSpells();
         }
 
         #endregion
@@ -142,6 +168,7 @@ namespace OKTRAIO.Utility
 
         public static Item
 
+        #region AD Items
             Potion = new Item(2003),
             Biscuit = new Item(2010),
             Refillable = new Item(2031),
@@ -149,8 +176,25 @@ namespace OKTRAIO.Utility
             Corrupting = new Item(2033),
             Botrk = new Item(3153, 550f),
             Cutlass = new Item(3144, 550f),
-            Youmuus = new Item(3142, 650f);
+            Youmuus = new Item(3142, 650f),
+        #endregion 
 
+        #region AP Items
+            Zhonya = new Item(3157),
+            Seraph = new Item(3040),
+        #endregion
+
+        #region Vision
+            PinkVision = new Item(2043, 1000f),
+            GreaterStealthTotem = new Item(3361, 1000f),
+            GreaterVisionTotem = new Item(3362, 1000f),
+            FarsightAlteration = new Item(3363, 1000f),
+            WardingTotem = new Item(3340, 1000f);
+        #endregion
+
+        #endregion
+
+        #region Offensive Items
         private static void OffensiveItems()
         {
             if (Botrk.IsReady() && Value.Use("activator.botrk"))
@@ -195,6 +239,13 @@ namespace OKTRAIO.Utility
                 }
             }
         }
+        #endregion 
+
+        #region Defensive Items
+        private static void DefensiveItems()
+        {
+            Potions();
+        }
 
         private static void Potions()
         {
@@ -238,8 +289,7 @@ namespace OKTRAIO.Utility
                 }
             }
         }
-
-        #endregion
+        #endregion 
 
         #region Spells
 
@@ -271,7 +321,7 @@ namespace OKTRAIO.Utility
                 Heal = new Spell.Active(SpellSlot.Summoner2);
         }
 
-        private static void ActivatorSpells()
+        private static void PlayerSpells()
         {
             var target = TargetSelector.GetTarget(1000, DamageType.Mixed);
 

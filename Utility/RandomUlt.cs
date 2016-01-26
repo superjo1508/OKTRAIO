@@ -63,11 +63,11 @@
 
         public static void OnUpdate(EventArgs args)
         {
-            var time = Game.Time;
             foreach (var enemy in
-                RandomUltUnits.Where(x => x.Unit.IsVisible && !x.Unit.IsDead && x.Unit.IsValidTarget()))
+                RandomUltUnits.Where(x => x.Unit.IsHPBarRendered && !x.Unit.IsDead && x.Unit.IsValidTarget()))
             {
-                enemy.LastSeen = time;
+                enemy.LastSeen = Game.Time;
+                enemy.OldPos = enemy.Unit.Position;
                 enemy.PredictedPos = Prediction.Position.PredictUnitPosition(enemy.Unit, 10).To3DWorld();
             }
 
@@ -79,37 +79,31 @@
             {
                 return;
             }
-            var hitChance = Value.Get("randomult.hitchance");
             foreach (var enemy in
                 RandomUltUnits.Where(
                     x =>
                     x.Unit.IsValid() && !x.Unit.IsDead && Value.Use("randomult." + x.Unit.ChampionName)
                     && x.RecallData.Status == RecallStatus.Active).OrderByDescending(x => x.RecallData.Started))
             {
-                if (CheckResurrect(enemy.Unit)
-                    || !(Game.Time - enemy.RecallData.Started > Value.Get("randomult.delay")))
+                if (CheckResurrect(enemy.Unit) || !(Game.Time - enemy.RecallData.Started > Value.Get("randomult.delay")))
                 {
                     continue;
                 }
-                var dist = (Math.Abs(enemy.LastSeen - enemy.RecallData.Started) / 1000 * enemy.Unit.MoveSpeed)
-                           - enemy.Unit.MoveSpeed / 3;
-                var trueDist = Math.Abs(enemy.LastSeen - enemy.RecallData.Started) / 1000 * enemy.Unit.MoveSpeed;
-                var line = PredictPos(enemy, dist);
-                if (dist > 1500)
+                Chat.Print(enemy.RecallData.Started - enemy.LastSeen);
+                var dist = ((enemy.RecallData.Started - enemy.LastSeen) / 1000 * enemy.Unit.MoveSpeed);
+                          // - enemy.Unit.MoveSpeed / 4;
+                if (dist > 1500 || (dist * 2 > 1000 && !enemy.Unit.IsHPBarRendered))
                 {
                     continue;
                 }
-                
-                        if (trueDist > 1000 && !enemy.Unit.IsVisible)
+                var pos = enemy.Unit.IsHPBarRendered
+                              ? enemy.Unit.Position
+                              : enemy.OldPos.Extend(enemy.PredictedPos, dist).To3D();
+                if (Player.Instance.Distance(pos)
+                    > RandomUltSpells.Find(x => x.Name == Player.Instance.ChampionName).Range)
                         {
                             continue;
                         }
-                var pos = line.To3D();
-                pos = enemy.Unit.IsHPBarRendered ? enemy.Unit.Position : line.To3D();
-                if (Player.Instance.Distance(pos) > RandomUltSpells.Find(x => x.Name == Player.Instance.Name).Range)
-                {
-                    continue;
-                }
                 CastRandomUlt(enemy, pos);
             }
         }
@@ -119,16 +113,13 @@
             var ult = Player.Instance.Spellbook.GetSpell(SpellSlot.R);
             if (ult.IsReady)
             {
-                Chat.Print("Recall Time " + target.RecallData.GetRecallTime());
                 if (GetRandomUltSpellDamage(
                     RandomUltSpells.Find(x => x.Name == Player.Instance.ChampionName),
                     target.Unit) && UltTime(pos) < target.RecallData.GetRecallTime())
                 {
-                    Chat.Print("8");
                     Player.Instance.Spellbook.CastSpell(SpellSlot.R, pos);
                 }
             }
-            Chat.Print("9");
         }
 
         public static float GetPath(AIHeroClient hero, Vector3 b)
@@ -142,11 +133,6 @@
                 lastPoint = point;
             }
             return distance;
-        }
-
-        private static bool IsWall(Vector3 point)
-        {
-            return NavMesh.GetCollisionFlags(point).HasFlag(CollisionFlags.Wall);
         }
 
         private static bool CheckResurrect(AIHeroClient enemy)
@@ -164,29 +150,27 @@
 
         private static float UltTime(Vector3 pos)
         {
-            var dist = Player.Instance.Distance(pos);
+            var distance = Player.Instance.Distance(pos);
             var spell = RandomUltSpells.Find(x => x.Name == Player.Instance.ChampionName);
             var delay = spell.Delay;
             var speed = spell.Speed;
-            Chat.Print("Speed is " + speed);
-            Chat.Print("Distance is " + dist);
-            if (Player.Instance.ChampionName == "Jinx" && dist > 1350)
+            if (Player.Instance.ChampionName == "Jinx" && distance > 1350)
             {
-                var accelDif = dist - 1350;
+                var accelDif = distance - 1350;
                 if (accelDif > 150) { accelDif = 150; }
-                var difference = dist - 1500;
-                return (dist / ((1350 * 1700 + accelDif * (1700 + 0.3f * accelDif) + difference * 1700f) / dist)) * 1000
-                       + 250;
+                var difference = distance - 1500;
+                return (distance / ((1350 * 1700 + accelDif * (1700 + 0.3f * accelDif) + difference * 1700f) / distance))
+                       * 1000 + 250;
             }
-            return (dist / speed) * 1000 + delay;
+            return (distance / speed) * 1000 + delay;
         }
 
         private static Vector2 PredictPos(RandomUltUnit target, float distance)
         {
-            var time = (target.LastSeen - target.RecallData.Started) / 1000;
+            var recallTime = (target.RecallData.Started - target.LastSeen);
             var line = target.Unit.Position.Extend(target.PredictedPos, distance);
             if (target.Unit.Position.Distance(target.PredictedPos) < distance
-                && ((time < 2
+                && ((recallTime < 2000
                      || target.Unit.Position.Distance(target.PredictedPos) > target.Unit.Position.Distance(line) * 0.70f)))
             {
                 line = target.PredictedPos.To2D();
@@ -210,8 +194,8 @@
 
                 case "Draven":
                     {
-                        damage = (new float[] { 175, 275, 375 }[level]
-                                 + 1.1f * Player.Instance.FlatPhysicalDamageMod) * 2;
+                        damage = (new float[] { 175, 275, 375 }[level] + 1.1f * Player.Instance.FlatPhysicalDamageMod)
+                                 * 2;
                         damageType = DamageType.Physical;
                         break;
                     }
@@ -259,8 +243,8 @@
 
         public static void OnTeleport(Obj_AI_Base sender, Teleport.TeleportEventArgs args)
         {
-            var unit = RandomUltUnits.Find(h => h.Unit.NetworkId == sender.NetworkId).RecallData;
-            if (unit == null || args.Type != TeleportType.Recall)
+            var recall = RandomUltUnits.Find(h => h.Unit.NetworkId == sender.NetworkId).RecallData;
+            if (!sender.IsEnemy || recall == null || args.Type != TeleportType.Recall)
             {
                 return;
             }
@@ -269,24 +253,24 @@
             {
                 case TeleportStatus.Start:
                     {
-                        unit.Status = RecallStatus.Active;
-                        unit.Started = Game.Time;
-                        unit.Duration = (float)args.Duration / 1000;
-                        unit.Ended = unit.Started + unit.Duration;
+                        recall.Status = RecallStatus.Active;
+                        recall.Started = Game.Time;
+                        recall.Duration = args.Duration;
+                        recall.Ended = recall.Started + recall.Duration;
                         break;
                     }
 
                 case TeleportStatus.Abort:
                     {
-                        unit.Status = RecallStatus.Abort;
-                        unit.Ended = Game.Time;
+                        recall.Status = RecallStatus.Abort;
+                        recall.Ended = Game.Time;
                         break;
                     }
 
                 case TeleportStatus.Finish:
                     {
-                        unit.Status = RecallStatus.Finished;
-                        unit.Ended = Game.Time;
+                        recall.Status = RecallStatus.Finished;
+                        recall.Ended = Game.Time;
                         break;
                     }
             }
@@ -300,6 +284,8 @@
         public float LastSeen;
 
         public Vector3 PredictedPos;
+
+        public Vector3 OldPos;
 
         public RandomUltRecall RecallData;
 

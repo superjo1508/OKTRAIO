@@ -126,6 +126,7 @@ namespace OKTRAIO.Champions
                     MainMenu._misc.AddCheckBox("misc.q", "Use Auto Q");
                     MainMenu._misc.AddCheckBox("misc.w", "Use Auto W");
                     MainMenu._misc.AddCheckBox("misc.e", "Use Auto E", false);
+                    MainMenu._misc.AddCheckBox("misc.w.gapcloser", "Use Auto W on Gapcloser", true, true);
                     MainMenu._misc.AddCheckBox("misc.e.gapcloser", "Use Auto E on Gapcloser", true, true);
                     MainMenu._misc.AddSeparator();
                     MainMenu._misc.AddGroupLabel("Auto Spell Settings", "misc.grouplabel.1", true);
@@ -507,15 +508,18 @@ namespace OKTRAIO.Champions
         {
             try
             {
-                if (!e.Sender.IsValidTarget() || !Value.Use("misc.e.gapcloser") || e.Sender.Type != Player.Instance.Type ||
+                if (!e.Sender.IsValidTarget() || e.Sender.Type != Player.Instance.Type ||
                     !e.Sender.IsEnemy)
                     return;
+                Vector3 pred = e.End;
 
                 if (_e.IsReady() && _e.IsInRange(sender) && Value.Use("misc.e.gapcloser"))
                 {
-                    Vector3 pred = e.End;
-
                     _e.Cast(pred + 5 * (Player.Instance.Position - e.End));
+                }
+                if (_w.IsReady() && _w.IsInRange(sender) && Value.Use("misc.w.gapcloser"))
+                {
+                    _w.Cast(pred + 5 * (Player.Instance.Position - e.End));
                 }
             }
 
@@ -585,6 +589,8 @@ namespace OKTRAIO.Champions
         public static void AutoHarass()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
+
+            if (target == null) return;
 
             if (Value.Use("harass.auto"))
             {
@@ -821,10 +827,16 @@ namespace OKTRAIO.Champions
         #region EQButton
         private static void OnEqButton(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
         {
-            if (args.NewValue && (TargetSelector.GetTarget(_e.Range, DamageType.Mixed) != null))
+            if (args.NewValue && (TargetSelector.GetTarget(_q.Range, DamageType.Mixed) != null))
             {
-                _e.Cast(_e.GetPrediction(TargetSelector.GetTarget(_e.Range, DamageType.Mixed)).CastPosition);
-                _q.Cast(_q.GetPrediction(TargetSelector.GetTarget(_q.Range, DamageType.Mixed)).CastPosition);
+                if (_q.IsReady())
+                {
+                    _q.Cast(_q.GetPrediction(TargetSelector.GetTarget(_q.Range, DamageType.Mixed)).CastPosition);
+                }
+                if (_e.IsReady())
+                {
+                    _e.Cast(_e.GetPrediction(TargetSelector.GetTarget(_e.Range, DamageType.Mixed)).CastPosition);
+                }
             }
         }
         #endregion

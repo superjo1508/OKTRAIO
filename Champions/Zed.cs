@@ -7,12 +7,13 @@ using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using OKTRAIO.Menu_Settings;
-using SharpDX;
 
 namespace OKTRAIO.Champions
 {
     class Zed : AIOChampion
     {
+        #region Initalize and Declare
+
         private static List<Obj_AI_Base> ActiveShadows = new List<Obj_AI_Base>();
 
         private static Obj_AI_Base WShadow;
@@ -25,22 +26,27 @@ namespace OKTRAIO.Champions
         private static bool WIsSwitch;
         private static bool RIsSwitch;
 
+        private static bool IsDoingCombo
+        {
+            get { return Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.Combo; }
+        }
+
         private static bool IsValidNotNull(Obj_AI_Base target)
         {
             if (target != null && target.IsValid)
                 return true;
             return false;
         }
-        #region Initialization
 
         public override void Init()
         {
+            throw new NotImplementedException("Zed is only supported for development purposes");
             try
             {
                 try
                 {
-                    Q = new Spell.Skillshot(SpellSlot.Q, 900, SkillShotType.Linear, 250, 1700, 50);
-                    W = new Spell.Skillshot(SpellSlot.W, 650, SkillShotType.Linear, 250, 1400);
+                    Q = new Spell.Skillshot(SpellSlot.Q, 900, SkillShotType.Linear, 250, 1650, 45);
+                    W = new Spell.Skillshot(SpellSlot.W, 650, SkillShotType.Linear, 250, 1400, 60);
                     E = new Spell.Active(SpellSlot.E, 280);
                     R = new Spell.Targeted(SpellSlot.Q, 625);
 
@@ -59,7 +65,7 @@ namespace OKTRAIO.Champions
                     MainMenu._combo.AddSlider("combo.mode", "Combo Mode", 2, 1, 3, true);
                     MainMenu._combo["combo.mode"].Cast<Slider>().OnValueChange += ComboStringList;
                     MainMenu._combo.AddSlider("combo.distant.health", "Distant Mode Health: ", 25, 0, 100, true);
-                    MainMenu._combo.AddCheckBox("combo.switch", "Switch shadows after combo", false, true);
+                    MainMenu._combo.AddCheckBox("combo.switch", "Switch Shadows After combo", false, true);
 
                     // draw
                     MainMenu.DamageIndicator();
@@ -81,16 +87,17 @@ namespace OKTRAIO.Champions
 
                     // ks
                     MainMenu.KsKeys(true, true, true, false);
-                    MainMenu._ks.AddSlider("killsteal.hitchance.q", "Q Hitchance", 75, 1, 100, true);
+                    MainMenu._ks.AddSlider("killsteal.q.hitchance", "Q Hitchance", 75, 1, 100, true);
 
                     // last hit
                     MainMenu.LastHitKeys(true, true, true, false);
                     MainMenu._lasthit.AddCheckBox("lasthit.notkillablebyaa",
-                        "Only use spells if minion is not killable by AA", false, true);
+                        "Only use Spells if Minion is not Killable by AA", false, true);
 
                     // harass
                     MainMenu.HarassKeys(true, true, true, false);
                     MainMenu._harass.AddCheckBox("harass.autoe", "Auto E", true);
+                    MainMenu._harass.AddCheckBox("harass.autoe.combodisable", "Disable When Combo", true, true);
                     MainMenu._harass.AddCheckBox("harass.autoe.w", "Auto E for W Shadow", true, true);
                     MainMenu._harass.AddCheckBox("harass.autoe.r", "Auto E for R Shadow", true, true);
                 }
@@ -106,7 +113,7 @@ namespace OKTRAIO.Champions
                     // events
                     Value.Init();
                     Game.OnUpdate += Game_OnUpdate;
-                    Obj_AI_Base.OnBuffGain += delegate (Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
+                    Obj_AI_Base.OnBuffGain += delegate(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
                     {
                         var shadow = sender as Obj_AI_Minion;
                         if (shadow == null || !shadow.IsValid || !args.Buff.Caster.IsMe || !args.Buff.IsValid)
@@ -128,7 +135,7 @@ namespace OKTRAIO.Champions
                             }
                         }
                     };
-                    Obj_AI_Base.OnBuffLose += delegate (Obj_AI_Base sender, Obj_AI_BaseBuffLoseEventArgs args)
+                    Obj_AI_Base.OnBuffLose += delegate(Obj_AI_Base sender, Obj_AI_BaseBuffLoseEventArgs args)
                     {
                         var shadow = sender as Obj_AI_Minion;
                         if (shadow == null || !shadow.IsValid || !args.Buff.Caster.IsMe || !args.Buff.IsValid)
@@ -151,7 +158,7 @@ namespace OKTRAIO.Champions
                         }
                     };
 
-                    GameObject.OnCreate += delegate (GameObject sender, EventArgs args)
+                    GameObject.OnCreate += delegate(GameObject sender, EventArgs args)
                     {
                         var shadow = sender as Obj_AI_Minion;
                         if (shadow.IsValid && shadow != null && shadow.CharData.BaseSkinName.ToLower() == "zedshadow" ||
@@ -162,7 +169,7 @@ namespace OKTRAIO.Champions
                                 ActiveShadows.Add(shadow);
                         }
                     };
-                    GameObject.OnDelete += delegate (GameObject sender, EventArgs args)
+                    GameObject.OnDelete += delegate(GameObject sender, EventArgs args)
                     {
                         var shadow = sender as Obj_AI_Minion;
                         if (shadow.IsValid && shadow != null && shadow.CharData.BaseSkinName.ToLower() == "zedshadow" ||
@@ -229,6 +236,12 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code UPDATESLIDER)</font>");
             }
         }
+
+        #endregion
+
+        #region Game-Related Logic
+
+        #region Draw
 
         private void Drawing_OnDraw(EventArgs args)
         {
@@ -401,6 +414,8 @@ namespace OKTRAIO.Champions
 
         #endregion
 
+        #region Combo
+
         public override void Combo()
         {
             try
@@ -433,7 +448,7 @@ namespace OKTRAIO.Champions
                             }
                             if (Value.Use("combo.switch"))
                             {
-                                if (RIsSwitch)
+                                if (RIsSwitch && RShadow != null && RShadow.IsValid)
                                 {
                                     R.Cast();
                                 }
@@ -466,14 +481,15 @@ namespace OKTRAIO.Champions
                                     return;
 
                                 var pos =
-                                    RShadow.ServerPosition.Extend(WShadow, RShadow.Distance(WShadow) / 2)
+                                    RShadow.ServerPosition.Extend(WShadow, RShadow.Distance(WShadow)/2)
                                         .Perpendicular()
-                                        .Extend(Player.Instance, E.Range / 1.75f);
+                                        .Extend(Player.Instance, E.Range/1.75f);
                                 W.Cast(pos.To3D());
                             }
                             if (Q.IsReady())
                             {
-                                if (WShadow.IsInRange(Target, Q.Range) || RShadow.IsInRange(Target, Q.Range) ||
+                                if ((WShadow.IsInRange(Target, Q.Range) && WShadow != null && WShadow.IsValid) ||
+                                    (RShadow.IsInRange(Target, Q.Range) && RShadow != null && RShadow.IsValid) ||
                                     Q.IsInRange(Target))
                                 {
                                     Q.Cast(Target);
@@ -520,7 +536,7 @@ namespace OKTRAIO.Champions
                                 {
                                     if (RShadow != null && RShadow.IsValid)
                                     {
-                                        var pos = RShadow.ServerPosition.Extend(Target, RShadow.Distance(Target) * 2);
+                                        var pos = RShadow.ServerPosition.Extend(Target, RShadow.Distance(Target)*2);
                                         W.Cast(pos.To3D());
                                     }
                                 }
@@ -567,6 +583,10 @@ namespace OKTRAIO.Champions
             }
         }
 
+        #endregion
+
+        #region Harass
+
         public override void Harass()
         {
             try
@@ -597,6 +617,10 @@ namespace OKTRAIO.Champions
             }
         }
 
+        #endregion
+
+        #region LaneClear
+
         public override void Laneclear()
         {
             try
@@ -606,7 +630,7 @@ namespace OKTRAIO.Champions
                     if (W.IsReady() && !WIsSwitch && Value.Use("lane.w") &&
                         Value.Get("lane.w.mana") <= Player.Instance.ManaPercent)
                     {
-                        W.Cast(minion.ServerPosition.Extend(Player.Instance, Player.Instance.Distance(minion) * 2).To3D());
+                        W.Cast(minion.ServerPosition.Extend(Player.Instance, Player.Instance.Distance(minion)*2).To3D());
                     }
                     if (E.IsReady() && Value.Use("lane.e") && Value.Get("lane.e.mana") <= Player.Instance.ManaPercent &&
                         (WShadow.IsInRange(minion, E.Range) && WShadow.IsValid && WShadow != null) ||
@@ -630,10 +654,9 @@ namespace OKTRAIO.Champions
             }
         }
 
-        public override void Jungleclear()
-        {
-            //rip
-        }
+        #endregion
+
+        #region Flee
 
         public override void Flee()
         {
@@ -659,7 +682,8 @@ namespace OKTRAIO.Champions
                 }
                 if (Value.Use("flee.w") && W.IsReady())
                 {
-                    Player.Instance.Spellbook.CastSpell(SpellSlot.W, Game.CursorPos);
+                    Core.DelayAction(() => W.Cast(Player.Instance.Position.Extend(Game.CursorPos, W.Range).To3D()),
+                        Value.Get("flee.w.delay"));
                 }
             }
             catch (Exception e)
@@ -669,6 +693,10 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code FLEE)</font>");
             }
         }
+
+        #endregion
+
+        #region LastHit
 
         public override void LastHit()
         {
@@ -681,10 +709,10 @@ namespace OKTRAIO.Champions
                         if (Orbwalker.UnKillableMinionsList.Contains(minion))
                         {
                             if ((Prediction.Health.GetPrediction(minion, W.CastDelay + Q.CastDelay) <=
-                                 Player.Instance.GetSpellDamage(minion, SpellSlot.Q) * 1.5 && Q.IsReady() &&
+                                 Player.Instance.GetSpellDamage(minion, SpellSlot.Q)*1.5 && Q.IsReady() &&
                                  Value.Use("lasthit.q")) ||
                                 (Prediction.Health.GetPrediction(minion, W.CastDelay + E.CastDelay) <=
-                                 Player.Instance.GetSpellDamage(minion, SpellSlot.E) * 1.5 && E.IsReady() &&
+                                 Player.Instance.GetSpellDamage(minion, SpellSlot.E)*1.5 && E.IsReady() &&
                                  Value.Use("lasthit.e")) &&
                                 Value.Use("lasthit.w") && !WIsSwitch)
                             {
@@ -694,7 +722,7 @@ namespace OKTRAIO.Champions
                                 W.Cast(minion);
                             }
                             if (Prediction.Health.GetPrediction(minion, Q.CastDelay) <=
-                                Player.Instance.GetSpellDamage(minion, SpellSlot.Q) *
+                                Player.Instance.GetSpellDamage(minion, SpellSlot.Q)*
                                 ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() +
                                 1 &&
                                 Prediction.Health.GetPrediction(minion, Q.CastDelay) >= 1 &&
@@ -708,7 +736,7 @@ namespace OKTRAIO.Champions
                                 }
                             }
                             if (Prediction.Health.GetPrediction(minion, E.CastDelay) <=
-                                Player.Instance.GetSpellDamage(minion, SpellSlot.E) *
+                                Player.Instance.GetSpellDamage(minion, SpellSlot.E)*
                                 ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() +
                                 1 &&
                                 Prediction.Health.GetPrediction(minion, E.CastDelay) >= 1 &&
@@ -726,10 +754,10 @@ namespace OKTRAIO.Champions
                     else
                     {
                         if ((Prediction.Health.GetPrediction(minion, W.CastDelay + Q.CastDelay) <=
-                             Player.Instance.GetSpellDamage(minion, SpellSlot.Q) * 1.5 && Q.IsReady() &&
+                             Player.Instance.GetSpellDamage(minion, SpellSlot.Q)*1.5 && Q.IsReady() &&
                              Value.Use("lasthit.q")) ||
                             (Prediction.Health.GetPrediction(minion, W.CastDelay + E.CastDelay) <=
-                             Player.Instance.GetSpellDamage(minion, SpellSlot.E) * 1.5 && E.IsReady() &&
+                             Player.Instance.GetSpellDamage(minion, SpellSlot.E)*1.5 && E.IsReady() &&
                              Value.Use("lasthit.e")) &&
                             Value.Use("lasthit.w") && !WIsSwitch)
                         {
@@ -739,7 +767,7 @@ namespace OKTRAIO.Champions
                             W.Cast(minion);
                         }
                         if (Prediction.Health.GetPrediction(minion, Q.CastDelay) <=
-                            Player.Instance.GetSpellDamage(minion, SpellSlot.Q) *
+                            Player.Instance.GetSpellDamage(minion, SpellSlot.Q)*
                             ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() + 1 &&
                             Prediction.Health.GetPrediction(minion, Q.CastDelay) >= 1 &&
                             Value.Use("lasthit.q"))
@@ -752,7 +780,7 @@ namespace OKTRAIO.Champions
                             }
                         }
                         if (Prediction.Health.GetPrediction(minion, E.CastDelay) <=
-                            Player.Instance.GetSpellDamage(minion, SpellSlot.E) *
+                            Player.Instance.GetSpellDamage(minion, SpellSlot.E)*
                             ActiveShadows.Where(s => s != null && s.IsValid && s.IsInRange(minion, Q.Range)).Count() + 1 &&
                             Prediction.Health.GetPrediction(minion, E.CastDelay) >= 1 &&
                             Value.Use("lasthit.e"))
@@ -767,7 +795,8 @@ namespace OKTRAIO.Champions
 
                         if (Value.Use("lasthit.e") &&
                             minion.Health <= Player.Instance.GetSpellDamage(minion, SpellSlot.E) &&
-                            (IsValidNotNull(WShadow) && WShadow.IsInRange(minion, E.Range)) || (IsValidNotNull(RShadow) && RShadow.IsInRange(minion, E.Range)))
+                            (IsValidNotNull(WShadow) && WShadow.IsInRange(minion, E.Range)) ||
+                            (IsValidNotNull(RShadow) && RShadow.IsInRange(minion, E.Range)))
                         {
                             if (E.IsReady())
                             {
@@ -777,7 +806,8 @@ namespace OKTRAIO.Champions
                         }
                         if (Value.Use("lasthit.q") &&
                             minion.Health <= Player.Instance.GetSpellDamage(minion, SpellSlot.Q) &&
-                            (IsValidNotNull(WShadow) && WShadow.IsInRange(minion, Q.Range)) || (IsValidNotNull(RShadow) && RShadow.IsInRange(minion, Q.Range)))
+                            (IsValidNotNull(WShadow) && WShadow.IsInRange(minion, Q.Range)) ||
+                            (IsValidNotNull(RShadow) && RShadow.IsInRange(minion, Q.Range)))
                         {
                             if (Q.IsReady())
                             {
@@ -795,6 +825,14 @@ namespace OKTRAIO.Champions
             }
         }
 
+        #endregion
+
+        #endregion
+
+        #region Utils
+
+        #region GameOnUpdate
+
         private static void Game_OnUpdate(EventArgs args)
         {
             try
@@ -811,12 +849,22 @@ namespace OKTRAIO.Champions
             AutoE();
         }
 
+        #endregion
+
+        #region AutoE
+
         private static void AutoE()
         {
             try
             {
                 if (!Value.Use("harass.autoe"))
                     return;
+
+                if (Value.Use("harass.autoe.combodisable"))
+                {
+                    if (IsDoingCombo)
+                        return;
+                }
 
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(e => e.IsValid && !e.IsDead && e.IsTargetable))
                 {
@@ -842,6 +890,10 @@ namespace OKTRAIO.Champions
             }
         }
 
+        #endregion
+
+        #region KillSteal
+
         static void KillSteal()
         {
             try
@@ -851,13 +903,16 @@ namespace OKTRAIO.Champions
                 foreach (var enemy in e)
                 {
                     var damage = Player.Instance.CalculateDamageOnUnit(enemy, DamageType.Physical,
-                        GetRawComboDamage(enemy), true, true);
+                        GetRawComboDamage(enemy));
                     if (enemy.Health <= damage)
                     {
                         if (Q.IsReady() && (Q.IsInRange(enemy) || enemy.IsInRange(WShadow, Q.Range)) &&
                             Value.Use("killsteal.q"))
                         {
-                            Q.Cast(Q.GetPrediction(enemy).UnitPosition);
+                            if (Q.GetPrediction(enemy).HitChancePercent >= Value.Get("killsteal.q.hitchance"))
+                            {
+                                Q.Cast(Q.GetPrediction(enemy).UnitPosition);
+                            }
                         }
                         if (W.IsReady() && W.IsInRange(enemy) && Value.Use("killsteal.w") && !WIsSwitch)
                         {
@@ -879,12 +934,16 @@ namespace OKTRAIO.Champions
             }
         }
 
-        private static readonly float[] QBaseDamage = new float[6] { 0, 75, 115, 155, 195, 235 };
-        private static readonly float[] QFirstHitBonusDamage = new float[6] { 0, 45, 69, 93, 117, 141 };
-        private static readonly float[] EBaseDamage = new float[6] { 0, 60, 90, 120, 150, 180 };
-        private static readonly float[] RBasePercentDamage = new float[4] { 0, 30, 40, 50 };
+        #endregion
 
-        private static float GetRawSpellDamage(SpellSlot slot)
+        #region Damage
+
+        private static readonly float[] QBaseDamage = new float[6] {0, 75, 115, 155, 195, 235};
+        private static readonly float[] QFirstHitBonusDamage = new float[6] {0, 45, 69, 93, 117, 141};
+        private static readonly float[] EBaseDamage = new float[6] {0, 60, 90, 120, 150, 180};
+        private static readonly float[] RBasePercentDamage = new float[4] {0, 30, 40, 50};
+
+        private static float GetRawSpellDamage(SpellSlot slot, Obj_AI_Base target = null)
         {
             try
             {
@@ -893,11 +952,14 @@ namespace OKTRAIO.Champions
                 if (slot == SpellSlot.Q)
                 {
                     damage += QBaseDamage[Q.Level] + Player.Instance.FlatPhysicalDamageMod;
-                    damage += QBaseDamage[Q.Level] + (60f / 100f) * Player.Instance.FlatPhysicalDamageMod;
+                    if (Q.GetPrediction(target).Collision == false)
+                    {
+                        damage += QBaseDamage[Q.Level] + (60f/100f)*Player.Instance.FlatPhysicalDamageMod;
+                    }
                 }
                 if (slot == SpellSlot.E)
                 {
-                    damage += EBaseDamage[Q.Level] + (80f / 100f) * Player.Instance.FlatPhysicalDamageMod;
+                    damage += EBaseDamage[Q.Level] + (80f/100f)*Player.Instance.FlatPhysicalDamageMod;
                 }
                 if (slot == SpellSlot.R)
                 {
@@ -905,7 +967,7 @@ namespace OKTRAIO.Champions
                 }
                 if (slot == GetIgniteSpellSlot())
                 {
-                    damage += 50 + (20 * Player.Instance.Level);
+                    damage += 50 + (20*Player.Instance.Level);
                 }
                 return damage;
             }
@@ -952,7 +1014,7 @@ namespace OKTRAIO.Champions
                     }
                 }
                 if (Player.Instance.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
-                    damage += (RBasePercentDamage[R.Level] / 100f) * damage;
+                    damage += (RBasePercentDamage[R.Level]/100f)*damage;
                 return damage;
             }
             catch (Exception e)
@@ -982,5 +1044,9 @@ namespace OKTRAIO.Champions
                 return SpellSlot.Unknown;
             }
         }
+
+        #endregion
+
+        #endregion
     }
 }
