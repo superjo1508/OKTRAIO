@@ -432,35 +432,57 @@ namespace OKTRAIO.Champions
 
         private static void AIHeroClient_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            if (sender == null || args.Target == null || sender.IsStructure() || sender.IsAlly || sender.IsMinion ||
-                sender.IsMonster || sender.IsMe || args.SData.IsAutoAttack() || !_e.IsReady() ||
-                (args.Slot != SpellSlot.Q && args.Slot != SpellSlot.W && args.Slot != SpellSlot.E && args.Slot != SpellSlot.R) ||
-                (args.SData.TargettingType != SpellDataTargetType.Self &&
-                 args.SData.TargettingType != SpellDataTargetType.Unit &&
-                 args.SData.TargettingType != SpellDataTargetType.SelfAndUnit &&
-                 args.SData.TargettingType != SpellDataTargetType.SelfAoe &&
-                 args.SData.TargettingType != SpellDataTargetType.Cone &&
-                 args.SData.TargettingType != SpellDataTargetType.Location &&
-                 args.SData.TargettingType != SpellDataTargetType.Location2 &&
-                 args.SData.TargettingType != SpellDataTargetType.Location3 &&
-                 args.SData.TargettingType != SpellDataTargetType.LocationAoe &&
-                 args.SData.TargettingType != SpellDataTargetType.LocationSummon &&
-                 args.SData.TargettingType != SpellDataTargetType.LocationTunnel &&
-                 args.SData.TargettingType != SpellDataTargetType.LocationVector))
+
+            if ((args.Slot == SpellSlot.Q || args.Slot == SpellSlot.W || args.Slot == SpellSlot.E ||
+                args.Slot == SpellSlot.R) && sender.IsEnemy && _e.IsReady())
             {
-                return;
-            }
+                if (args.SData.TargettingType == SpellDataTargetType.Unit ||
+                    args.SData.TargettingType == SpellDataTargetType.SelfAndUnit ||
+                    args.SData.TargettingType == SpellDataTargetType.Self)
+                {
+                    if ((args.Target.NetworkId == Player.Instance.NetworkId && args.Time < 1.5 || args.End.Distance(Player.Instance.ServerPosition) <= Player.Instance.BoundingRadius * 3) && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                    {
+                        _e.Cast();
+                    }
+                }
+                else if (args.SData.TargettingType == SpellDataTargetType.LocationAoe)
+                {
+                    var castvector = new Geometry.Polygon.Circle(args.End, args.SData.CastRange).IsInside(Player.Instance.ServerPosition);
 
-            //var castvector = new Geometry.Polygon.Rectangle(args.Start, args.End, args.SData.LineWidth);
+                    if (castvector && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                    {
+                        _e.Cast();
+                    }
+                }
 
-            //if (MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue && castvector.IsInside(Player.Instance.ServerPosition))
-            //{
-            //    _e.Cast();
-            //}
+                else if (args.SData.TargettingType == SpellDataTargetType.Cone)
+                {
+                    var castvector = new Geometry.Polygon.Arc(args.Start, args.End, args.SData.CastConeAngle, args.SData.CastRange).IsInside(Player.Instance.ServerPosition);
 
-            if (MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue && (args.Target.NetworkId == Player.Instance.NetworkId && args.Time < 1.5 || args.End.Distance(Player.Instance.Position) <= Player.Instance.BoundingRadius * 3))
-            {
-                _e.Cast();
+                    if (castvector && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                    {
+                        _e.Cast();
+                    }
+                }
+
+                else if (args.SData.TargettingType == SpellDataTargetType.SelfAoe)
+                {
+                    var castvector = new Geometry.Polygon.Circle(sender.ServerPosition, args.SData.CastRadius).IsInside(Player.Instance.ServerPosition);
+
+                    if (castvector && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                    {
+                        _e.Cast();
+                    }
+                }
+                else
+                {
+                    var castvector = new Geometry.Polygon.Rectangle(args.Start, args.End, args.SData.LineWidth).IsInside(Player.Instance.ServerPosition);
+
+                    if (castvector && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                    {
+                        _e.Cast(); 
+                    }
+                }               
             }
         }
 
