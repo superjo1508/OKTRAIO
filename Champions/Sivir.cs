@@ -2,7 +2,6 @@
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
-using EloBuddy.SDK.Constants;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
@@ -95,7 +94,7 @@ namespace OKTRAIO.Champions
 
                 //misc
                 MainMenu.MiscMenu();
-                MainMenu._misc.AddGroupLabel("Auto E - Spell Settings", "misc.grouplabel.addonmenu", true);
+                MainMenu._misc.AddGroupLabel("Auto E - Spell Settings", "misc.grouplabel.addonmenu");
                 MainMenu._misc.AddSeparator();
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => a.Team != Player.Instance.Team))
                 {
@@ -447,7 +446,7 @@ namespace OKTRAIO.Champions
                 }
                 else if (args.SData.TargettingType == SpellDataTargetType.LocationAoe)
                 {
-                    var castvector = new Geometry.Polygon.Circle(args.End, args.SData.CastRange).IsInside(Player.Instance.ServerPosition);
+                    var castvector = new Geometry.Polygon.Circle(args.End, args.SData.CastRadius).IsInside(Player.Instance.ServerPosition);
 
                     if (castvector && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
                     {
