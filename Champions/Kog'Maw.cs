@@ -2,7 +2,7 @@
 
 namespace OKTRAIO.Champions
 {
-    class KogMaw : AIOChampion
+    internal class KogMaw : AIOChampion
     {
         public override void Combo()
         {

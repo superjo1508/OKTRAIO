@@ -4,21 +4,66 @@ using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using OKTRAIO.Database.Spell_Library;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
 using SharpDX;
-using Color = System.Drawing.Color;
 using Spell = EloBuddy.SDK.Spell;
 
 namespace OKTRAIO.Champions
 {
-    class Lucian : AIOChampion
+    internal class Lucian : AIOChampion
     {
+        #region Drawings
+
+        private static void Draw(EventArgs args)
+        {
+            var colorQ = MainMenu._draw.GetColor("color.q");
+            var widthQ = MainMenu._draw.GetWidth("width.q");
+            var colorQW = MainMenu._draw.GetColor("color.qw");
+            var widthQW = MainMenu._draw.GetWidth("width.qw");
+            var colorR = MainMenu._draw.GetColor("color.r");
+            var widthR = MainMenu._draw.GetWidth("width.r");
+
+            if (!Value.Use("draw.disable"))
+            {
+                if (Value.Use("draw.q") && ((Value.Use("draw.ready") && _q.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorQ,
+                        Radius = _q.Range,
+                        BorderWidth = widthQ
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.qw") && ((Value.Use("draw.ready") && _q.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorQW,
+                        Radius = _q1.Range,
+                        BorderWidth = widthQW
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorR,
+                        Radius = _r.Range,
+                        BorderWidth = widthR
+                    }.Draw(Player.Instance.Position);
+                }
+            }
+        }
+
+        #endregion
 
         #region Initialize and Declare
+
         private static Spell.Targeted _q;
         private static Spell.Skillshot _q1, _w, _e, _r;
         private static bool _passive;
@@ -36,7 +81,7 @@ namespace OKTRAIO.Champions
             _e = new Spell.Skillshot(SpellSlot.E, 475, SkillShotType.Linear);
             _r = new Spell.Skillshot(SpellSlot.R, 1400, SkillShotType.Linear, 500, 2800, 110);
 
-            MainMenu.ComboKeys(true, true, true, false);
+            MainMenu.ComboKeys(useR: false);
             MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.gl.pref", true);
             MainMenu._combo.Add("combo.mode", new Slider("Combo Mode", 0, 0, 1)).OnValueChange += ModeSlider;
             Value.AdvancedMenuItemUiDs.Add("combo.mode");
@@ -49,46 +94,48 @@ namespace OKTRAIO.Champions
             MainMenu._combo.AddCheckBox("combo.wcol", "Check for W collision", false, true);
             MainMenu._combo.AddCheckBox("combo.egap", "Use E to Gapclose (Not Recommended)", false, true);
             MainMenu._combo.AddSeparator();
-            MainMenu._combo.Add("combo.emode", new Slider("E Mode: ", 0, 0, 2)).OnValueChange += ComboEModeSlider;
+            MainMenu._combo.Add("combo.emode", new Slider("E Mode: ", 0, 0, 1)).OnValueChange += ComboEModeSlider;
             Value.AdvancedMenuItemUiDs.Add("combo.emode");
-            MainMenu._combo["combo.emode"].Cast<Slider>().IsVisible = MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
+            MainMenu._combo["combo.emode"].Cast<Slider>().IsVisible =
+                MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
             MainMenu._combo.Add("combo.rbind",
                 new KeyBind("Semi-Auto R (No Lock)", false, KeyBind.BindTypes.HoldActive, 'T'))
                 .OnValueChange += OnUltButton;
             Value.AdvancedMenuItemUiDs.Add("combo.rbind");
             MainMenu._combo["combo.rbind"].IsVisible = MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
 
-            MainMenu.HarassKeys(true, true, true, false);
+            MainMenu.HarassKeys(useR: false);
             MainMenu._harass.AddGroupLabel("Harass Preferences", "harass.gl.pref", true);
             MainMenu._harass.AddCheckBox("harass.eq", "Use Extended Q in Harass", true, true);
             MainMenu._harass.AddCheckBox("harass.wcol", "Check for W collision", false, true);
             MainMenu._harass.AddSeparator();
-            MainMenu._harass.Add("harass.emode", new Slider("E Mode: ", 0, 0, 2)).OnValueChange += HarassEModeSlider;
+            MainMenu._harass.Add("harass.emode", new Slider("E Mode: ", 0, 0, 1)).OnValueChange += HarassEModeSlider;
             Value.AdvancedMenuItemUiDs.Add("harass.emode");
-            MainMenu._harass["harass.emode"].IsVisible = MainMenu._harass["harass.advanced"].Cast<CheckBox>().CurrentValue;
+            MainMenu._harass["harass.emode"].IsVisible =
+                MainMenu._harass["harass.advanced"].Cast<CheckBox>().CurrentValue;
             MainMenu._harass.AddSlider("harass.mana", "Mana Manager:", 60, 0, 100, true);
 
-            MainMenu.JungleKeys(true, true, true, false);
+            MainMenu.JungleKeys(useR: false);
             MainMenu._jungle.AddSlider("jungle.mana", "Mana Manager:", 80, 0, 100, true);
 
-            MainMenu.LaneKeys(true, true, true, false);
+            MainMenu.LaneKeys(useR: false);
             MainMenu._lane.AddGroupLabel("LaneClear Preferences", "lane.gl.pref", true);
             MainMenu._lane.AddCheckBox("lane.qharass", "Q = Harass Enemies", false, true);
             MainMenu._lane.AddSeparator();
             MainMenu._lane.AddSlider("lane.minfarm", "Minions for Farm Q", 3, 0, 6, true);
             MainMenu._lane.AddSlider("lane.mana", "Mana Manager:", 80, 0, 100, true);
 
-            MainMenu.KsKeys(true, false, true, false);
+            MainMenu.KsKeys(useW: false);
 
-            MainMenu.DrawKeys(true, false, false, true);
+            MainMenu.DrawKeys(useW: false, useE: false);
             MainMenu._draw.AddSeparator();
             MainMenu._draw.AddLabel("W/Extended Q Settings");
             MainMenu._draw.Add("draw.qw", new CheckBox("Draw W/Extended Q"));
             MainMenu._draw.AddColorItem("color.qw");
             MainMenu._draw.AddWidthItem("width.qw");
             MainMenu.DamageIndicator(true);
-            
-            MainMenu.FleeKeys(false, false, true, false);
+
+            MainMenu.FleeKeys(false, useW: false, useR: false);
             Value.Init();
             UpdateSlider(1);
             UpdateSlider(2);
@@ -114,6 +161,7 @@ namespace OKTRAIO.Champions
         #region Gamerelated Logic
 
         #region SpellLogic
+
         private static void SpellLogic()
         {
             if (_target is AIHeroClient)
@@ -171,7 +219,8 @@ namespace OKTRAIO.Champions
             if (_target is Obj_AI_Base)
             {
                 var targets = new List<Obj_AI_Minion>();
-                if ((_target as Obj_AI_Base).IsMonster && Value.Mode(Orbwalker.ActiveModes.JungleClear) && Value.Get("jungle.mana") < Player.Instance.ManaPercent)
+                if ((_target as Obj_AI_Base).IsMonster && Value.Mode(Orbwalker.ActiveModes.JungleClear) &&
+                    Value.Get("jungle.mana") < Player.Instance.ManaPercent)
                 {
                     targets =
                         EntityManager.MinionsAndMonsters.Monsters.Where(
@@ -186,25 +235,14 @@ namespace OKTRAIO.Champions
                     else if (_w.IsReady() && _passive == false && Value.Use("jungle.w"))
                     {
                         _w.Cast(targets[0].ServerPosition);
-
                     }
                     else if (_e.IsReady() && Value.Use("jungle.e"))
                     {
-                        if (InsideCone())
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                    .To3D());
-                        }
-                        else
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 255)
-                                    .To3D());
-                        }
+                        _e.Cast(OKTRGeometry.SafeDashPosRework(200, _target as Obj_AI_Base, 120));
                     }
                 }
-                else if ((_target as Obj_AI_Base).IsMinion && Value.Get("lane.mana") < Player.Instance.ManaPercent && Value.Mode(Orbwalker.ActiveModes.LaneClear))
+                else if ((_target as Obj_AI_Base).IsMinion && Value.Get("lane.mana") < Player.Instance.ManaPercent &&
+                         Value.Mode(Orbwalker.ActiveModes.LaneClear))
                 {
                     targets =
                         EntityManager.MinionsAndMonsters.EnemyMinions.Where(
@@ -218,26 +256,15 @@ namespace OKTRAIO.Champions
                     else if (_w.IsReady() && _passive == false && Value.Use("lane.w"))
                     {
                         _w.Cast(targets[0].ServerPosition);
-
                     }
                     else if (_e.IsReady() && Value.Use("lane.e"))
                     {
-                        if (InsideCone())
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                    .To3D());
-                        }
-                        else
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 255)
-                                    .To3D());
-                        }
+                        _e.Cast(OKTRGeometry.SafeDashPosRework(200, _target as Obj_AI_Base, 120));
                     }
                 }
             }
         }
+
         #endregion
 
         #region QLogic
@@ -283,11 +310,11 @@ namespace OKTRAIO.Champions
                     m => m.Distance(Player.Instance) < _q1.Range)
                     .ToList();
             foreach (var minion in from minion in targetMinions
-                                   let qHit =
-                                       new Geometry.Polygon.Rectangle(Player.Instance.Position,
-                                           Player.Instance.Position.Extend(minion.Position, _q1.Range).To3D(), _q1.Width)
-                                   where hitMinions.Count(x => qHit.IsInside(x.Position.To2D())) >= Value.Get("lane.minfarm")
-                                   select minion)
+                let qHit =
+                    new Geometry.Polygon.Rectangle(Player.Instance.Position,
+                        Player.Instance.Position.Extend(minion.Position, _q1.Range).To3D(), _q1.Width)
+                where hitMinions.Count(x => qHit.IsInside(x.Position.To2D())) >= Value.Get("lane.minfarm")
+                select minion)
             {
                 return minion;
             }
@@ -300,7 +327,7 @@ namespace OKTRAIO.Champions
                         m => m.Distance(Player.Instance) < _q.Range)
                         .OrderByDescending(m => m.MinionLevel)
                         .ToList();
-                return (targetMonsters[0]);
+                return targetMonsters[0];
             }
             return null;
         }
@@ -308,6 +335,7 @@ namespace OKTRAIO.Champions
         #endregion
 
         #region WLogic
+
         private static void WLogic()
         {
             if ((Value.Use("combo.wcol") && Value.Mode(Orbwalker.ActiveModes.Combo)) ||
@@ -322,68 +350,22 @@ namespace OKTRAIO.Champions
                 _w.Cast(_target.Position);
             }
         }
+
         #endregion
 
         #region ELogic
+
         private static void ELogic()
         {
             if (Value.Mode(Orbwalker.ActiveModes.Combo))
             {
                 if (Value.Get("combo.emode") == 0)
                 {
-                    var ePos = OKTRGeometry.SafeDashPos(_e.Range);
+                    var ePos = OKTRGeometry.SafeDashPosRework(300, _target as Obj_AI_Base, 120);
                     if (ePos != Vector3.Zero)
                         _e.Cast(ePos);
-                    else
-                    {
-                        if (Game.CursorPos.Distance(Player.Instance.Position) >
-                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2 &&
-                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
-                        {
-                            _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
-                        }
-                        else
-                        {
-                            if (InsideCone())
-                            {
-                                _e.Cast(
-                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), -65)
-                                        .To3D());
-                            }
-                            else
-                            {
-                                _e.Cast(
-                                    OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                        .To3D());
-                            }
-                        }
-                    }
                 }
                 else if (Value.Get("combo.emode") == 1)
-                {
-                    if (Game.CursorPos.Distance(Player.Instance.Position) >
-                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2 &&
-                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
-                    {
-                        _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
-                    }
-                    else
-                    {
-                        if (InsideCone())
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), -65)
-                                    .To3D());
-                        }
-                        else
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                    .To3D());
-                        }
-                    }
-                }
-                else if (Value.Get("combo.emode") == 2)
                 {
                     _e.Cast(Game.CursorPos);
                 }
@@ -392,43 +374,21 @@ namespace OKTRAIO.Champions
             {
                 if (Value.Get("harass.emode") == 0)
                 {
-                    var ePos = OKTRGeometry.SafeDashPos(_e.Range);
+                    var ePos = OKTRGeometry.SafeDashPosRework(200, _target as Obj_AI_Base, 120);
                     if (ePos != Vector3.Zero)
                         _e.Cast(ePos);
                 }
                 else if (Value.Get("harass.emode") == 1)
                 {
-                    if (Game.CursorPos.Distance(Player.Instance.Position) >
-                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2 &&
-                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
-                    {
-                        _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
-                    }
-                    else
-                    {
-                        if (InsideCone())
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 255)
-                                    .To3D());
-                        }
-                        else
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 65)
-                                    .To3D());
-                        }
-                    }
-                }
-                else if (Value.Get("harass.emode") == 2)
-                {
                     _e.Cast(Game.CursorPos);
                 }
             }
         }
+
         #endregion
 
         #region Combo
+
         public override void Combo()
         {
             if (!_passive && Value.Use("combo.q") && Value.Use("combo.eq") && Value.Get("combo.mode") == 1)
@@ -447,9 +407,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Harass
+
         public override void Harass()
         {
             if (!_passive && Value.Use("harass.eq") && Player.Instance.ManaPercent > Value.Get("harass.mana"))
@@ -457,9 +419,11 @@ namespace OKTRAIO.Champions
                 QExtendLogic(TargetSelector.GetTarget(_q1.Range, DamageType.Physical));
             }
         }
+
         #endregion
 
         #region Laneclear
+
         public override void Laneclear()
         {
             if (!_passive && Value.Use("lane.qharass") && Value.Use("lane.q") &&
@@ -468,9 +432,11 @@ namespace OKTRAIO.Champions
                 QExtendLogic(TargetSelector.GetTarget(_q1.Range, DamageType.Physical));
             }
         }
+
         #endregion
 
         #region Flee
+
         public override void Flee()
         {
             if (Value.Use("flee.e") && _e.IsReady())
@@ -478,6 +444,7 @@ namespace OKTRAIO.Champions
                 _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
             }
         }
+
         #endregion
 
         #endregion
@@ -485,22 +452,27 @@ namespace OKTRAIO.Champions
         #region Utils
 
         #region OnTick
+
         private void Game_OnTick(EventArgs args)
         {
             if (Value.Mode(Orbwalker.ActiveModes.Harass)) Harass();
             if (Value.Use("killsteal.e")) Killsteal();
         }
+
         #endregion
 
         #region OnUltButton
+
         private static void OnUltButton(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
         {
             if (args.NewValue && TargetSelector.GetTarget(_r.Range, DamageType.Physical) != null)
                 _r.Cast(TargetSelector.GetTarget(_r.Range, DamageType.Physical).ServerPosition);
         }
+
         #endregion
 
         #region KillSteal
+
         private static void Killsteal()
         {
             if (KsTarget() == null) return;
@@ -508,7 +480,7 @@ namespace OKTRAIO.Champions
                 if (Prediction.Health.GetPrediction(KsTarget(), Game.Ping + _e.CastDelay) <
                     Player.Instance.GetAutoAttackDamage(KsTarget()) + SpellDamage.LucianPassive())
                 {
-                    var safeE = OKTRGeometry.SafeDashPos(_e.Range);
+                    var safeE = OKTRGeometry.SafeDashPosRework(200, KsTarget(), 120);
                     if (safeE != Vector3.Zero)
                     {
                         _e.Cast(safeE);
@@ -522,19 +494,21 @@ namespace OKTRAIO.Champions
                 }
             if (KsTarget().Distance(Player.Instance) < Player.Instance.GetAutoAttackRange())
             {
-                if (!Orbwalker.IsAutoAttacking && _passive && Prediction.Health.GetPrediction(KsTarget(), Game.Ping + _e.CastDelay) <
+                if (!Orbwalker.IsAutoAttacking && _passive &&
+                    Prediction.Health.GetPrediction(KsTarget(), Game.Ping + _e.CastDelay) <
                     Player.Instance.GetAutoAttackDamage(KsTarget()) + SpellDamage.LucianPassive())
                 {
                     ToggleOrb();
                     Player.IssueOrder(GameObjectOrder.AttackUnit, KsTarget());
-                    Core.DelayAction(ToggleOrb, (int)(Player.Instance.AttackCastDelay * 1000));
+                    Core.DelayAction(ToggleOrb, (int) (Player.Instance.AttackCastDelay*1000));
                 }
-                else if (!Orbwalker.IsAutoAttacking && Prediction.Health.GetPrediction(KsTarget(), Game.Ping + _e.CastDelay) <
-                    Player.Instance.GetAutoAttackDamage(KsTarget()))
+                else if (!Orbwalker.IsAutoAttacking &&
+                         Prediction.Health.GetPrediction(KsTarget(), Game.Ping + _e.CastDelay) <
+                         Player.Instance.GetAutoAttackDamage(KsTarget()))
                 {
                     ToggleOrb();
                     Player.IssueOrder(GameObjectOrder.AttackUnit, KsTarget(), true);
-                    Core.DelayAction(ToggleOrb, (int)(Player.Instance.AttackCastDelay * 1000));
+                    Core.DelayAction(ToggleOrb, (int) (Player.Instance.AttackCastDelay*1000));
                 }
             }
         }
@@ -542,11 +516,17 @@ namespace OKTRAIO.Champions
 
         private static AIHeroClient KsTarget()
         {
-            return Variables.CloseEnemies(Player.Instance.AttackRange + _e.Range * 1.1f).OrderBy(e => e.Distance(Player.Instance)).ThenBy(e => e.Health).FirstOrDefault();
+            return
+                Variables.CloseEnemies(Player.Instance.AttackRange + _e.Range*1.1f)
+                    .OrderBy(e => e.Distance(Player.Instance))
+                    .ThenBy(e => e.Health)
+                    .FirstOrDefault();
         }
+
         #endregion
 
         #region OnSpellCast
+
         private static void OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             if (sender.NetworkId != Player.Instance.NetworkId) return;
@@ -562,12 +542,13 @@ namespace OKTRAIO.Champions
             if (args.Slot == SpellSlot.Q || args.Slot == SpellSlot.W || args.Slot == SpellSlot.E)
             {
                 _passive = true;
-
             }
         }
+
         #endregion
 
         #region Orbwalker
+
         private static void OrbwalkerOnPostAttack(AttackableUnit target, EventArgs args)
         {
             if (target.IsValidTarget())
@@ -591,31 +572,23 @@ namespace OKTRAIO.Champions
         }
 
         #endregion
-
-        #region Geometry-Cone
-        private static bool InsideCone()
-        {
-            if (_target == null) return false;
-            var cone = new Geometry.Polygon.Sector(Player.Instance.Position,
-                            OKTRGeometry.Deviation(Player.Instance.Position.To2D(), _target.Position.To2D(), 90).To3D(), Geometry.DegreeToRadian(180),
-                            (Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2));
-            return cone.IsInside(Game.CursorPos.To2D());
-        }
-        #endregion
-
+        
         #region Humanized Delay
+
         public static int GetSpellDelay
         {
-            get { return 50 * (new Random().Next(_randomizerOne, _randomizerTwo) / 10); }
+            get { return 50*(new Random().Next(_randomizerOne, _randomizerTwo)/10); }
         }
 
         private static void SpeedSlider(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
         {
             UpdateSlider(1);
         }
+
         #endregion
 
         #region Slider
+
         private static void ComboEModeSlider(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
         {
             UpdateSlider(2);
@@ -665,13 +638,9 @@ namespace OKTRAIO.Champions
 
                     if (Value.Get("combo.emode") == 0)
                     {
-                        displayName = displayName + "Safe";
+                        displayName = displayName + "Best";
                     }
                     else if (Value.Get("combo.emode") == 1)
-                    {
-                        displayName = displayName + "Burst";
-                    }
-                    else if (Value.Get("combo.emode") == 2)
                     {
                         displayName = displayName + "To Mouse";
                     }
@@ -697,13 +666,9 @@ namespace OKTRAIO.Champions
 
                     if (Value.Get("harass.emode") == 0)
                     {
-                        displayName = displayName + "Safe";
+                        displayName = displayName + "Best";
                     }
                     else if (Value.Get("harass.emode") == 1)
-                    {
-                        displayName = displayName + "Burst";
-                    }
-                    else if (Value.Get("harass.emode") == 2)
                     {
                         displayName = displayName + "To Mouse";
                     }
@@ -717,9 +682,11 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code anal)</font>");
             }
         }
+
         #endregion
 
         #region Damage
+
         internal static float GetRawDamage(Obj_AI_Base target)
         {
             float damage = 0;
@@ -745,54 +712,9 @@ namespace OKTRAIO.Champions
             }
             return damage;
         }
-        #endregion 
 
         #endregion
 
-        #region Drawings
-
-        private static void Draw(EventArgs args)
-        {
-            Color colorQ = MainMenu._draw.GetColor("color.q");
-            var widthQ = MainMenu._draw.GetWidth("width.q");
-            Color colorQW = MainMenu._draw.GetColor("color.qw");
-            var widthQW = MainMenu._draw.GetWidth("width.qw");
-            Color colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
-
-            if (!Value.Use("draw.disable"))
-            {
-                if (Value.Use("draw.q") && ((Value.Use("draw.ready") && _q.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorQ,
-                        Radius = _q.Range,
-                        BorderWidth = widthQ
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.qw") && ((Value.Use("draw.ready") && _q.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorQW,
-                        Radius = _q1.Range,
-                        BorderWidth = widthQW
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorR,
-                        Radius = _r.Range,
-                        BorderWidth = widthR
-                    }.Draw(Player.Instance.Position);
-                }
-            }
-        }
-
         #endregion
-
     }
 }

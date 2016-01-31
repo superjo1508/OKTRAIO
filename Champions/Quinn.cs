@@ -2,7 +2,7 @@
 
 namespace OKTRAIO.Champions
 {
-    class Quinn : AIOChampion
+    internal class Quinn : AIOChampion
     {
         public override void Combo()
         {

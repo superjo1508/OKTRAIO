@@ -13,7 +13,6 @@ namespace OKTRAIO.Champions
 {
     internal class Teemo : AIOChampion
     {
-
         #region Initialize and Declare
 
         private static Spell.Targeted _q;
@@ -21,7 +20,6 @@ namespace OKTRAIO.Champions
         private static Spell.Skillshot _r;
         private static int _rDelay;
         private static readonly Vector2 Offset = new Vector2(1, 0);
-
 
         public override void Init()
         {
@@ -39,7 +37,7 @@ namespace OKTRAIO.Champions
                 //menu
 
                 //combo
-                MainMenu.ComboKeys(true, true, false, true);
+                MainMenu.ComboKeys(useE: false);
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
                 MainMenu._combo.AddGroupLabel("Use Q only on:", "combo.grouplabe2.addonmenu");
@@ -52,23 +50,23 @@ namespace OKTRAIO.Champions
                 }
                 MainMenu._combo.AddSlider("combo.w.distance", "Use W when there is an enemy in {0} range", 600, 1, 1200,
                     true);
-                MainMenu._combo.AddSlider("combo.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);               
+                MainMenu._combo.AddSlider("combo.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
 
                 //flee
-                MainMenu.FleeKeys(true, true, false, true);
+                MainMenu.FleeKeys(useE: false);
                 MainMenu._flee.AddSeparator();
                 MainMenu._flee.AddSlider("flee.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
                 MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
                 MainMenu.FleeManaManager(true, true, false, true, 20, 20, 0, 20);
 
                 //lasthit
-                MainMenu.LastHitKeys(true, false, false, false);
+                MainMenu.LastHitKeys(useW: false, useE: false, useR: false);
                 MainMenu._lasthit.AddSeparator();
                 MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
                 MainMenu.LasthitManaManager(true, false, false, false, 20, 0, 0, 0);
 
                 //laneclear
-                MainMenu.LaneKeys(true, false, false, true);
+                MainMenu.LaneKeys(useW: false, useE: false);
                 MainMenu._lane.AddSeparator();
                 MainMenu._lane.AddSlider("lane.r.min", "Min. {0} minions for R", 3, 1, 7, true);
                 MainMenu._lane.AddSlider("lane.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
@@ -76,7 +74,7 @@ namespace OKTRAIO.Champions
                 MainMenu.LaneManaManager(true, false, false, true, 60, 0, 0, 60);
 
                 //jungleclear
-                MainMenu.JungleKeys(true, false, false, true);
+                MainMenu.JungleKeys(useW: false, useE: false);
                 MainMenu._jungle.AddSeparator();
                 MainMenu._jungle.AddSlider("jungle.r.min", "Min. {0} minions for R", 3, 1, 4, true);
                 MainMenu._jungle.AddSlider("jungle.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
@@ -84,13 +82,13 @@ namespace OKTRAIO.Champions
                 MainMenu.JungleManaManager(true, false, false, true, 60, 0, 0, 60);
 
                 //harass
-                MainMenu.HarassKeys(true, false, false, false);
+                MainMenu.HarassKeys(useW: false, useE: false, useR: false);
                 MainMenu._harass.AddSeparator();
                 MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
                 MainMenu.HarassManaManager(true, false, false, false, 60, 0, 0, 0);
 
                 //Ks
-                MainMenu.KsKeys(true, false, false, false);
+                MainMenu.KsKeys(useW: false, useE: false, useR: false);
                 MainMenu._ks.AddSeparator();
                 MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
                 MainMenu.KsManaManager(true, false, false, false, 20, 0, 0, 0);
@@ -126,7 +124,7 @@ namespace OKTRAIO.Champions
                 MainMenu._misc.AddSlider("misc.r.delay", "Shroom Cast Delay", 1500, 1000, 4000, true);
 
                 //draw
-                MainMenu.DrawKeys(true, false, false, true);
+                MainMenu.DrawKeys(useW: false, useE: false);
                 MainMenu._draw.AddSeparator();
                 MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
                 MainMenu._draw.AddCheckBox("draw.r.auto", "Draw Auto Shroom Locations", true, true);
@@ -164,11 +162,13 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
             }
         }
+
         #endregion
 
         #region Gamerelated Logic
 
         #region Combo
+
         public override void Combo()
         {
             if (_q.IsReady() && Value.Use("combo.q"))
@@ -207,9 +207,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Harass
+
         public override void Harass()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Magical);
@@ -223,16 +225,20 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Laneclear
+
         public override void Laneclear()
         {
             var minionq =
                 EntityManager.MinionsAndMonsters.GetLaneMinions()
                     .OrderByDescending(a => a.MaxHealth)
                     .FirstOrDefault(
-                        a => a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) && a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
+                        a =>
+                            a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) &&
+                            a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
 
 
             if (_q.IsReady() && Value.Use("lane.q") && Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
@@ -256,9 +262,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Jungleclear
+
         public override void Jungleclear()
         {
             var monsterq =
@@ -270,7 +278,8 @@ namespace OKTRAIO.Champions
                             a.Health >= QDamage(a));
 
 
-            if (_q.IsReady() && Value.Use("jungle.q") && Player.Instance.ManaPercent >= Value.Get("jungle.q.mana") && !Orbwalker.IsAutoAttacking)
+            if (_q.IsReady() && Value.Use("jungle.q") && Player.Instance.ManaPercent >= Value.Get("jungle.q.mana") &&
+                !Orbwalker.IsAutoAttacking)
             {
                 if (monsterq != null)
                 {
@@ -293,9 +302,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Flee
+
         public override void Flee()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Magical);
@@ -329,16 +340,20 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Lasthit
+
         public override void LastHit()
         {
             var minion =
                 EntityManager.MinionsAndMonsters.GetLaneMinions()
                     .OrderByDescending(a => a.MaxHealth)
                     .FirstOrDefault(
-                        a => a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) && a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
+                        a =>
+                            a.IsValidTarget(_q.Range) && a.Health <= QDamage(a) &&
+                            a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
 
 
             if (_q.IsReady() && Value.Use("lasthit.q") && Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
@@ -349,6 +364,7 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #endregion
@@ -356,6 +372,7 @@ namespace OKTRAIO.Champions
         #region Utils
 
         #region OnUpdate
+
         private static void GameOnUpdate(EventArgs args)
         {
             if (_r.IsLearned)
@@ -370,21 +387,28 @@ namespace OKTRAIO.Champions
 
             AutoShroom();
         }
+
         #endregion
 
         #region OnSpellCast
+
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            if (!sender.IsMe) { return; }
+            if (!sender.IsMe)
+            {
+                return;
+            }
 
             if (args.Slot == SpellSlot.R)
             {
                 _rDelay = Core.GameTickCount;
             }
         }
+
         #endregion
 
         #region AntiGapCloser
+
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
             if (sender.IsAlly || !Value.Use("misc.q.gapcloser"))
@@ -397,16 +421,20 @@ namespace OKTRAIO.Champions
                 _q.Cast(sender);
             }
         }
+
         #endregion
 
         #region Check RStacks
+
         private static int Rstacks
         {
             get { return _r.Handle.Ammo; }
         }
+
         #endregion
 
         #region Vector Shroomed
+
         private static bool Shroomed(Vector3 castposition)
         {
             return
@@ -421,9 +449,11 @@ namespace OKTRAIO.Champions
                 _r.Cast(location);
             }
         }
+
         #endregion
 
         #region Killsteal
+
         private static void Ks()
         {
             if (_q.IsReady() && Value.Use("killsteal.q") && Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
@@ -440,9 +470,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region AutoR
+
         private static void AutoRcc()
         {
             var targetq =
@@ -487,9 +519,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region AutoPlaceShroom
+
         private static void AutoShroom()
         {
             if (_r.IsReady())
@@ -706,9 +740,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Timing
+
         private static float EDotTime(Obj_AI_Base target)
         {
             if (target.HasBuff("toxicshotparticle"))
@@ -726,9 +762,11 @@ namespace OKTRAIO.Champions
             }
             return 0;
         }
+
         #endregion
 
         #region Damages
+
         private static float EDotdamageRaw(Obj_AI_Base target)
         {
             float dmg = 0;
@@ -827,6 +865,7 @@ namespace OKTRAIO.Champions
             }
             return damage;
         }
+
         #endregion
 
         #endregion
@@ -993,6 +1032,5 @@ namespace OKTRAIO.Champions
         }
 
         #endregion
-
     }
 }

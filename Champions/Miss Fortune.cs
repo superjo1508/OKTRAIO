@@ -2,7 +2,7 @@
 
 namespace OKTRAIO.Champions
 {
-    class MissFortune : AIOChampion
+    internal class MissFortune : AIOChampion
     {
         public override void Combo()
         {

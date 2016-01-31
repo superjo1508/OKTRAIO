@@ -10,6 +10,15 @@ namespace OKTRAIO.Menu_Settings
 {
     public static class Value
     {
+        public static readonly string[] MenuStrings =
+        {
+            "combo", "lane", "jungle", "lasthit", "harass", "flee", "misc",
+            "killsteal", "draw", "activator", "baseult", "randomult", "bushreveal"
+        };
+
+        public static List<string> AdvancedMenuItemUiDs = new List<string>();
+        public static List<Menu> MenuList = new List<Menu>();
+
         public static void Init()
         {
             if (MainMenu._combo != null) MenuList.Add(MainMenu._combo);
@@ -26,10 +35,6 @@ namespace OKTRAIO.Menu_Settings
             if (UtilityMenu.Randomult != null) MenuList.Add(UtilityMenu.Randomult);
             if (UtilityMenu.Bushreveal != null) MenuList.Add(UtilityMenu.Bushreveal);
         }
-
-        public static readonly string[] MenuStrings = { "combo", "lane", "jungle", "lasthit", "harass", "flee", "misc", "killsteal", "draw", "activator", "baseult", "randomult", "bushreveal" };
-        public static List<string> AdvancedMenuItemUiDs = new List<string>();
-        public static List<Menu> MenuList = new List<Menu>();
 
         public static bool Use(string id)
         {
@@ -65,7 +70,8 @@ namespace OKTRAIO.Menu_Settings
             menu[uid].Cast<CheckBox>().IsVisible = menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
         }
 
-        public static void AddSlider(this Menu menu, string uid, string displayName, int defaultValue = 0, int minValue = 0, int maxValue = 100, bool advanced = false)
+        public static void AddSlider(this Menu menu, string uid, string displayName, int defaultValue = 0,
+            int minValue = 0, int maxValue = 100, bool advanced = false)
         {
             menu.Add(uid, new Slider(displayName, defaultValue, minValue, maxValue));
             if (!advanced) return;
@@ -80,7 +86,8 @@ namespace OKTRAIO.Menu_Settings
                 menu.Add(uid, new Label(text));
                 if (!advanced) return;
                 AdvancedMenuItemUiDs.Add(uid);
-                menu[uid].Cast<Label>().IsVisible = menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
+                menu[uid].Cast<Label>().IsVisible =
+                    menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
             }
             else
             {
@@ -95,7 +102,8 @@ namespace OKTRAIO.Menu_Settings
                 menu.Add(uid, new GroupLabel(text));
                 if (!advanced) return;
                 AdvancedMenuItemUiDs.Add(uid);
-                menu[uid].Cast<GroupLabel>().IsVisible = menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
+                menu[uid].Cast<GroupLabel>().IsVisible =
+                    menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
             }
             else
             {
@@ -111,7 +119,9 @@ namespace OKTRAIO.Menu_Settings
         public static void AdvancedModeChanged(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
         {
             if (AdvancedMenuItemUiDs.All(uid => MenuSubString(sender.SerializationId) != MenuSubString(uid))) return;
-            foreach (var box in AdvancedMenuItemUiDs.Where(uid=>MenuSubString(sender.SerializationId) == MenuSubString(uid)))
+            foreach (
+                var box in
+                    AdvancedMenuItemUiDs.Where(uid => MenuSubString(sender.SerializationId) == MenuSubString(uid)))
             {
                 MenuList.Find(m => m.UniqueMenuId.Contains(MenuSubString(box)))[box].IsVisible = args.NewValue;
             }

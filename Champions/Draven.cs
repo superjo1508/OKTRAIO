@@ -8,16 +8,15 @@ using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using OKTRAIO.Menu_Settings;
-using OKTRAIO.Utility;
 using SharpDX;
 using Color = System.Drawing.Color;
 
 namespace OKTRAIO.Champions
 {
-    class Draven : AIOChampion
+    internal class Draven : AIOChampion
     {
-
         #region Initialize and Declare
+
         private static int AxeCount
         {
             get
@@ -37,7 +36,6 @@ namespace OKTRAIO.Champions
         //LunarBlue method
         private static List<Axe> Axes { get; set; }
         private static Circle _axeLocation;
-
 
         public override void Init()
         {
@@ -62,7 +60,7 @@ namespace OKTRAIO.Champions
                 try
                 {
                     //Combo Menu Settings
-                    MainMenu.ComboKeys(true, true, true, true);
+                    MainMenu.ComboKeys();
                     MainMenu._combo.AddSeparator();
                     MainMenu._combo.AddGroupLabel("Prediction Settings", "combo.grouplabel.2", true);
                     MainMenu._combo.AddSlider("combo.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
@@ -71,13 +69,13 @@ namespace OKTRAIO.Champions
                     MainMenu.ComboManaManager(true, true, true, true, 10, 5, 10, 10);
 
                     //Lane Clear Menu Settings
-                    MainMenu.LaneKeys(true, true, true, false);
+                    MainMenu.LaneKeys(useR: false);
                     MainMenu._lane.AddSeparator();
                     MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.2", true);
                     MainMenu.LaneManaManager(true, true, true, false, 60, 50, 40, 50);
 
                     //Jungle Clear Menu Settings
-                    MainMenu.JungleKeys(true, true, true, false);
+                    MainMenu.JungleKeys(useR: false);
                     MainMenu._jungle.AddSeparator();
                     MainMenu._jungle.AddGroupLabel("Jungleclear Preferences", "jungle.grouplabel.1", true);
                     MainMenu._jungle.AddCheckBox("jungle.monsters.spell", "Use Abilities on Big Monster", true, true);
@@ -88,25 +86,25 @@ namespace OKTRAIO.Champions
                     MainMenu.JungleManaManager(true, true, true, false, 60, 50, 40, 50);
 
                     //Last hit Menu Settings
-                    MainMenu.LastHitKeys(false, false, true, false);
+                    MainMenu.LastHitKeys(false, useW: false, useR: false);
                     MainMenu._lasthit.AddSeparator();
                     MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.1", true);
                     MainMenu.LasthitManaManager(false, false, true, false, 60, 50, 40, 50);
 
-                    //Harras
-                    MainMenu.HarassKeys(true, true, true, false);
+                    //Harrass
+                    MainMenu.HarassKeys(useR: false);
                     MainMenu._harass.AddSeparator();
                     MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.1", true);
                     MainMenu.HarassManaManager(true, true, true, false, 60, 50, 40, 50);
 
                     //Flee Menu
-                    MainMenu.FleeKeys(false, true, true, false);
+                    MainMenu.FleeKeys(false, useR: false);
                     MainMenu._flee.AddSeparator();
                     MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.1", true);
                     MainMenu.FleeManaManager(false, true, true, false, 0, 20, 30, 0);
 
                     //Ks
-                    MainMenu.KsKeys(false, false, true, true);
+                    MainMenu.KsKeys(false, useW: false);
                     MainMenu._ks.AddSeparator();
                     MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.5", true);
                     MainMenu.KsManaManager(false, false, true, true, 60, 50, 10, 25);
@@ -142,20 +140,19 @@ namespace OKTRAIO.Champions
                     MainMenu._misc.AddSlider("misc.axe.range", "Catch Range", 800, 120, 1500, true);
                     MainMenu._misc.AddGroupLabel("Catch Axes if:", "misc.grouplabel.5", true);
                     MainMenu._misc.Add("misc.axe.mode", new Slider("Axe Catch Mode", 1, 1, 2)).OnValueChange +=
-
                         delegate(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
                         {
-                            if (sender.Cast<Slider>().CurrentValue == 1)
+                            switch (sender.Cast<Slider>().CurrentValue)
                             {
-                                sender.DisplayName = "Catch Method: Combo";
-                            }
-                            else if (sender.Cast<Slider>().CurrentValue == 2)
-                            {
-                                sender.DisplayName = "Catch Method: Any";
-                            }
-                            else if (sender.Cast<Slider>().CurrentValue == 3)
-                            {
-                                sender.DisplayName = "Catch Method: Orbwalking";
+                                case 1:
+                                    sender.DisplayName = "Catch Method: Combo";
+                                    break;
+                                case 2:
+                                    sender.DisplayName = "Catch Method: Any";
+                                    break;
+                                case 3:
+                                    sender.DisplayName = "Catch Method: Orbwalking";
+                                    break;
                             }
                         };
 
@@ -166,7 +163,7 @@ namespace OKTRAIO.Champions
                     //Need to start the Axe Manager code
 
                     //Draw Menu
-                    MainMenu.DrawKeys(true, true, true, true);
+                    MainMenu.DrawKeys();
                     MainMenu._draw.AddCheckBox("draw.axe.catch", "Draw Catche Range");
                     MainMenu._draw.AddSeparator();
                     MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
@@ -179,8 +176,6 @@ namespace OKTRAIO.Champions
                     Chat.Print(
                         "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code MENU)</font>");
                 }
-
-
             }
             catch (Exception e)
             {
@@ -213,23 +208,27 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
             }
         }
+
         #endregion
 
         #region Utils
 
         #region OnCreate
+
         private static void GameObjectOnCreate(GameObject sender, EventArgs args)
         {
             if (sender.Name.Contains("Draven_Base_Q_reticle_self.troy"))
             {
-                Axes.Add(new Axe { Object = sender, ExpireTime = Game.Time + 1.8});
+                Axes.Add(new Axe {Object = sender, ExpireTime = Game.Time + 1.8});
 
                 Core.DelayAction(() => Axes.RemoveAll(x => x.Object.NetworkId == sender.NetworkId), 1800);
             }
         }
+
         #endregion
 
         #region OnDelete
+
         private static void GameObjectOnDelete(GameObject sender, EventArgs args)
         {
             if (sender.Name.Contains("Draven_Base_Q_reticle_self.troy"))
@@ -237,10 +236,13 @@ namespace OKTRAIO.Champions
                 Axes.RemoveAll(x => x.Object.NetworkId == sender.NetworkId);
             }
         }
+
         #endregion
 
         #region Interrupter
-        private static void InterrupterOnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
+
+        private static void InterrupterOnInterruptableSpell(Obj_AI_Base sender,
+            Interrupter.InterruptableSpellEventArgs e)
         {
             try
             {
@@ -264,9 +266,11 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INTERRUPTER)</font>");
             }
         }
+
         #endregion
 
         #region Orbwalker
+
         private static void OrbwalkerOnPreAttack(AttackableUnit target, Orbwalker.PreAttackArgs args)
         {
             if (_q.IsReady())
@@ -301,12 +305,13 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region AntiGapCloser
+
         private static void AntiGapCloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
-
             try
             {
                 if (!e.Sender.IsValidTarget() || !Value.Use("misc.e.gapcloser") || e.Sender.Type != Player.Instance.Type ||
@@ -329,9 +334,11 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ANTIGAP)</font>");
             }
         }
+
         #endregion
 
         #region OnUpdate
+
         private static void GameOnUpdate(EventArgs args)
         {
             if (Player.Instance.IsDead || Player.Instance.HasBuff("Recall")
@@ -353,12 +360,13 @@ namespace OKTRAIO.Champions
 
             CatchAxe();
         }
+
         #endregion
 
         #region AutoE
+
         private static void AutoE()
         {
-
             var enemy =
                 EntityManager.Heroes.Enemies.FirstOrDefault(
                     x =>
@@ -412,20 +420,23 @@ namespace OKTRAIO.Champions
         {
             if (!Variables.CloseEnemies(_e.Range).Any() || !_e.IsReady()) return;
             foreach (
-                AIHeroClient fuccboi in
+                var fuccboi in
                     EntityManager.Heroes.Enemies.Where(fuccboi => fuccboi.IsValidTarget(_e.Range)))
             {
                 if (
                     !EntityManager.Turrets.Allies.Any(
-                        turret => turret.LastTarget() != null && turret.LastTarget().NetworkId == fuccboi.NetworkId && fuccboi.Distance(turret) <= 1200)) continue;
+                        turret =>
+                            turret.LastTarget() != null && turret.LastTarget().NetworkId == fuccboi.NetworkId &&
+                            fuccboi.Distance(turret) <= 1200)) continue;
                 foreach (
-                    Obj_AI_Turret turret in
+                    var turret in
                         EntityManager.Turrets.Allies.Where(
-                            turret => turret.LastTarget().NetworkId == fuccboi.NetworkId && fuccboi.Distance(turret) <= 1200))
+                            turret =>
+                                turret.LastTarget().NetworkId == fuccboi.NetworkId && fuccboi.Distance(turret) <= 1200))
                 {
-                    AIHeroClient target = TargetSelector.GetTarget(_e.Range, DamageType.Physical);
+                    var target = TargetSelector.GetTarget(_e.Range, DamageType.Physical);
                     if (!target.IsValidTarget(_e.Range)) return;
-                    PredictionResult prediction = _e.GetPrediction(target);
+                    var prediction = _e.GetPrediction(target);
                     if (prediction.HitChance >= HitChance.Medium)
                     {
                         _e.Cast(prediction.CastPosition);
@@ -433,9 +444,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region KillSteal
+
         private static void KillSteal()
         {
             try
@@ -461,19 +474,18 @@ namespace OKTRAIO.Champions
                     }
 
                     if (Value.Use("killsteal.r") && _r.IsReady())
+                    {
+                        if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
                         {
-                            if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
-                            {
-                                if (target.Health + target.AttackShield <
-                                    Player.Instance.GetSpellDamage(target, SpellSlot.R))
+                            if (target.Health + target.AttackShield <
+                                Player.Instance.GetSpellDamage(target, SpellSlot.R))
 
-                                {
-                                    _r.Cast(_r.GetPrediction(target).CastPosition);
-                                }
+                            {
+                                _r.Cast(_r.GetPrediction(target).CastPosition);
                             }
                         }
                     }
-
+                }
             }
 
             catch (Exception e)
@@ -483,9 +495,11 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
             }
         }
+
         #endregion
 
         #region CatchAxe
+
         private static void CatchAxe()
         {
             if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Flee)) return;
@@ -539,12 +553,14 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Damage
+
         private static float ComboDamage(Obj_AI_Base enemy)
         {
-            float damage = Player.Instance.GetAutoAttackDamage(enemy);
+            var damage = Player.Instance.GetAutoAttackDamage(enemy);
 
             if (AxeCount > 0)
             {
@@ -563,19 +579,22 @@ namespace OKTRAIO.Champions
 
             return damage;
         }
-        #endregion 
+
+        #endregion
 
         #region Various check
+
         private static Axe GetBestAxe
         {
             get
             {
                 return Axes.Where(h => h.Object.Position.Distance(Game.CursorPos) <= Value.Get("misc.axe.range")).
-                        OrderBy(h => h.Object.Position.Distance(Player.Instance.ServerPosition)).
-                        ThenBy(x => x.Object.Distance(Game.CursorPos)).
-                        FirstOrDefault();
+                    OrderBy(h => h.Object.Position.Distance(Player.Instance.ServerPosition)).
+                    ThenBy(x => x.Object.Distance(Game.CursorPos)).
+                    FirstOrDefault();
             }
         }
+
         public static bool IsUnderTurret(Vector3 position)
         {
             return ObjectManager.Get<Obj_AI_Turret>().Any(turret => turret.IsValidTarget(950) && turret.IsEnemy);
@@ -587,13 +606,15 @@ namespace OKTRAIO.Champions
 
             public GameObject Object { get; set; }
         }
+
         #endregion
 
-        #endregion 
+        #endregion
 
         #region Gamerelated Logic
 
         #region Combo
+
         public override void Combo()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
@@ -610,10 +631,10 @@ namespace OKTRAIO.Champions
 
             if (Player.Instance.ManaPercent >= Value.Get("combo.w.mana"))
             {
-                    if (!Player.Instance.HasBuff("dravenfurybuff") && _w.IsReady())
-                    {
-                        _w.Cast();
-                    }
+                if (!Player.Instance.HasBuff("dravenfurybuff") && _w.IsReady())
+                {
+                    _w.Cast();
+                }
             }
 
             if (Player.Instance.ManaPercent >= Value.Get("combo.r.mana"))
@@ -623,11 +644,12 @@ namespace OKTRAIO.Champions
                     _r.Cast(_r.GetPrediction(target).CastPosition);
                 }
             }
-            
         }
+
         #endregion
 
         #region Harass
+
         public override void Harass()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
@@ -659,9 +681,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Laneclear
+
         public override void Laneclear()
         {
             var count =
@@ -701,9 +725,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Jungleclear
+
         public override void Jungleclear()
         {
             var monsters =
@@ -749,7 +775,6 @@ namespace OKTRAIO.Champions
             {
                 if (Value.Use("jungle.minimonsters.spell"))
                 {
-
                     if (Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
                     {
                         if (Value.Use("jungle.q") && _q.IsReady())
@@ -777,9 +802,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Flee
+
         public override void Flee()
         {
             var target = TargetSelector.GetTarget(_e.Range, DamageType.Physical);
@@ -800,14 +827,19 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Lasthit
+
         public override void LastHit()
         {
             var source =
                 EntityManager.MinionsAndMonsters.EnemyMinions
-                    .FirstOrDefault(m => m.IsValidTarget(_e.Range) && Player.Instance.GetSpellDamage(m, SpellSlot.E) > m.TotalShieldHealth());
+                    .FirstOrDefault(
+                        m =>
+                            m.IsValidTarget(_e.Range) &&
+                            Player.Instance.GetSpellDamage(m, SpellSlot.E) > m.TotalShieldHealth());
 
             if (source == null) return;
 
@@ -819,11 +851,13 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #endregion
 
         #region Drawings
+
         private static void GameOnDraw(EventArgs args)
         {
             var colorQ = MainMenu._draw.GetColor("color.q");
@@ -848,7 +882,8 @@ namespace OKTRAIO.Champions
 
                     foreach (
                         var axe in
-                            Axes.Where(x => x.Object.NetworkId != (GetBestAxe != null ? GetBestAxe.Object.NetworkId : 0)))
+                            Axes.Where(x => x.Object.NetworkId != (GetBestAxe != null ? GetBestAxe.Object.NetworkId : 0))
+                        )
                     {
                         _axeLocation.Color = colorQ;
                         _axeLocation.Radius = widthQ;
@@ -883,7 +918,8 @@ namespace OKTRAIO.Champions
                         BorderWidth = widthR
                     }.Draw(Player.Instance.Position);
                 }
-                if (Value.Use("draw.axe.catch") && ((Value.Use("draw.ready") && _q.IsReady()) || !Value.Use("draw.ready")))
+                if (Value.Use("draw.axe.catch") &&
+                    ((Value.Use("draw.ready") && _q.IsReady()) || !Value.Use("draw.ready")))
                 {
                     new Circle
                     {
@@ -893,7 +929,6 @@ namespace OKTRAIO.Champions
                     }.Draw(Game.CursorPos);
                 }
             }
-
         }
 
         private static void Drawing_OnEndScene(EventArgs args)
@@ -903,16 +938,20 @@ namespace OKTRAIO.Champions
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => !a.IsDead && a.IsHPBarRendered))
                 {
                     var damage = ComboDamage(enemy);
-                    var damagepercent = ((enemy.TotalShieldHealth() - damage) > 0 ? (enemy.TotalShieldHealth() - damage) : 0) / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var hppercent = enemy.TotalShieldHealth() / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var start = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + damagepercent * 104), (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
-                    var end = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + hppercent * 104) + 2, (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var damagepercent = (enemy.TotalShieldHealth() - damage > 0 ? enemy.TotalShieldHealth() - damage : 0)/
+                                        (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var hppercent = enemy.TotalShieldHealth()/
+                                    (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var start = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + damagepercent*104),
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var end = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + hppercent*104) + 2,
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
 
                     Drawing.DrawLine(start, end, 9, Color.Chartreuse);
                 }
             }
         }
-        #endregion 
 
+        #endregion
     }
 }

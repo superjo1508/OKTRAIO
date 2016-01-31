@@ -15,19 +15,392 @@ using Spell = EloBuddy.SDK.Spell;
 
 namespace OKTRAIO.Champions
 {
-    class Katarina : AIOChampion
+    internal class Katarina : AIOChampion
     {
+        #region ComboMain
+
+        public override void Combo()
+        {
+            try
+            {
+                var target = TargetSelector.GetTarget(1000, DamageType.Magical);
+                if (target == null || !target.IsValid)
+                    return;
+
+                switch (Value.Get("combo.mode"))
+                {
+                        #region Mode QEWR
+
+                    case 0:
+                        if (_q.IsReady() && _q.IsInRange(target) && Value.Use("combo.q"))
+                        {
+                            Core.DelayAction(() => _q.Cast(target), new Random().Next(MinQDelay, MaxQDelay));
+                        }
+                        if (_e.IsReady() && _e.IsInRange(target) && Value.Use("combo.e"))
+                        {
+                            Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
+                        }
+                        if (_w.IsReady() && _w.IsInRange(target) && Value.Use("combo.w"))
+                        {
+                            Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
+                        }
+                        if (_r.IsReady() && _r.IsInRange(target) && Value.Use("combo.r"))
+                        {
+                            Core.DelayAction(() => _r.Cast(), new Random().Next(MinRDelay, MaxRDelay));
+                        }
+                        break;
+
+                        #endregion
+
+                        #region Mode EQWR
+
+                    case 1:
+                        if (_e.IsReady() && _e.IsInRange(target) && Value.Use("combo.e"))
+                        {
+                            Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
+                        }
+                        if (_q.IsReady() && _q.IsInRange(target) && Value.Use("combo.q"))
+                        {
+                            Core.DelayAction(() => _q.Cast(target), new Random().Next(MinQDelay, MaxQDelay));
+                        }
+                        if (_w.IsReady() && _w.IsInRange(target) && Value.Use("combo.w"))
+                        {
+                            Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
+                        }
+                        if (_r.IsReady() && _r.IsInRange(target) && Value.Use("combo.r"))
+                        {
+                            Core.DelayAction(() => _r.Cast(), new Random().Next(MinRDelay, MaxRDelay));
+                        }
+                        break;
+                }
+
+                #endregion
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO)</font>");
+            }
+        }
+
+        #endregion
+
+        #region HarassMain
+
+        public override void Harass()
+        {
+            try
+            {
+                var target = TargetSelector.GetTarget(1000, DamageType.Magical);
+                if (target == null || !target.IsValid)
+                    return;
+
+
+                if (_q.IsReady() && _q.IsInRange(target) && Value.Use("harass.q"))
+                {
+                    Core.DelayAction(() => _q.Cast(target), new Random().Next(MinQDelay, MaxQDelay));
+                }
+                if (_w.IsReady() && _w.IsInRange(target) && Value.Use("harass.w"))
+                {
+                    Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
+                }
+                if (_e.IsReady() && _e.IsInRange(target) && Value.Use("harass.e"))
+                {
+                    if (Value.Use("harass.donteunderturret"))
+                    {
+                        if (!target.IsUnderEnemyturret())
+                        {
+                            Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
+                        }
+                    }
+                    else
+                    {
+                        Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code HARASS)</font>");
+            }
+        }
+
+        #endregion
+
+        #region LastHitMain
+
+        public override void LastHit()
+        {
+            try
+            {
+                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions)
+                {
+                    if (minion == null || !minion.IsValid)
+                        return;
+
+                    #region Q
+
+                    try
+                    {
+                        if (Prediction.Health.GetPrediction(minion, _q.CastDelay + Game.Ping/4) <=
+                            Player.Instance.GetSpellDamage(minion, SpellSlot.Q))
+                        {
+                            if (_q.IsInRange(minion) && _q.IsReady() && Value.Use("lasthit.q"))
+                            {
+                                Core.DelayAction(() => _q.Cast(minion), new Random().Next(MinQDelay, MaxQDelay));
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Chat.Print(
+                            "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT.Q)</font>");
+                    }
+
+                    #endregion
+
+                    #region W
+
+                    try
+                    {
+                        if (Prediction.Health.GetPrediction(minion, _w.CastDelay + Game.Ping/4) <=
+                            Player.Instance.GetSpellDamage(minion, SpellSlot.W))
+                        {
+                            if (_w.IsInRange(minion) && _w.IsReady() && Value.Use("lasthit.w"))
+                            {
+                                Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Chat.Print(
+                            "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT.W)</font>");
+                    }
+
+                    #endregion
+
+                    #region E
+
+                    try
+                    {
+                        if (Prediction.Health.GetPrediction(minion, _e.CastDelay + Game.Ping/4) <=
+                            Player.Instance.GetSpellDamage(minion, SpellSlot.E))
+                        {
+                            if (_e.IsInRange(minion) && _e.IsReady() && Value.Use("lasthit.e"))
+                            {
+                                if (Value.Use("lasthit.donteunderturret"))
+                                {
+                                    if (!minion.IsUnderEnemyturret())
+                                    {
+                                        Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                                    }
+                                }
+                                else
+                                {
+                                    Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Chat.Print(
+                            "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT.W)</font>");
+                    }
+
+                    #endregion
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT)</font>");
+            }
+        }
+
+        #endregion
+
+        #region FleeMain
+
+        public override void Flee()
+        {
+            try
+            {
+                foreach (
+                    var minion in
+                        ObjectManager.Get<Obj_AI_Base>()
+                            .Where(
+                                o =>
+                                    o.IsTargetable && o.IsValid && !o.IsDead && o.IsHPBarRendered &&
+                                    (o.IsMinion || o.IsMonster || (o is AIHeroClient && !o.IsMe) || o.IsWard()))
+                            .OrderBy(o => o.Distance(Game.CursorPos)))
+                {
+                    if (minion == null)
+                    {
+                        return;
+                    }
+                    if (Value.Use("flee.e") && _e.IsReady() && _e.IsInRange(minion))
+                    {
+                        if (minion.IsInRange(Game.CursorPos, 200))
+                        {
+                            Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            if (Extensions.GetWardSlot() == null || !Extensions.GetWardSlot().IsWard)
+                                return;
+
+                            if (Value.Use("flee.ward") && Extensions.GetWardSlot().CanUseItem() && _e.IsReady() &&
+                                Value.Use("flee.e"))
+                            {
+                                var pos = Player.Instance.Position.Extend(Game.CursorPos, 600);
+                                Extensions.GetWardSlot().Cast(pos.To3D());
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            Chat.Print(
+                                "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code FLE_e.WARDJUMP)</font>");
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code FLEE)</font>");
+            }
+        }
+
+        #endregion
+
+        #region LaneClearMain
+
+        public override void Laneclear()
+        {
+            try
+            {
+                foreach (
+                    var minion in
+                        EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsInRange(Player.Instance, 1200)))
+                {
+                    if (minion == null || !minion.IsValid)
+                        return;
+
+                    if (_q.IsInRange(minion) && _q.IsReady() && Value.Use("lane.q"))
+                    {
+                        Core.DelayAction(() => _q.Cast(minion), new Random().Next(MinQDelay, MaxQDelay));
+                    }
+
+                    if (_w.IsInRange(minion) && _w.IsReady() && Value.Use("lane.w"))
+                    {
+                        Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
+                    }
+
+                    if (_e.IsInRange(minion) && _e.IsReady() && Value.Use("lane.e"))
+                    {
+                        if (Value.Use("lane.donteunderturret"))
+                        {
+                            if (!minion.IsUnderEnemyturret())
+                            {
+                                Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                            }
+                        }
+                        else
+                        {
+                            Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LANECLEAR)</font>");
+            }
+        }
+
+        #endregion
+
+        #region KillStealMain
+
+        private static void KillSteal()
+        {
+            try
+            {
+                var e = EntityManager.Heroes.Enemies.Where(ee => !ee.IsDead && ee.IsValid);
+
+                foreach (var enemy in e)
+                {
+                    var damage = Player.Instance.CalculateDamageOnUnit(enemy, DamageType.Magical,
+                        GetActualRawComboDamage(enemy), true, true);
+                    if (enemy.Health <= damage)
+                    {
+                        if (_q.IsReady() && _q.IsInRange(enemy) && Value.Use("killsteal.q"))
+                        {
+                            Core.DelayAction(() => _q.Cast(enemy), new Random().Next(MinQDelay, MaxQDelay));
+                        }
+                        if (_w.IsReady() && _w.IsInRange(enemy) && Value.Use("killsteal.w"))
+                        {
+                            Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
+                        }
+                        if (_e.IsReady() && _e.IsInRange(enemy) && Value.Use("killsteal.e"))
+                        {
+                            if (Value.Use("killsteal.donteunderturret"))
+                            {
+                                if (!enemy.IsUnderEnemyturret())
+                                {
+                                    Core.DelayAction(() => _e.Cast(enemy), new Random().Next(MinWDelay, MaxWDelay));
+                                }
+                            }
+                            else
+                            {
+                                Core.DelayAction(() => _e.Cast(enemy), new Random().Next(MinWDelay, MaxWDelay));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
+            }
+        }
+
+        #endregion
+
         #region Initialization
+
         #region SpellsDefine
+
         private static Spell.Targeted _q;
         private static Spell.Active _w;
         private static Spell.Targeted _e;
         private static Spell.Active _r;
+
         #endregion
+
         private static bool _isChannelingImportantSpell;
-        InterrupterExtensions ext = new InterrupterExtensions();
+        private readonly InterrupterExtensions ext = new InterrupterExtensions();
 
         private static bool _isUlting;
+
         private static void OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
             if (args.Buff.Name.ToLower() == "katarinarsound" || args.Buff.Name.ToLower() == "katarinar" ||
@@ -50,6 +423,7 @@ namespace OKTRAIO.Champions
         }
 
         private static Menu _humanizerMenu;
+
         public override void Init()
         {
             try
@@ -57,46 +431,50 @@ namespace OKTRAIO.Champions
                 try
                 {
                     #region Spells
+
                     // Defining Spells
                     _q = new Spell.Targeted(SpellSlot.Q, 675);
                     _w = new Spell.Active(SpellSlot.W, 375);
                     _e = new Spell.Targeted(SpellSlot.E, 700);
                     _r = new Spell.Active(SpellSlot.R, 550);
+
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code SPELL)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code SPELL)</font>");
                 }
 
                 try
                 {
                     #region Menu
+
                     var combo = MainMenu._combo;
-                    string[] s = { "QEWR", "EQWR" };
+                    string[] s = {"QEWR", "EQWR"};
 
                     combo.AddStringList("combo.mode", "Mode: ", s, 1);
-                    MainMenu.ComboKeys(true, true, true, true);
-                    MainMenu.HarassKeys(true, true, true, true);
+                    MainMenu.ComboKeys();
+                    MainMenu.HarassKeys();
                     MainMenu._harass.Add("harass.autow", new CheckBox("Use Auto W"));
                     MainMenu._harass.Add("harass.donteunderturret", new CheckBox("Dont E Under Turret"));
 
-                    MainMenu.FleeKeys(false, false, true, false);
+                    MainMenu.FleeKeys(false, useW: false, useR: false);
                     MainMenu._flee.Add("flee.ward", new CheckBox("Use Wardjump"));
 
-                    MainMenu.LaneKeys(true, true, true, false);
+                    MainMenu.LaneKeys(useR: false);
                     MainMenu._lane.Add("lane.donteunderturret", new CheckBox("Dont E Under Turret"));
 
-                    MainMenu.LastHitKeys(true, true, true, false);
+                    MainMenu.LastHitKeys(useR: false);
                     MainMenu._lasthit.Add("lasthit.donteunderturret", new CheckBox("Dont E Under Turret"));
 
-                    MainMenu.KsKeys(true, true, true, true);
+                    MainMenu.KsKeys();
                     MainMenu._ks.Add("killsteal.ignite", new CheckBox("Use Ignite"));
                     MainMenu._ks.Add("killsteal.donteunderturret", new CheckBox("Dont E Under Turret"));
 
                     MainMenu.DamageIndicator();
-                    MainMenu.DrawKeys(true, true, true, true);
+                    MainMenu.DrawKeys();
                     MainMenu._draw.AddSeparator();
 
                     MainMenu._draw.AddGroupLabel("Flash Settings");
@@ -137,10 +515,12 @@ namespace OKTRAIO.Champions
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code MENU)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code MENU)</font>");
                 }
 
                 #region UtilityInit
+
                 Obj_AI_Base.OnBuffGain += OnBuffGain;
                 Obj_AI_Base.OnBuffLose += OnBuffLose;
                 DamageIndicator.DamageToUnit = GetActualRawComboDamage;
@@ -149,53 +529,73 @@ namespace OKTRAIO.Champions
                 Drawing.OnDraw += DrawRanges;
 
                 #region MenuValueChange
+
                 _humanizerMenu["min.q"].Cast<Slider>().OnValueChange += delegate
                 {
-                    if (_humanizerMenu["min.q"].Cast<Slider>().CurrentValue > _humanizerMenu["max.q"].Cast<Slider>().CurrentValue)
-                        _humanizerMenu["min.q"].Cast<Slider>().CurrentValue = _humanizerMenu["max.q"].Cast<Slider>().CurrentValue;
+                    if (_humanizerMenu["min.q"].Cast<Slider>().CurrentValue >
+                        _humanizerMenu["max.q"].Cast<Slider>().CurrentValue)
+                        _humanizerMenu["min.q"].Cast<Slider>().CurrentValue =
+                            _humanizerMenu["max.q"].Cast<Slider>().CurrentValue;
                 };
                 _humanizerMenu["max.q"].Cast<Slider>().OnValueChange += delegate
                 {
-                    if (_humanizerMenu["max.q"].Cast<Slider>().CurrentValue < _humanizerMenu["min.q"].Cast<Slider>().CurrentValue)
-                        _humanizerMenu["max.q"].Cast<Slider>().CurrentValue = _humanizerMenu["min.q"].Cast<Slider>().CurrentValue;
+                    if (_humanizerMenu["max.q"].Cast<Slider>().CurrentValue <
+                        _humanizerMenu["min.q"].Cast<Slider>().CurrentValue)
+                        _humanizerMenu["max.q"].Cast<Slider>().CurrentValue =
+                            _humanizerMenu["min.q"].Cast<Slider>().CurrentValue;
                 };
                 _humanizerMenu["min.w"].Cast<Slider>().OnValueChange += delegate
                 {
-                    if (_humanizerMenu["min.w"].Cast<Slider>().CurrentValue > _humanizerMenu["max.w"].Cast<Slider>().CurrentValue)
-                        _humanizerMenu["min.w"].Cast<Slider>().CurrentValue = _humanizerMenu["max.w"].Cast<Slider>().CurrentValue;
+                    if (_humanizerMenu["min.w"].Cast<Slider>().CurrentValue >
+                        _humanizerMenu["max.w"].Cast<Slider>().CurrentValue)
+                        _humanizerMenu["min.w"].Cast<Slider>().CurrentValue =
+                            _humanizerMenu["max.w"].Cast<Slider>().CurrentValue;
                 };
                 _humanizerMenu["max.w"].Cast<Slider>().OnValueChange += delegate
                 {
-                    if (_humanizerMenu["max.w"].Cast<Slider>().CurrentValue < _humanizerMenu["min.w"].Cast<Slider>().CurrentValue)
-                        _humanizerMenu["max.w"].Cast<Slider>().CurrentValue = _humanizerMenu["min.w"].Cast<Slider>().CurrentValue;
+                    if (_humanizerMenu["max.w"].Cast<Slider>().CurrentValue <
+                        _humanizerMenu["min.w"].Cast<Slider>().CurrentValue)
+                        _humanizerMenu["max.w"].Cast<Slider>().CurrentValue =
+                            _humanizerMenu["min.w"].Cast<Slider>().CurrentValue;
                 };
                 _humanizerMenu["min.e"].Cast<Slider>().OnValueChange += delegate
                 {
-                    if (_humanizerMenu["min.e"].Cast<Slider>().CurrentValue > _humanizerMenu["max.e"].Cast<Slider>().CurrentValue)
-                        _humanizerMenu["min.e"].Cast<Slider>().CurrentValue = _humanizerMenu["max.e"].Cast<Slider>().CurrentValue;
+                    if (_humanizerMenu["min.e"].Cast<Slider>().CurrentValue >
+                        _humanizerMenu["max.e"].Cast<Slider>().CurrentValue)
+                        _humanizerMenu["min.e"].Cast<Slider>().CurrentValue =
+                            _humanizerMenu["max.e"].Cast<Slider>().CurrentValue;
                 };
                 _humanizerMenu["max.e"].Cast<Slider>().OnValueChange += delegate
                 {
-                    if (_humanizerMenu["max.e"].Cast<Slider>().CurrentValue < _humanizerMenu["min.e"].Cast<Slider>().CurrentValue)
-                        _humanizerMenu["max.e"].Cast<Slider>().CurrentValue = _humanizerMenu["min.e"].Cast<Slider>().CurrentValue;
+                    if (_humanizerMenu["max.e"].Cast<Slider>().CurrentValue <
+                        _humanizerMenu["min.e"].Cast<Slider>().CurrentValue)
+                        _humanizerMenu["max.e"].Cast<Slider>().CurrentValue =
+                            _humanizerMenu["min.e"].Cast<Slider>().CurrentValue;
                 };
                 _humanizerMenu["min.r"].Cast<Slider>().OnValueChange += delegate
                 {
-                    if (_humanizerMenu["min.r"].Cast<Slider>().CurrentValue > _humanizerMenu["max.r"].Cast<Slider>().CurrentValue)
-                        _humanizerMenu["min.r"].Cast<Slider>().CurrentValue = _humanizerMenu["max.r"].Cast<Slider>().CurrentValue;
+                    if (_humanizerMenu["min.r"].Cast<Slider>().CurrentValue >
+                        _humanizerMenu["max.r"].Cast<Slider>().CurrentValue)
+                        _humanizerMenu["min.r"].Cast<Slider>().CurrentValue =
+                            _humanizerMenu["max.r"].Cast<Slider>().CurrentValue;
                 };
                 _humanizerMenu["max.r"].Cast<Slider>().OnValueChange += delegate
                 {
-                    if (_humanizerMenu["max.r"].Cast<Slider>().CurrentValue < _humanizerMenu["min.r"].Cast<Slider>().CurrentValue)
-                        _humanizerMenu["max.r"].Cast<Slider>().CurrentValue = _humanizerMenu["min.r"].Cast<Slider>().CurrentValue;
+                    if (_humanizerMenu["max.r"].Cast<Slider>().CurrentValue <
+                        _humanizerMenu["min.r"].Cast<Slider>().CurrentValue)
+                        _humanizerMenu["max.r"].Cast<Slider>().CurrentValue =
+                            _humanizerMenu["min.r"].Cast<Slider>().CurrentValue;
                 };
+
                 #endregion
+
                 #endregion
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 503)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 503)</font>");
             }
 
             Game.OnUpdate += delegate
@@ -203,6 +603,7 @@ namespace OKTRAIO.Champions
                 try
                 {
                     #region AutoW
+
                     if (_isUlting) return;
                     if (MainMenu._harass["harass.autow"].Cast<CheckBox>().CurrentValue)
                     {
@@ -211,10 +612,11 @@ namespace OKTRAIO.Champions
                         {
                             if (_w.IsInRange(enemy) && _w.IsReady())
                             {
-                                _w.Cast(); 
+                                _w.Cast();
                             }
                         }
                     }
+
                     #endregion
 
                     _isChannelingImportantSpell = ext.IsChannelingImportantSpell(Player.Instance);
@@ -223,402 +625,73 @@ namespace OKTRAIO.Champions
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> san error ocurred. (Code 5)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> san error ocurred. (Code 5)</font>");
                 }
                 //KillSteal();
             };
         }
+
         #endregion
 
         #region _humanizerMenuIndex
+
         private static int MinQDelay
         {
-            get
-            {
-                return _humanizerMenu["min.q"].Cast<Slider>().CurrentValue;
-            }
+            get { return _humanizerMenu["min.q"].Cast<Slider>().CurrentValue; }
         }
+
         private static int MaxQDelay
         {
-            get
-            {
-                return _humanizerMenu["max.q"].Cast<Slider>().CurrentValue;
-            }
+            get { return _humanizerMenu["max.q"].Cast<Slider>().CurrentValue; }
         }
+
         private static int MinWDelay
         {
-            get
-            {
-                return _humanizerMenu["min.w"].Cast<Slider>().CurrentValue;
-            }
+            get { return _humanizerMenu["min.w"].Cast<Slider>().CurrentValue; }
         }
+
         private static int MaxWDelay
         {
-            get
-            {
-                return _humanizerMenu["max.w"].Cast<Slider>().CurrentValue;
-            }
+            get { return _humanizerMenu["max.w"].Cast<Slider>().CurrentValue; }
         }
+
         private static int MinEDelay
         {
-            get
-            {
-                return _humanizerMenu["min.e"].Cast<Slider>().CurrentValue;
-            }
+            get { return _humanizerMenu["min.e"].Cast<Slider>().CurrentValue; }
         }
+
         private static int MaxEDelay
         {
-            get
-            {
-                return _humanizerMenu["max.e"].Cast<Slider>().CurrentValue;
-            }
+            get { return _humanizerMenu["max.e"].Cast<Slider>().CurrentValue; }
         }
+
         private static int MinRDelay
         {
-            get
-            {
-                return _humanizerMenu["min.e"].Cast<Slider>().CurrentValue;
-            }
+            get { return _humanizerMenu["min.e"].Cast<Slider>().CurrentValue; }
         }
+
         private static int MaxRDelay
         {
-            get
-            {
-                return _humanizerMenu["max.r"].Cast<Slider>().CurrentValue;
-            }
+            get { return _humanizerMenu["max.r"].Cast<Slider>().CurrentValue; }
         }
-        #endregion
 
-        #region ComboMain
-        public override void Combo()
-        {
-            try
-            {
-                var target = TargetSelector.GetTarget(1000, DamageType.Magical);
-                if (target == null || !target.IsValid)
-                    return;
-
-                switch (Value.Get("combo.mode"))
-                {
-                    #region Mode QEWR
-                    case 0:
-                        if (_q.IsReady() && _q.IsInRange(target) && Value.Use("combo.q"))
-                        {
-                            Core.DelayAction(() => _q.Cast(target), new Random().Next(MinQDelay, MaxQDelay));
-                        }
-                        if (_e.IsReady() && _e.IsInRange(target) && Value.Use("combo.e"))
-                        {
-                            Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
-                        }
-                        if (_w.IsReady() && _w.IsInRange(target) && Value.Use("combo.w"))
-                        {
-                            Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
-                        }
-                        if (_r.IsReady() && _r.IsInRange(target) && Value.Use("combo.r"))
-                        {
-                            Core.DelayAction(() => _r.Cast(), new Random().Next(MinRDelay, MaxRDelay));
-                        }
-                        break;
-                    #endregion
-                    #region Mode EQWR
-                    case 1:
-                        if (_e.IsReady() && _e.IsInRange(target) && Value.Use("combo.e"))
-                        {
-                            Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
-                        }
-                        if (_q.IsReady() && _q.IsInRange(target) && Value.Use("combo.q"))
-                        {
-                            Core.DelayAction(() => _q.Cast(target), new Random().Next(MinQDelay, MaxQDelay));
-                        }
-                        if (_w.IsReady() && _w.IsInRange(target) && Value.Use("combo.w"))
-                        {
-                            Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
-                        }
-                        if (_r.IsReady() && _r.IsInRange(target) && Value.Use("combo.r"))
-                        {
-                            Core.DelayAction(() => _r.Cast(), new Random().Next(MinRDelay, MaxRDelay));
-                        }
-                        break;
-                }
-                #endregion
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code COMBO)</font>");
-            }
-        }
-        #endregion
-
-        #region HarassMain
-        public override void Harass()
-        {
-            try
-            {
-                var target = TargetSelector.GetTarget(1000, DamageType.Magical);
-                if (target == null || !target.IsValid)
-                    return;
-
-
-
-                if (_q.IsReady() && _q.IsInRange(target) && Value.Use("harass.q"))
-                {
-                    Core.DelayAction(() => _q.Cast(target), new Random().Next(MinQDelay, MaxQDelay));
-                }
-                if (_w.IsReady() && _w.IsInRange(target) && Value.Use("harass.w"))
-                {
-                    Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
-                }
-                if (_e.IsReady() && _e.IsInRange(target) && Value.Use("harass.e"))
-                {
-                    if (Value.Use("harass.donteunderturret"))
-                    {
-                        if (!target.IsUnderEnemyturret())
-                        {
-                            Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
-                        }
-                    }
-                    else
-                    {
-                        Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code HARASS)</font>");
-            }
-        }
-        #endregion
-
-        #region LastHitMain
-        public override void LastHit()
-        {
-            try
-            {
-                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions)
-                {
-                    if (minion == null || !minion.IsValid)
-                        return;
-
-                    #region Q
-                    try
-                    {
-                        if (Prediction.Health.GetPrediction(minion, _q.CastDelay + (Game.Ping / 4)) <= Player.Instance.GetSpellDamage(minion, SpellSlot.Q))
-                        {
-                            if (_q.IsInRange(minion) && _q.IsReady() && Value.Use("lasthit.q"))
-                            {
-                                Core.DelayAction(() => _q.Cast(minion), new Random().Next(MinQDelay, MaxQDelay));
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT.Q)</font>");
-                    }
-                    #endregion
-                    #region W
-                    try
-                    {
-                        if (Prediction.Health.GetPrediction(minion, _w.CastDelay + (Game.Ping / 4)) <= Player.Instance.GetSpellDamage(minion, SpellSlot.W))
-                        {
-                            if (_w.IsInRange(minion) && _w.IsReady() && Value.Use("lasthit.w"))
-                            {
-                                Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT.W)</font>");
-                    }
-                    #endregion
-                    #region E
-                    try
-                    {
-                        if (Prediction.Health.GetPrediction(minion, _e.CastDelay + (Game.Ping / 4)) <= Player.Instance.GetSpellDamage(minion, SpellSlot.E))
-                        {
-                            if (_e.IsInRange(minion) && _e.IsReady() && Value.Use("lasthit.e"))
-                            {
-                                if (Value.Use("lasthit.donteunderturret"))
-                                {
-                                    if (!minion.IsUnderEnemyturret())
-                                    {
-                                        Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
-                                    }
-                                }
-                                else
-                                {
-                                    Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT.W)</font>");
-                    }
-                    #endregion
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LASTHIT)</font>");
-            }
-        }
-        #endregion
-
-        #region FleeMain
-        public override void Flee()
-        {
-            try
-            {
-
-                foreach (var minion in ObjectManager.Get<Obj_AI_Base>().Where(o => o.IsTargetable && o.IsValid && !o.IsDead && o.IsHPBarRendered && (o.IsMinion || o.IsMonster || (o is AIHeroClient && !o.IsMe) || o.IsWard())).OrderBy(o => o.Distance(Game.CursorPos)))
-                {
-                    if (minion == null)
-                    {
-                        return;
-                    }
-                    if (Value.Use("flee.e") && _e.IsReady() && _e.IsInRange(minion))
-                    {
-                        if (minion.IsInRange(Game.CursorPos, 200))
-                        {
-                            Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            if (Extensions.GetWardSlot() == null || !Extensions.GetWardSlot().IsWard)
-                                return;
-
-                            if (Value.Use("flee.ward") && Extensions.GetWardSlot().CanUseItem() && _e.IsReady() && Value.Use("flee.e"))
-                            {
-                                var pos = Player.Instance.Position.Extend(Game.CursorPos, 600);
-                                Extensions.GetWardSlot().Cast(pos.To3D());
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e);
-                            Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code FLE_e.WARDJUMP)</font>");
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code FLEE)</font>");
-            }
-        }
-        #endregion
-
-        #region LaneClearMain
-        public override void Laneclear()
-        {
-            try
-            {
-                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsInRange(Player.Instance, 1200)))
-                {
-                    if (minion == null || !minion.IsValid)
-                        return;
-
-                    if (_q.IsInRange(minion) && _q.IsReady() && Value.Use("lane.q"))
-                    {
-                        Core.DelayAction(() => _q.Cast(minion), new Random().Next(MinQDelay, MaxQDelay));
-                    }
-
-                    if (_w.IsInRange(minion) && _w.IsReady() && Value.Use("lane.w"))
-                    {
-                        Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
-                    }
-
-                    if (_e.IsInRange(minion) && _e.IsReady() && Value.Use("lane.e"))
-                    {
-                        if (Value.Use("lane.donteunderturret"))
-                        {
-                            if (!minion.IsUnderEnemyturret())
-                            {
-                                Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
-                            }
-                        }
-                        else
-                        {
-                            Core.DelayAction(() => _e.Cast(minion), new Random().Next(MinWDelay, MaxWDelay));
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code LANECLEAR)</font>");
-            }
-        }
-        #endregion
-
-        #region KillStealMain
-        private static void KillSteal()
-        {
-            try
-            {
-                var e = EntityManager.Heroes.Enemies.Where(ee => !ee.IsDead && ee.IsValid);
-
-                foreach (var enemy in e)
-                {
-                    var damage = Player.Instance.CalculateDamageOnUnit(enemy, DamageType.Magical, GetActualRawComboDamage(enemy), true, true);
-                    if (enemy.Health <= damage)
-                    {
-                        if (_q.IsReady() && _q.IsInRange(enemy) && Value.Use("killsteal.q"))
-                        {
-                            Core.DelayAction(() => _q.Cast(enemy), new Random().Next(MinQDelay, MaxQDelay));
-                        }
-                        if (_w.IsReady() && _w.IsInRange(enemy) && Value.Use("killsteal.w"))
-                        {
-                            Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
-                        }
-                        if (_e.IsReady() && _e.IsInRange(enemy) && Value.Use("killsteal.e"))
-                        {
-                            if (Value.Use("killsteal.donteunderturret"))
-                            {
-                                if (!enemy.IsUnderEnemyturret())
-                                {
-                                    Core.DelayAction(() => _e.Cast(enemy), new Random().Next(MinWDelay, MaxWDelay));
-                                }
-                            }
-                            else
-                            {
-                                Core.DelayAction(() => _e.Cast(enemy), new Random().Next(MinWDelay, MaxWDelay));
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
-            }
-        }
         #endregion
 
         #region Damages
+
         #region BaseDamages
-        private static float[] QDamage = { 0, 60, 85, 110, 135, 160 };
-        private static float[] BonusQDamage = { 0, 15, 30, 45, 60, 75 };
-        private static float[] WDamage = { 0, 40, 75, 110, 145, 180 };
-        private static float[] EDamage = { 0, 40, 70, 100, 130, 160 };
-        private static float[] RDamage = { 0, 350, 550, 750 };
+
+        private static readonly float[] QDamage = {0, 60, 85, 110, 135, 160};
+        private static readonly float[] BonusQDamage = {0, 15, 30, 45, 60, 75};
+        private static readonly float[] WDamage = {0, 40, 75, 110, 145, 180};
+        private static readonly float[] EDamage = {0, 40, 70, 100, 130, 160};
+        private static readonly float[] RDamage = {0, 350, 550, 750};
+
         #endregion
+
         #region GetSpellDamage
+
         private static float GetSpellDamage(SpellSlot slot)
         {
             try
@@ -628,19 +701,20 @@ namespace OKTRAIO.Champions
                 var ebasedamage = EDamage[_e.Level];
                 var rbasedamage = RDamage[_r.Level];
 
-                var qbonusdamage = (45f / 100f * Player.Instance.FlatMagicDamageMod);
-                var wbonusdamage = (25f / 100f * Player.Instance.FlatMagicDamageMod);
-                var ebonusdamage = (25f / 100f * Player.Instance.FlatMagicDamageMod);
-                var rbonusdamage = (25f / 100f * Player.Instance.FlatMagicDamageMod);
+                var qbonusdamage = 45f/100f*Player.Instance.FlatMagicDamageMod;
+                var wbonusdamage = 25f/100f*Player.Instance.FlatMagicDamageMod;
+                var ebonusdamage = 25f/100f*Player.Instance.FlatMagicDamageMod;
+                var rbonusdamage = 25f/100f*Player.Instance.FlatMagicDamageMod;
 
                 if (slot == SpellSlot.Q)
-                    return qbasedamage + qbonusdamage + (BonusQDamage[_q.Level] + (15f / 100f * Player.Instance.FlatMagicDamageMod));
+                    return qbasedamage + qbonusdamage +
+                           (BonusQDamage[_q.Level] + 15f/100f*Player.Instance.FlatMagicDamageMod);
                 if (slot == SpellSlot.W)
-                    return wbasedamage + wbonusdamage + (60f / 100f * Player.Instance.FlatPhysicalDamageMod);
+                    return wbasedamage + wbonusdamage + 60f/100f*Player.Instance.FlatPhysicalDamageMod;
                 if (slot == SpellSlot.E)
                     return ebasedamage + ebonusdamage;
                 if (slot == SpellSlot.R)
-                    return rbasedamage + rbonusdamage + (375f / 1000f * Player.Instance.FlatPhysicalDamageMod);
+                    return rbasedamage + rbonusdamage + 375f/1000f*Player.Instance.FlatPhysicalDamageMod;
 
                 //if (raw)
                 //return Player.Instance.CalculateDamageOnUnit(target, DamageTyp_e.Magical, damage, true, true);
@@ -649,12 +723,16 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETSPELLDAMAGE)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETSPELLDAMAGE)</font>");
                 return 0f;
             }
         }
+
         #endregion
+
         #region RawComboDamage
+
         private static float GetActualRawComboDamage(Obj_AI_Base enemy)
         {
             try
@@ -666,31 +744,42 @@ namespace OKTRAIO.Champions
                 spells.Add(SpellSlot.W);
                 spells.Add(SpellSlot.E);
                 spells.Add(SpellSlot.R);
-                foreach (var spell in spells.Where(s => Player.Instance.Spellbook.CanUseSpell(s) == SpellState.Ready && s != SpellSlot.R))
+                foreach (
+                    var spell in
+                        spells.Where(
+                            s => Player.Instance.Spellbook.CanUseSpell(s) == SpellState.Ready && s != SpellSlot.R))
                 {
                     if (Player.Instance.Spellbook.CanUseSpell(spell) == SpellState.Ready)
                         damage += GetSpellDamage(spell);
                 }
-                if (Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) != SpellState.Cooldown && Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) != SpellState.NotLearned && Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready && GetIgniteSpellSlot() != SpellSlot.Unknown)
+                if (Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) != SpellState.Cooldown &&
+                    Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) != SpellState.NotLearned &&
+                    Player.Instance.Spellbook.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready &&
+                    GetIgniteSpellSlot() != SpellSlot.Unknown)
                     damage += Player.Instance.GetSummonerSpellDamage(enemy, DamageLibrary.SummonerSpells.Ignite);
-                if (Player.Instance.Spellbook.CanUseSpell(SpellSlot.R) != SpellState.Cooldown && Player.Instance.Spellbook.CanUseSpell(SpellSlot.R) != SpellState.NotLearned)
+                if (Player.Instance.Spellbook.CanUseSpell(SpellSlot.R) != SpellState.Cooldown &&
+                    Player.Instance.Spellbook.CanUseSpell(SpellSlot.R) != SpellState.NotLearned)
                     damage += GetSpellDamage(SpellSlot.R);
                 return damage;
-
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETACTUALRAWCOMBODAMAGE)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETACTUALRAWCOMBODAMAGE)</font>");
                 return 0f;
             }
         }
+
         #endregion
 
         #region SummonersRanges
-        private static float flashrange = 425;
-        private static float igniterange = 600;
+
+        private static readonly float flashrange = 425;
+        private static readonly float igniterange = 600;
+
         #endregion
+
         private static void DrawRanges(EventArgs args)
         {
             try
@@ -700,132 +789,211 @@ namespace OKTRAIO.Champions
                 try
                 {
                     #region Q
+
                     if (Value.Use("draw.q"))
                     {
                         if (Value.Use("draw.ready"))
                         {
                             if (_q.IsReady())
                             {
-                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = _q.Range }.Draw(Player.Instance.Position);
+                                new Circle
+                                {
+                                    BorderWidth = MainMenu._draw.GetWidth("width.q"),
+                                    Color = MainMenu._draw.GetColor("color.q"),
+                                    Radius = _q.Range
+                                }.Draw(Player.Instance.Position);
                             }
                         }
                         else
                         {
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.q"), Color = MainMenu._draw.GetColor("color.q"), Radius = _q.Range }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.q"),
+                                Color = MainMenu._draw.GetColor("color.q"),
+                                Radius = _q.Range
+                            }.Draw(Player.Instance.Position);
                         }
                     }
+
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.Q</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.Q</font>");
                 }
 
                 try
                 {
                     #region W
+
                     if (Value.Use("draw.w"))
                     {
                         if (Value.Use("draw.ready"))
                         {
                             if (_w.IsReady())
-                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.w"), Color = MainMenu._draw.GetColor("color.w"), Radius = _w.Range }.Draw(Player.Instance.Position);
+                                new Circle
+                                {
+                                    BorderWidth = MainMenu._draw.GetWidth("width.w"),
+                                    Color = MainMenu._draw.GetColor("color.w"),
+                                    Radius = _w.Range
+                                }.Draw(Player.Instance.Position);
                         }
                         else
                         {
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.w"), Color = MainMenu._draw.GetColor("color.w"), Radius = _w.Range }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.w"),
+                                Color = MainMenu._draw.GetColor("color.w"),
+                                Radius = _w.Range
+                            }.Draw(Player.Instance.Position);
                         }
                     }
+
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.W</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.W</font>");
                 }
 
                 try
                 {
                     #region E
+
                     if (Value.Use("draw.e"))
                     {
                         if (Value.Use("draw.ready"))
                         {
                             if (_e.IsReady())
-                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = _e.Range }.Draw(Player.Instance.Position);
+                                new Circle
+                                {
+                                    BorderWidth = MainMenu._draw.GetWidth("width.e"),
+                                    Color = MainMenu._draw.GetColor("color.e"),
+                                    Radius = _e.Range
+                                }.Draw(Player.Instance.Position);
                         }
                         else
                         {
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.e"), Color = MainMenu._draw.GetColor("color.e"), Radius = _e.Range }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.e"),
+                                Color = MainMenu._draw.GetColor("color.e"),
+                                Radius = _e.Range
+                            }.Draw(Player.Instance.Position);
                         }
                     }
+
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.E</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.E</font>");
                 }
 
                 try
                 {
                     #region R
+
                     if (Value.Use("draw.r"))
                     {
                         if (Value.Use("draw.ready"))
                         {
                             if (!_r.IsOnCooldown)
-                                new Circle { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = _r.Range }.Draw(Player.Instance.Position);
+                                new Circle
+                                {
+                                    BorderWidth = MainMenu._draw.GetWidth("width.r"),
+                                    Color = MainMenu._draw.GetColor("color.r"),
+                                    Radius = _r.Range
+                                }.Draw(Player.Instance.Position);
                         }
                         else
                         {
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.r"), Color = MainMenu._draw.GetColor("color.r"), Radius = _r.Range }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.r"),
+                                Color = MainMenu._draw.GetColor("color.r"),
+                                Radius = _r.Range
+                            }.Draw(Player.Instance.Position);
                         }
                     }
+
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.R)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW.R)</font>");
                 }
 
                 #region Summoners
+
                 try
                 {
                     #region Flash
+
                     if (Value.Use("draw.flash"))
                     {
                         if (Player.CanUseSpell(GetFlashSpellSlot()) == SpellState.Ready)
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.flash"), Color = MainMenu._draw.GetColor("color.flash"), Radius = flashrange }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.flash"),
+                                Color = MainMenu._draw.GetColor("color.flash"),
+                                Radius = flashrange
+                            }.Draw(Player.Instance.Position);
                         if (Player.CanUseSpell(GetFlashSpellSlot()) == SpellState.Cooldown)
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("width.flash"), Color = MainMenu._draw.GetColor("color.flash"), Radius = flashrange }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("width.flash"),
+                                Color = MainMenu._draw.GetColor("color.flash"),
+                                Radius = flashrange
+                            }.Draw(Player.Instance.Position);
                     }
+
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW)</font>");
                 }
 
                 try
                 {
                     #region Ignite
+
                     if (Value.Use("draw.ignite"))
                     {
                         if (Player.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready)
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("color.flash"), Color = MainMenu._draw.GetColor("color.ignite"), Radius = igniterange }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("color.flash"),
+                                Color = MainMenu._draw.GetColor("color.ignite"),
+                                Radius = igniterange
+                            }.Draw(Player.Instance.Position);
                         if (Player.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Cooldown)
-                            new Circle { BorderWidth = MainMenu._draw.GetWidth("color.flash"), Color = MainMenu._draw.GetColor("color.ignite"), Radius = igniterange }.Draw(Player.Instance.Position);
+                            new Circle
+                            {
+                                BorderWidth = MainMenu._draw.GetWidth("color.flash"),
+                                Color = MainMenu._draw.GetColor("color.ignite"),
+                                Radius = igniterange
+                            }.Draw(Player.Instance.Position);
                     }
+
                     #endregion
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code DRAW)</font>");
                 }
 
                 #endregion
@@ -833,12 +1001,15 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (DRAW)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (DRAW)</font>");
             }
         }
+
         #endregion
 
         #region GetSpellSlots
+
         private static SpellSlot GetFlashSpellSlot()
         {
             try
@@ -852,7 +1023,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETFLASHSPELLSLOT)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETFLASHSPELLSLOT)</font>");
                 return SpellSlot.Unknown;
             }
         }
@@ -870,34 +1042,40 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETIGNITESPELLSLOT)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code GETIGNITESPELLSLOT)</font>");
                 return SpellSlot.Unknown;
             }
         }
+
         #endregion
     }
 
     #region Misc
-    static class KataExtensions
+
+    internal static class KataExtensions
     {
-        public static void AddStringList(this Menu m, string uniqueId, string displayName, string[] values, int defaultValue)
+        public static void AddStringList(this Menu m, string uniqueId, string displayName, string[] values,
+            int defaultValue)
         {
             try
             {
                 var mode = m.Add(uniqueId, new Slider(displayName, defaultValue, 0, values.Length - 1));
                 mode.DisplayName = displayName + ": " + values[mode.CurrentValue];
-                mode.OnValueChange += delegate (ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
-                {
-                    sender.DisplayName = displayName + ": " + values[args.NewValue];
-                };
+                mode.OnValueChange +=
+                    delegate(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
+                    {
+                        sender.DisplayName = displayName + ": " + values[args.NewValue];
+                    };
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ADDSTRINGLIST)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ADDSTRINGLIST)</font>");
             }
         }
-
     }
+
     #endregion
 }

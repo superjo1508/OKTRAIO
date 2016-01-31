@@ -11,9 +11,8 @@ using Color = System.Drawing.Color;
 
 namespace OKTRAIO.Champions
 {
-    class Twitch : AIOChampion
+    internal class Twitch : AIOChampion
     {
-
         #region Initialize and Declare
 
         private static Spell.Active _q, _e, _r, _recall;
@@ -24,11 +23,8 @@ namespace OKTRAIO.Champions
         private static readonly Vector2 Offset = new Vector2(1, 0);
         private static float _qmana, _wmana, _emana, _rmana;
 
-
-
         public override void Init()
         {
-
             try
             {
                 //spells
@@ -50,7 +46,7 @@ namespace OKTRAIO.Champions
                 //menu
 
                 //combo
-                MainMenu.ComboKeys(true, true, true, true);
+                MainMenu.ComboKeys();
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddSlider("combo.q.close", "Use Q when {0} enemies are close", 2, 1, 5, true);
                 MainMenu._combo.AddSeparator();
@@ -61,14 +57,14 @@ namespace OKTRAIO.Champions
                 MainMenu._combo.AddSlider("combo.w.prediction", "Hitchance Percentage for W", 80, 0, 100, true);
 
                 //flee
-                MainMenu.FleeKeys(true, true, false, false);
+                MainMenu.FleeKeys(useE: false, useR: false);
                 MainMenu._flee.AddSeparator();
                 MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
                 MainMenu.FleeManaManager(true, true, false, false, 20, 40, 0, 0);
 
 
                 //laneclear
-                MainMenu.LaneKeys(false, true, true, false);
+                MainMenu.LaneKeys(false, useR: false);
                 MainMenu._lane.AddSeparator();
                 MainMenu._lane.AddCheckBox("lane.execute", "Use E on Siege Minions", true, true);
                 MainMenu._lane.AddSeparator();
@@ -79,20 +75,20 @@ namespace OKTRAIO.Champions
                 MainMenu.LaneManaManager(false, true, true, false, 0, 40, 15, 0);
 
                 //jungleclear
-                MainMenu.JungleKeys(false, true, false, false, true);
+                MainMenu.JungleKeys(false, useE: false, useR: false, junglesteal: true);
                 MainMenu._jungle.AddSeparator();
                 MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
                 MainMenu.JungleManaManager(false, true, true, false, 0, 40, 15, 0);
 
 
                 //harass
-                MainMenu.HarassKeys(false, true, false, false);
+                MainMenu.HarassKeys(false, useE: false, useR: false);
                 MainMenu._harass.AddSeparator();
                 MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
                 MainMenu.HarassManaManager(false, true, false, false, 0, 30, 0, 0);
 
                 //ks
-                MainMenu.KsKeys(false, false, true, true);
+                MainMenu.KsKeys(false, useW: false);
                 MainMenu._ks.AddSeparator();
                 MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
                 MainMenu.KsManaManager(false, false, true, true, 0, 0, 5, 30);
@@ -113,7 +109,7 @@ namespace OKTRAIO.Champions
 
 
                 //draw
-                MainMenu.DrawKeys(false, true, true, true);
+                MainMenu.DrawKeys(false);
                 MainMenu._draw.AddSeparator();
                 MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw E Damage", true, true);
             }
@@ -135,12 +131,10 @@ namespace OKTRAIO.Champions
 
             catch (Exception e)
             {
-
                 Console.WriteLine(e);
                 Chat.Print(
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
             }
-
         }
 
         #endregion
@@ -148,6 +142,7 @@ namespace OKTRAIO.Champions
         #region Gamerelated Logic
 
         #region Combo
+
         public override void Combo()
         {
             var target = TargetSelector.GetTarget(_e.Range, DamageType.Physical);
@@ -169,7 +164,9 @@ namespace OKTRAIO.Champions
             {
                 var targetw = TargetSelector.GetTarget(_w.Range, DamageType.Physical);
 
-                if (targetw != null && (!Stealthed && _w.IsInRange(targetw) && EStacks(target) < 5 || !Stealthed && !Player.Instance.IsInAutoAttackRange(targetw) && _w.IsInRange(targetw)))
+                if (targetw != null &&
+                    (!Stealthed && _w.IsInRange(targetw) && EStacks(target) < 5 ||
+                     !Stealthed && !Player.Instance.IsInAutoAttackRange(targetw) && _w.IsInRange(targetw)))
                 {
                     var wpred = _w.GetPrediction(targetw);
 
@@ -179,7 +176,8 @@ namespace OKTRAIO.Champions
                     }
                 }
 
-                if (Stealthed && target.Distance(Player.Instance.Position) < Player.Instance.GetAutoAttackRange() && EStacks(target) < 5)
+                if (Stealthed && target.Distance(Player.Instance.Position) < Player.Instance.GetAutoAttackRange() &&
+                    EStacks(target) < 5)
                 {
                     _w.Cast(target);
                 }
@@ -215,9 +213,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Harass
+
         public override void Harass()
         {
             var target =
@@ -239,9 +239,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Laneclear
+
         public override void Laneclear()
         {
             var minionw = EntityManager.MinionsAndMonsters.GetLaneMinions().Where(a => a.IsValidTarget(_w.Range));
@@ -254,7 +256,7 @@ namespace OKTRAIO.Champions
                         a =>
                             a.IsValidTarget(_e.Range) && a.BaseSkinName.Contains("Siege") &&
                             a.HasBuff("twitchdeadlyvenom") &&
-                        a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
+                            a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
 
             var wfarm = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(minionw, _w.Width, (int) _w.Range);
 
@@ -268,7 +270,10 @@ namespace OKTRAIO.Champions
 
             if (Value.Use("lane.e") && _e.IsReady() && Player.Instance.ManaPercent >= Value.Get("lane.e.mana"))
             {
-                if (minione.Count(a => a.IsValidTarget() && a.HasBuff("twitchdeadlyvenom") && a.Health <= EDamageMinion(a)) >= Value.Get("lane.e.min"))
+                if (
+                    minione.Count(
+                        a => a.IsValidTarget() && a.HasBuff("twitchdeadlyvenom") && a.Health <= EDamageMinion(a)) >=
+                    Value.Get("lane.e.min"))
                 {
                     _e.Cast();
                 }
@@ -284,11 +289,12 @@ namespace OKTRAIO.Champions
                     }
                 }
             }
-
         }
+
         #endregion
 
         #region Jungleclear
+
         public override void Jungleclear()
         {
             var monster =
@@ -306,9 +312,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Flee
+
         public override void Flee()
         {
             var target = TargetSelector.GetTarget(_w.Range, DamageType.Physical);
@@ -333,6 +341,7 @@ namespace OKTRAIO.Champions
                 _q.Cast();
             }
         }
+
         #endregion
 
         #endregion
@@ -340,9 +349,9 @@ namespace OKTRAIO.Champions
         #region Utils
 
         #region OnUpdate
+
         private static void GameOnOnUpdate(EventArgs args)
         {
-
             Ks();
 
             JungleSteal();
@@ -354,13 +363,14 @@ namespace OKTRAIO.Champions
             AutoEDeath();
 
             AutoERange();
-            
-            ComboManaManagement();
 
+            ComboManaManagement();
         }
+
         #endregion
 
         #region EStacks
+
         private static int EStacks(Obj_AI_Base obj)
         {
             var twitchECount = 0;
@@ -400,10 +410,10 @@ namespace OKTRAIO.Champions
             }
             return
                 (float)
-                    ((EBaseDamage[_e.Level - 1]) +
-                     (EStackDamage[_e.Level - 1]*stacks) +
-                     (.2*Player.Instance.FlatMagicDamageMod) +
-                     (.25*(Player.Instance.TotalAttackDamage - Player.Instance.BaseAttackDamage)));
+                    (EBaseDamage[_e.Level - 1] +
+                     EStackDamage[_e.Level - 1]*stacks +
+                     .2*Player.Instance.FlatMagicDamageMod +
+                     .25*(Player.Instance.TotalAttackDamage - Player.Instance.BaseAttackDamage));
         }
 
         private static float ERawMinion(Obj_AI_Minion minion)
@@ -415,21 +425,21 @@ namespace OKTRAIO.Champions
             }
             return
                 (float)
-                    ((EBaseDamage[_e.Level - 1]) +
-                     (EStackDamage[_e.Level - 1] * stacks) +
-                     (.2 * Player.Instance.FlatMagicDamageMod) +
-                     (.25 * (Player.Instance.TotalAttackDamage - Player.Instance.BaseAttackDamage)));
+                    (EBaseDamage[_e.Level - 1] +
+                     EStackDamage[_e.Level - 1]*stacks +
+                     .2*Player.Instance.FlatMagicDamageMod +
+                     .25*(Player.Instance.TotalAttackDamage - Player.Instance.BaseAttackDamage));
         }
-        
+
         private static float EDamage(Obj_AI_Base target)
         {
-            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, ERaw(target)) *
+            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, ERaw(target))*
                    (Player.Instance.HasBuff("summonerexhaust") ? 0.6f : 1);
         }
 
         private static float EDamageMinion(Obj_AI_Minion minion)
         {
-            return Player.Instance.CalculateDamageOnUnit(minion, DamageType.Physical, ERawMinion(minion)) *
+            return Player.Instance.CalculateDamageOnUnit(minion, DamageType.Physical, ERawMinion(minion))*
                    (Player.Instance.HasBuff("summonerexhaust") ? 0.6f : 1);
         }
 
@@ -437,7 +447,9 @@ namespace OKTRAIO.Champions
         {
             var targete =
                 EntityManager.Heroes.Enemies.FirstOrDefault(
-                    a => a.IsValidTarget(_e.Range) && a.HasBuff("twitchdeadlyvenom") && EStacks(a) > Value.Get("misc.e.stacks"));
+                    a =>
+                        a.IsValidTarget(_e.Range) && a.HasBuff("twitchdeadlyvenom") &&
+                        EStacks(a) > Value.Get("misc.e.stacks"));
 
             if (_e.IsReady() && Value.Use("misc.e.death") && targete != null)
             {
@@ -452,9 +464,10 @@ namespace OKTRAIO.Champions
         {
             // ReSharper disable once UnusedVariable
             foreach (var targete in EntityManager.Heroes.Enemies.Where(
-                    a => a.IsValid && a.HasBuff("twitchdeadlyvenom") && EStacks(a) >= Value.Get("misc.e.range.stacks")))
+                a => a.IsValid && a.HasBuff("twitchdeadlyvenom") && EStacks(a) >= Value.Get("misc.e.range.stacks")))
             {
-                if (Value.Use("misc.e.range") && _e.IsReady() && targete.Distance(Player.Instance.ServerPosition) >= _e.Range - 200)
+                if (Value.Use("misc.e.range") && _e.IsReady() &&
+                    targete.Distance(Player.Instance.ServerPosition) >= _e.Range - 200)
                 {
                     _e.Cast();
                 }
@@ -463,7 +476,10 @@ namespace OKTRAIO.Champions
 
         private static void AutoE()
         {
-            foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => a.HasBuff("twitchdeadlyvenom") && a.IsValidTarget(_e.Range)))
+            foreach (
+                var enemy in
+                    EntityManager.Heroes.Enemies.Where(a => a.HasBuff("twitchdeadlyvenom") && a.IsValidTarget(_e.Range))
+                )
             {
                 if (Value.Use("misc.e.time") && _e.IsReady())
                 {
@@ -474,9 +490,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Passive values
+
         public static float PassiveTime(Obj_AI_Base target)
         {
             if (target.HasBuff("twitchdeadlyvenom"))
@@ -511,18 +529,22 @@ namespace OKTRAIO.Champions
             {
                 dmg = 6;
             }
-            return (dmg * EStacks(target) * PassiveTime(target)) - target.HPRegenRate * PassiveTime(target);
+            return dmg*EStacks(target)*PassiveTime(target) - target.HPRegenRate*PassiveTime(target);
         }
+
         #endregion
 
         #region KillSteal
+
         private static void Ks()
         {
             foreach (var enemy in EntityManager.Heroes.Enemies.Where(
-                    a =>
-                        a.IsValidTarget(_e.Range) && !a.IsDead && !a.IsZombie && a.HasBuff("twitchdeadlyvenom") && !a.HasBuffOfType(BuffType.Invulnerability) && !a.HasBuff("ChronoShift")))
+                a =>
+                    a.IsValidTarget(_e.Range) && !a.IsDead && !a.IsZombie && a.HasBuff("twitchdeadlyvenom") &&
+                    !a.HasBuffOfType(BuffType.Invulnerability) && !a.HasBuff("ChronoShift")))
             {
-                if (Value.Use("killsteal.e") && _e.IsReady() && Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana"))
+                if (Value.Use("killsteal.e") && _e.IsReady() &&
+                    Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana"))
                 {
                     if (enemy.TotalShieldHealth() <= EDamage(enemy))
                     {
@@ -534,10 +556,10 @@ namespace OKTRAIO.Champions
                     {
                         _e.Cast();
                     }
-                }            
+                }
             }
-            
-            
+
+
             if (Value.Use("killsteal.r") && _r.IsReady() && Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
             {
                 var rks = TargetSelector.GetTarget(_r.Range, DamageType.Physical);
@@ -545,7 +567,8 @@ namespace OKTRAIO.Champions
                 if (rks != null)
                 {
                     if (rks.Distance(Player.Instance.Position) > Player.Instance.GetAutoAttackRange() &&
-                        rks.Health <= Player.Instance.TotalAttackDamage + RBonusAd[_r.Level - 1]*2 && rks.CountAlliesInRange(550) == 0)
+                        rks.Health <= Player.Instance.TotalAttackDamage + RBonusAd[_r.Level - 1]*2 &&
+                        rks.CountAlliesInRange(550) == 0)
                     {
                         _r.Cast();
                         Player.IssueOrder(GameObjectOrder.AutoAttack, rks);
@@ -553,9 +576,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region JungleSteal
+
         private static void JungleSteal()
         {
             var monster =
@@ -564,7 +589,8 @@ namespace OKTRAIO.Champions
                         a =>
                             a.IsValidTarget(_e.Range) && a.HasBuff("twitchdeadlyvenom") && a.Health <= EDamageMinion(a));
 
-            if (Value.Use("jungle.stealenabled") && _e.IsReady() && Player.Instance.ManaPercent >= Value.Get("jungle.e.mana"))
+            if (Value.Use("jungle.stealenabled") && _e.IsReady() &&
+                Player.Instance.ManaPercent >= Value.Get("jungle.e.mana"))
             {
                 if (monster != null)
                 {
@@ -573,51 +599,53 @@ namespace OKTRAIO.Champions
                         _e.Cast();
                     }
 
-                    if (monster.BaseSkinName == ("SRU_Dragon") && Value.Use("jungle.SRU_Dragon"))
+                    if (monster.BaseSkinName == "SRU_Dragon" && Value.Use("jungle.SRU_Dragon"))
                     {
                         _e.Cast();
                     }
 
-                    if (monster.BaseSkinName == ("SRU_Blue") && Value.Use("jungle.SRU_Blue"))
+                    if (monster.BaseSkinName == "SRU_Blue" && Value.Use("jungle.SRU_Blue"))
                     {
                         _e.Cast();
                     }
 
-                    if (monster.BaseSkinName == ("SRU_Red") && Value.Use("jungle.SRU_Red"))
+                    if (monster.BaseSkinName == "SRU_Red" && Value.Use("jungle.SRU_Red"))
                     {
                         _e.Cast();
                     }
 
-                    if (monster.BaseSkinName == ("SRU_Gromp") && Value.Use("jungle.SRU_Gromp"))
+                    if (monster.BaseSkinName == "SRU_Gromp" && Value.Use("jungle.SRU_Gromp"))
                     {
                         _e.Cast();
                     }
 
-                    if (monster.BaseSkinName == ("SRU_Murkwolf") && Value.Use("jungle.SRU_Murkwolf"))
+                    if (monster.BaseSkinName == "SRU_Murkwolf" && Value.Use("jungle.SRU_Murkwolf"))
                     {
                         _e.Cast();
                     }
 
-                    if (monster.BaseSkinName == ("SRU_Krug") && Value.Use("jungle.SRU_Krug"))
+                    if (monster.BaseSkinName == "SRU_Krug" && Value.Use("jungle.SRU_Krug"))
                     {
                         _e.Cast();
                     }
 
-                    if (monster.BaseSkinName == ("SRU_Razorbeak") && Value.Use("jungle.SRU_Razorbeak"))
+                    if (monster.BaseSkinName == "SRU_Razorbeak" && Value.Use("jungle.SRU_Razorbeak"))
                     {
                         _e.Cast();
                     }
 
-                    if (monster.BaseSkinName == ("Sru_Crab") && Value.Use("jungle.SRU_Crab"))
+                    if (monster.BaseSkinName == "Sru_Crab" && Value.Use("jungle.SRU_Crab"))
                     {
                         _e.Cast();
                     }
                 }
             }
         }
+
         #endregion
 
         #region QRecall
+
         private static void Recall()
         {
             if (Value.Active("misc.recall"))
@@ -629,9 +657,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Mana manager
+
         private static void ComboManaManagement()
         {
             if (Value.Use("combo.mana.management") && Player.Instance.HealthPercent > 20)
@@ -649,9 +679,11 @@ namespace OKTRAIO.Champions
                 _rmana = 0;
             }
         }
+
         #endregion
 
         #region Values
+
         private static bool Stealthed
         {
             get { return Player.Instance.HasBuff("TwitchHideInShadows"); }
@@ -661,18 +693,20 @@ namespace OKTRAIO.Champions
         {
             get { return Player.Instance.HasBuff("TwitchFullAutomatic"); }
         }
-        #endregion 
+
+        #endregion
 
         #endregion
 
         #region Drawings
+
         private static void GameOnDraw(EventArgs args)
         {
-            Color colorW = MainMenu._draw.GetColor("color.w");
+            var colorW = MainMenu._draw.GetColor("color.w");
             var widthW = MainMenu._draw.GetWidth("width.w");
-            Color colorE = MainMenu._draw.GetColor("color.e");
+            var colorE = MainMenu._draw.GetColor("color.e");
             var widthE = MainMenu._draw.GetWidth("width.e");
-            Color colorR = MainMenu._draw.GetColor("color.r");
+            var colorR = MainMenu._draw.GetColor("color.r");
             var widthR = MainMenu._draw.GetWidth("width.r");
 
 
@@ -712,19 +746,26 @@ namespace OKTRAIO.Champions
         {
             if (Value.Use("draw.hp.bar"))
             {
-                foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => !a.IsDead && a.HasBuff("twitchdeadlyvenom") && a.IsHPBarRendered))
+                foreach (
+                    var enemy in
+                        EntityManager.Heroes.Enemies.Where(
+                            a => !a.IsDead && a.HasBuff("twitchdeadlyvenom") && a.IsHPBarRendered))
                 {
                     var damage = EDamage(enemy);
-                    var damagepercent = ((enemy.TotalShieldHealth() - damage) > 0 ? (enemy.TotalShieldHealth() - damage) : 0) / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);                                             
-                    var hppercent = enemy.TotalShieldHealth() / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var start = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + damagepercent * 104), (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
-                    var end = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + hppercent * 104) + 2, (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var damagepercent = (enemy.TotalShieldHealth() - damage > 0 ? enemy.TotalShieldHealth() - damage : 0)/
+                                        (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var hppercent = enemy.TotalShieldHealth()/
+                                    (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var start = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + damagepercent*104),
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var end = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + hppercent*104) + 2,
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
 
                     Drawing.DrawLine(start, end, 9, Color.Chartreuse);
                 }
             }
         }
-        #endregion 
 
+        #endregion
     }
 }

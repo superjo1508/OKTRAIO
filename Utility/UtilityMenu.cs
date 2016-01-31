@@ -10,8 +10,6 @@ using MainMenu = EloBuddy.SDK.Menu.MainMenu;
 
 namespace OKTRAIO.Utility
 {
-    using EloBuddy.SDK.Enumerations;
-
     public static class UtilityMenu
     {
         public static Menu Menu, Activator, Autolvlup, Skinmanager, Baseult, Randomult, Bushreveal;
@@ -68,10 +66,11 @@ namespace OKTRAIO.Utility
             Autolvlup.AddCheckBox("autolvlup.use", "Use AutoLVLUP");
             Autolvlup.Add("autolvlup.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
-            Autolvlup.AddCheckBox("autolvlup.recognize.spells", "Recognize your Activator Spells", true, true);
-            Autolvlup.AddCheckBox("autolvlup.recognize.mode", "Recognize your Masteries", true, true);
-            Autolvlup.Add("autolvlup.build.line.mode", new Slider("Build Line: ", 0, 0, 8)).OnValueChange +=
-                Leveler.BuildLineSlider;
+            Autolvlup.AddSlider("autolvlup.mode", "Set Mode:", 1, 1, 2);
+            Autolvlup["autolvlup.damagetype"].Cast<Slider>().OnValueChange += LevelerMisc.DamageTypeSlider;
+            Autolvlup.AddSlider("autolvlup.role", "Set Role:", 1, 1, 3);
+            Autolvlup["autolvlup.role"].Cast<Slider>().OnValueChange += LevelerMisc.RoleSlider;
+            Autolvlup.AddCheckBox("autolvlup.ignorevers", "Ignore Version Differences", true, true);
         }
 
         public static void SkinManager()
@@ -80,7 +79,7 @@ namespace OKTRAIO.Utility
             Skinmanager.AddGroupLabel("OKTR AIO - Skinmanager for " + Player.Instance.ChampionName,
                 "skinmanager.grouplabel.utilitymenu");
             Skinmanager.AddLabel("PSA: Changing your Model might in rare cases crash the game." + Environment.NewLine +
-                                  "This does not apply to changing skin.");
+                                 "This does not apply to changing skin.");
             Skinmanager.AddSeparator();
             Skinmanager.Add("skinmanager.models", new Slider("Model - ", 0, 0, 0)).OnValueChange +=
                 SkinManagement.SkinManager_OnModelSliderChange;
@@ -108,11 +107,12 @@ namespace OKTRAIO.Utility
             Baseult.AddGroupLabel("OKTR AIO - BaseULT for " + Player.Instance.ChampionName,
                 "baseult.grouplabel.utilitymenu");
             Baseult.AddCheckBox("baseult.use", "Use BaseUlt");
-            Baseult.Add("baseult.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
+            Baseult.Add("baseult.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
             Baseult.AddCheckBox("baseult.recallsEnemy", "Show enemy recalls", true, true);
             Baseult.AddCheckBox("baseult.recallsAlly", "Show ally recalls", true, true);
-            Baseult.AddSlider("baseult.x", "Recall location X", (int)(Drawing.Width * 0.4), 0, Drawing.Width, true);
-            Baseult.AddSlider("baseult.y", "Recall location Y", (int)(Drawing.Height * 0.75), 0, Drawing.Height, true);
+            Baseult.AddSlider("baseult.x", "Recall location X", (int) (Drawing.Width*0.4), 0, Drawing.Width, true);
+            Baseult.AddSlider("baseult.y", "Recall location Y", (int) (Drawing.Height*0.75), 0, Drawing.Height, true);
             Baseult.AddSlider("baseult.width", "Recall width", 300, 200, 500, true);
             Baseult.AddSeparator();
             Baseult.AddLabel("Use BaseULT for:", 25, "baseult.label", true);
@@ -128,17 +128,18 @@ namespace OKTRAIO.Utility
             Randomult.AddGroupLabel("OKTR AIO - RandomUlt for " + Player.Instance.ChampionName,
                 "randomult.grouplabel.utilitymenu");
             Randomult.AddCheckBox("randomult.use", "Use RandomUlt");
-            Randomult.Add("randomult.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
+            Randomult.Add("randomult.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
             Randomult.AddSeparator();
             Randomult.AddSlider("randomult.range", "Don't Ult When Enemies In Range", 1000, 0, 2000, true);
             Randomult.AddSlider("randomult.delay", "Delay Before Ulting", 600, 0, 3000, true);
-            Randomult.AddSlider("randomult.hitchance", "RandomUlt Hitchance (1 - More Ults, 5 - Less Ults)", 3, 1, 5, true);
+            Randomult.AddSlider("randomult.hitchance", "RandomUlt Hitchance (1 - More Ults, 5 - Less Ults)", 3, 1, 5,
+                true);
             Randomult.AddLabel("Who To RandomUlt:", 25, "randomult.label", true);
             foreach (var enemy in EntityManager.Heroes.Enemies)
             {
                 Randomult.AddCheckBox("randomult." + enemy.ChampionName, enemy.ChampionName, true, true);
             }
         }
-        }
+    }
 }
-

@@ -13,7 +13,6 @@ namespace OKTRAIO.Menu_Settings
         {
             try
             {
-
                 /*
                     How does it work?
 
@@ -21,11 +20,10 @@ namespace OKTRAIO.Menu_Settings
                  * Test
                 */
 
-
                 //              
                 //  Main Menu   
                 //              
-                _menu = EloBuddy.SDK.Menu.MainMenu.AddMenu("OKTR AIO ","marks.aio",Player.Instance.ChampionName);
+                _menu = EloBuddy.SDK.Menu.MainMenu.AddMenu("OKTR AIO ", "marks.aio", Player.Instance.ChampionName);
                 _menu.AddGroupLabel("One Key To Report AIO - " + Player.Instance.ChampionName);
                 _menu.AddLabel("Hope you guys enjoy the ONE KEY TO RAXE AIO!");
                 _menu.AddLabel("Doh! is One Key To Report >_< \n Or OneKeyToRape (your enemies) ಠ_ಠ");
@@ -88,12 +86,12 @@ namespace OKTRAIO.Menu_Settings
                 _draw.AddSeparator();
                 _draw.AddCheckBox("draw.disable", "Disable Drawings", false);
                 _draw.AddCheckBox("draw.ready", "Display only ready skills");
-
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 2)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 2)</font>");
             }
             //TODO: Main menu stuff n things
         }
@@ -102,14 +100,15 @@ namespace OKTRAIO.Menu_Settings
         {
             _misc = _menu.AddSubMenu("Misc Menu", "misc");
             _misc.AddGroupLabel("Misc Settings");
-            _misc.Add("misc.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
+            _misc.Add("misc.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
         }
 
         public static void DamageIndicator(bool jungle = false, string draw = "")
         {
             _draw.AddSeparator();
             _draw.AddGroupLabel("Enemy Damage Indicator Settings");
-            _draw.AddLabel("Drawing: "+ (draw == "" ? "Combo damage" : draw));
+            _draw.AddLabel("Drawing: " + (draw == "" ? "Combo damage" : draw));
             _draw.AddCheckBox("draw.enemyDmg", "Draw damage on enemy healthbar");
             _draw.AddColorItem("draw.color.enemyDmg", 3);
 
@@ -122,54 +121,63 @@ namespace OKTRAIO.Menu_Settings
             }
         }
 
-        public static void DrawKeys(bool q, bool w, bool e, bool r)
+        public static void DrawKeys(
+            bool useQ = true,
+            bool defaultQ = true,
+            bool useW = true,
+            bool defaultW = true,
+            bool useE = true,
+            bool defaultE = true,
+            bool useR = true,
+            bool defaultR = true)
         {
-            if (q)
+            if (useQ)
             {
                 _draw.AddSeparator();
                 _draw.AddGroupLabel("Q Settings");
-                _draw.AddCheckBox("draw.q", "Draw Q");
+                _draw.AddCheckBox("draw.q", "Draw Q", defaultQ);
                 _draw.AddColorItem("color.q");
                 _draw.AddWidthItem("width.q");
             }
-            if (w)
+            if (useW)
             {
                 _draw.AddSeparator();
                 _draw.AddGroupLabel("W Settings");
-                _draw.AddCheckBox("draw.w", "Draw W");
+                _draw.AddCheckBox("draw.w", "Draw W", defaultW);
                 _draw.AddColorItem("color.w");
                 _draw.AddWidthItem("width.w");
             }
-            if (e)
+            if (useE)
             {
                 _draw.AddSeparator();
                 _draw.AddGroupLabel("E Settings");
-                _draw.AddCheckBox("draw.e", "Draw E");
+                _draw.AddCheckBox("draw.e", "Draw E", defaultE);
                 _draw.AddColorItem("color.e");
                 _draw.AddWidthItem("width.e");
             }
-            if (r)
+            if (useR)
             {
                 _draw.AddSeparator();
                 _draw.AddGroupLabel("R Settings");
-                _draw.AddCheckBox("draw.r", "Draw R");
+                _draw.AddCheckBox("draw.r", "Draw R", defaultR);
                 _draw.AddColorItem("color.r");
                 _draw.AddWidthItem("width.r");
             }
-            _draw.Add("draw.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
+            _draw.Add("draw.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
         }
 
         public static void ComboManaManager(bool q, bool w, bool e, bool r, int qmana, int wmana, int emana, int rmana)
         {
             if (q)
             {
-                _combo.AddSlider("combo.q.mana", "Use Q if Mana is above {0}%",qmana,0,100,true);
+                _combo.AddSlider("combo.q.mana", "Use Q if Mana is above {0}%", qmana, 0, 100, true);
             }
             if (w)
             {
                 _combo.AddSlider("combo.w.mana", "Use W if Mana is above {0}%", wmana, 0, 100, true);
             }
-            if (e)
+            if (w)
             {
                 _combo.AddSlider("combo.e.mana", "Use E if Mana is above {0}%", emana, 0, 100, true);
             }
@@ -219,7 +227,15 @@ namespace OKTRAIO.Menu_Settings
             }
         }
 
-        public static void LasthitManaManager(bool q, bool w, bool e, bool r, int qmana, int wmana, int emana, int rmana)
+        public static void LasthitManaManager(
+            bool q,
+            bool w,
+            bool e,
+            bool r,
+            int qmana,
+            int wmana,
+            int emana,
+            int rmana)
         {
             if (q)
             {
@@ -299,126 +315,180 @@ namespace OKTRAIO.Menu_Settings
             }
         }
 
-
-
         /// <summary>
-        /// Combo Keys
+        ///     Combo Keys
         /// </summary>
-        /// <param name="q">Create Q Combo menu</param>
-        /// <param name="w">Create W Combo menu</param>
-        /// <param name="e">Create E Combo menu</param>
-        /// <param name="r">Create R Combo menu</param>
-        public static void ComboKeys(bool q, bool w, bool e, bool r)
+        /// <param name="useQ">Create Q COMBO menu</param>
+        /// <param name="defaultQ">Determinate toggle status</param>
+        /// <param name="useW">Create W COMBO menu</param>
+        /// <param name="defaultW">Determinate toggle status</param>
+        /// <param name="useE">Create E COMBO menu</param>
+        /// <param name="defaultE">Determinate toggle status</param>
+        /// <param name="useR">Create R COMBO menu</param>
+        /// <param name="defaultR">Determinate toggle status</param>
+        public static void ComboKeys(
+            bool useQ = true,
+            bool defaultQ = true,
+            bool useW = true,
+            bool defaultW = true,
+            bool useE = true,
+            bool defaultE = true,
+            bool useR = true,
+            bool defaultR = true)
         {
-            if (q)
+            if (useQ)
             {
-                _combo.AddCheckBox("combo.q", "Use Q");
+                _combo.AddCheckBox("combo.q", "Use Q", defaultQ);
             }
-            if (w)
+            if (useW)
             {
-                _combo.AddCheckBox("combo.w", "Use W");
+                _combo.AddCheckBox("combo.w", "Use W", defaultW);
             }
-            if (e)
+            if (useE)
             {
-                _combo.AddCheckBox("combo.e", "Use E");
+                _combo.AddCheckBox("combo.e", "Use E", defaultE);
             }
-            if (r)
+            if (useR)
             {
-                _combo.AddCheckBox("combo.r", "Use R");
+                _combo.AddCheckBox("combo.r", "Use R", defaultR);
             }
             _combo.AddSeparator();
-            _combo.Add("combo.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
+            _combo.Add("combo.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
         }
 
         /// <summary>
-        /// Combo Keys
+        ///     KS Keys
         /// </summary>
-        /// <param name="q">Create Q KS menu</param>
-        /// <param name="w">Create W KS menu</param>
-        /// <param name="e">Create E KS menu</param>
-        /// <param name="r">Create R KS menu</param>
-        public static void KsKeys(bool q, bool w, bool e, bool r)
+        /// <param name="useQ">Create Q KS menu</param>
+        /// <param name="defaultQ">Determinate toggle status</param>
+        /// <param name="useW">Create W KS menu</param>
+        /// <param name="defaultW">Determinate toggle status</param>
+        /// <param name="useE">Create E KS menu</param>
+        /// <param name="defaultE">Determinate toggle status</param>
+        /// <param name="useR">Create R KS menu</param>
+        /// <param name="defaultR">Determinate toggle status</param>
+        public static void KsKeys(
+            bool useQ = true,
+            bool defaultQ = true,
+            bool useW = true,
+            bool defaultW = true,
+            bool useE = true,
+            bool defaultE = true,
+            bool useR = true,
+            bool defaultR = true)
         {
-            if (q)
+            if (useQ)
             {
-                _ks.AddCheckBox("killsteal.q", "Use Q");
+                _ks.AddCheckBox("killsteal.q", "Use Q", defaultQ);
             }
-            if (w)
+            if (useW)
             {
-                _ks.AddCheckBox("killsteal.w", "Use W");
+                _ks.AddCheckBox("killsteal.w", "Use W", defaultW);
             }
-            if (e)
+            if (useE)
             {
-                _ks.AddCheckBox("killsteal.e", "Use E");
+                _ks.AddCheckBox("killsteal.e", "Use E", defaultE);
             }
-            if (r)
+            if (useR)
             {
-                _ks.AddCheckBox("killsteal.r", "Use R");
+                _ks.AddCheckBox("killsteal.r", "Use R", defaultR);
             }
             _ks.AddSeparator();
-            _ks.Add("killsteal.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
+            _ks.Add("killsteal.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
         }
 
         /// <summary>
-        /// Lane Clear Keys
+        ///     Lane Clear Keys
         /// </summary>
-        /// <param name="q">Create Q LaneClear Menu</param>
-        /// <param name="w">Create W LaneClear Menu</param>
-        /// <param name="e">Create E LaneClear Menu</param>
-        /// <param name="r">Create R LaneClear Menu</param>
-        public static void LaneKeys(bool q, bool w, bool e, bool r)
+        /// <param name="useQ">Create Q LC menu</param>
+        /// <param name="defaultQ">Determinate toggle status</param>
+        /// <param name="useW">Create W LC menu</param>
+        /// <param name="defaultW">Determinate toggle status</param>
+        /// <param name="useE">Create E LC menu</param>
+        /// <param name="defaultE">Determinate toggle status</param>
+        /// <param name="useR">Create R LC menu</param>
+        /// <param name="defaultR">Determinate toggle status</param>
+        public static void LaneKeys(
+            bool useQ = true,
+            bool defaultQ = true,
+            bool useW = true,
+            bool defaultW = true,
+            bool useE = true,
+            bool defaultE = true,
+            bool useR = true,
+            bool defaultR = true)
         {
             _lane.AddGroupLabel("LaneClear Settings");
-            if (q)
+            if (useQ)
             {
                 _lane.AddCheckBox("lane.q", "Use Q", false);
             }
-            if (w)
+            if (useW)
             {
                 _lane.AddCheckBox("lane.w", "Use W", false);
             }
-            if (e)
+            if (useE)
             {
                 _lane.AddCheckBox("lane.e", "Use E", false);
             }
-            if (r)
+            if (useR)
             {
                 _lane.AddCheckBox("lane.r", "Use R", false);
             }
             _lane.AddSeparator();
-            _lane.Add("lane.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
+            _lane.Add("lane.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
         }
 
         /// <summary>
-        /// Jungle Clear Keys
+        ///     Jungle Clear Keys
         /// </summary>
-        /// <param name="q">Create Q JungleClear Menu</param>
-        /// <param name="w">Create W JungleClear Menu</param>
-        /// <param name="e">Create E JungleClear Menu</param>
-        /// <param name="r">Create R JungleClear Menu</param>
-        /// <param name="junglesteal">JungleSteal Menu</param>
-        public static void JungleKeys(bool q, bool w, bool e, bool r, bool junglesteal = false)
+        /// <param name="useQ">Create Q JC menu</param>
+        /// <param name="defaultQ">Determinate toggle status</param>
+        /// <param name="useW">Create W JC menu</param>
+        /// <param name="defaultW">Determinate toggle status</param>
+        /// <param name="useE">Create E JC menu</param>
+        /// <param name="defaultE">Determinate toggle status</param>
+        /// <param name="useR">Create R JC menu</param>
+        /// <param name="defaultR">Determinate toggle status</param>
+        /// <param name="junglesteal">Determinate toggle status for JungleSteal</param>
+        public static void JungleKeys(
+            bool useQ = true,
+            bool defaultQ = true,
+            bool useW = true,
+            bool defaultW = true,
+            bool useE = true,
+            bool defaultE = true,
+            bool useR = true,
+            bool defaultR = true,
+            bool junglesteal = false)
         {
             _jungle.AddGroupLabel("JungleClear Settings");
-            if (q)
+            if (useQ)
             {
                 _jungle.AddCheckBox("jungle.q", "Use Q", false);
             }
-            if (w)
+            if (useW)
             {
                 _jungle.AddCheckBox("jungle.w", "Use W", false);
             }
-            if (e)
+            if (useE)
             {
                 _jungle.AddCheckBox("jungle.e", "Use E", false);
             }
-            if (r)
+            if (useR)
             {
-                _jungle.AddCheckBox("jungle.r","Use R", false);
+                _jungle.AddCheckBox("jungle.r", "Use R", false);
             }
             _jungle.AddSeparator();
-            _jungle.Add("jungle.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
-            if (junglesteal) JungleSteal();
+            _jungle.Add("jungle.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
+            if (junglesteal)
+            {
+                JungleSteal();
+            }
         }
 
         private static void JungleSteal()
@@ -447,100 +517,135 @@ namespace OKTRAIO.Menu_Settings
                 _jungle.AddLabel("Epics", 25, "jungle.label.3", true);
                 _jungle.AddCheckBox("TT_Spiderboss8.1", "Vilemaw", true, true);
                 _jungle.AddLabel("Camps", 25, "jungle.label.4", true);
-                _jungle.AddCheckBox("TT_NWraith1.1","Wraith", false, true);
-                _jungle.AddCheckBox("TT_NWraith4.1","Wraith", false, true);
+                _jungle.AddCheckBox("TT_NWraith1.1", "Wraith", false, true);
+                _jungle.AddCheckBox("TT_NWraith4.1", "Wraith", false, true);
                 _jungle.AddCheckBox("TT_NGolem2.1", "Golem", false, true);
                 _jungle.AddCheckBox("TT_NGolem5.1", "Golem", false, true);
                 _jungle.AddCheckBox("TT_NWolf3.1", "Wolf", false, true);
-                _jungle.AddCheckBox("TT_NWolf6.1","Wolf", false, true);
+                _jungle.AddCheckBox("TT_NWolf6.1", "Wolf", false, true);
             }
         }
 
         /// <summary>
-        /// Add The LastHitMenu with basic configs
+        ///     Last Hit Keys
         /// </summary>
-        /// <param name="q"></param>
-        /// <param name="w"></param>
-        /// <param name="e"></param>
-        /// <param name="r"></param>
-        public static void LastHitKeys(bool q, bool w, bool e, bool r)
+        /// <param name="useQ">Create Q LH menu</param>
+        /// <param name="defaultQ">Determinate toggle status</param>
+        /// <param name="useW">Create W LH menu</param>
+        /// <param name="defaultW">Determinate toggle status</param>
+        /// <param name="useE">Create E LH menu</param>
+        /// <param name="defaultE">Determinate toggle status</param>
+        /// <param name="useR">Create R LH menu</param>
+        /// <param name="defaultR">Determinate toggle status</param>
+        public static void LastHitKeys(
+            bool useQ = true,
+            bool defaultQ = true,
+            bool useW = true,
+            bool defaultW = true,
+            bool useE = true,
+            bool defaultE = true,
+            bool useR = true,
+            bool defaultR = true)
         {
-              //
-             //  LastHit
+            //
+            //  LastHit
             //
             _lasthit = _menu.AddSubMenu("LastHit Menu", "lasthit");
             _lasthit.AddGroupLabel("Last Hit Settings");
-            if (q)
+            if (useQ)
             {
                 _lasthit.AddCheckBox("lasthit.q", "Use Q", false);
             }
-            if (w)
+            if (useW)
             {
                 _lasthit.AddCheckBox("lasthit.w", "Use W", false);
             }
-            if (e)
+            if (useE)
             {
                 _lasthit.AddCheckBox("lasthit.e", "Use E", false);
             }
-            if (r)
+            if (useR)
             {
                 _lasthit.AddCheckBox("lasthit.r", "Use R", false);
             }
             _lasthit.AddSeparator();
-            _lasthit.Add("lasthit.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
+            _lasthit.Add("lasthit.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
         }
 
         /// <summary>
-        /// Config Harras Menu
+        ///     Harass Keys
         /// </summary>
-        /// <param name="q"></param>
-        /// <param name="w"></param>
-        /// <param name="e"></param>
-        /// <param name="r"></param>
-        public static void HarassKeys(bool q, bool w, bool e, bool r)
+        /// <param name="useQ">Create Q Harass menu</param>
+        /// <param name="defaultQ">Determinate toggle status</param>
+        /// <param name="useW">Create W Harass menu</param>
+        /// <param name="defaultW">Determinate toggle status</param>
+        /// <param name="useE">Create E Harass menu</param>
+        /// <param name="defaultE">Determinate toggle status</param>
+        /// <param name="useR">Create R Harass menu</param>
+        /// <param name="defaultR">Determinate toggle status</param>
+        public static void HarassKeys(
+            bool useQ = true,
+            bool defaultQ = true,
+            bool useW = true,
+            bool defaultW = true,
+            bool useE = true,
+            bool defaultE = true,
+            bool useR = true,
+            bool defaultR = true)
         {
-            if (q)
+            if (useQ)
             {
                 _harass.AddCheckBox("harass.q", "Use Q");
             }
-            if (w)
+            if (useW)
             {
                 _harass.AddCheckBox("harass.w", "Use W");
             }
-            if (e)
+            if (useE)
             {
                 _harass.AddCheckBox("harass.e", "Use E");
             }
-            if (r)
+            if (useR)
             {
-               _harass.AddCheckBox("harass.r", "Use R", false);
+                _harass.AddCheckBox("harass.r", "Use R", false);
             }
             _harass.AddSeparator();
-            _harass.Add("harass.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged; 
+            _harass.Add("harass.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
         }
 
-        public static void FleeKeys(bool q, bool w, bool e, bool r)
+        public static void FleeKeys(
+            bool useQ = true,
+            bool defaultQ = true,
+            bool useW = true,
+            bool defaultW = true,
+            bool useE = true,
+            bool defaultE = true,
+            bool useR = true,
+            bool defaultR = true)
         {
             _flee = _menu.AddSubMenu("Flee Menu", "flee");
             _flee.AddGroupLabel("Flee Settings");
-            if (q)
+            if (useQ)
             {
                 _flee.AddCheckBox("flee.q", "Use Q");
             }
-            if (w)
+            if (useW)
             {
-                _flee.AddCheckBox("flee.w", "Use W" );
+                _flee.AddCheckBox("flee.w", "Use W");
             }
-            if (e)
+            if (useE)
             {
                 _flee.AddCheckBox("flee.e", "Use E");
             }
-            if (r)
+            if (useR)
             {
-                _flee.AddCheckBox("flee.r", "Use R " , false);
+                _flee.AddCheckBox("flee.r", "Use R ", false);
             }
             _flee.AddSeparator();
-            _flee.Add("flee.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged; 
+            _flee.Add("flee.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
         }
     }
 }

@@ -22,11 +22,32 @@ namespace OKTRAIO.Utility
         private static readonly List<BaseUltUnit> BaseUltUnits = new List<BaseUltUnit>();
         private static readonly List<BaseUltSpell> BaseUltSpells = new List<BaseUltSpell>();
         private static Font Text;
+
         public static readonly List<Champion> CompatibleChampions = new List<Champion>
-                                                                     {
-                                                                         Champion.Ashe, Champion.Draven, Champion.Ezreal,
-                                                                         Champion.Jinx
-                                                                     };
+        {
+            Champion.Ashe,
+            Champion.Draven,
+            Champion.Ezreal,
+            Champion.Jinx
+        };
+
+        private static readonly int BarHeight = 10;
+
+        private static int BarX
+        {
+            get { return Value.Get("baseult.x"); }
+        }
+
+        private static int BarY
+        {
+            get { return Value.Get("baseult.y"); }
+        }
+
+        private static int BarWidth
+        {
+            get { return Value.Get("baseult.width"); }
+        }
+
         public static bool IsCompatibleChamp()
         {
             return CompatibleChampions.Any(x => x.Equals(Player.Instance.Hero));
@@ -43,7 +64,7 @@ namespace OKTRAIO.Utility
             Text = new Font("", new FontDescription
             {
                 FaceName = "Calibri",
-                Height = (Height / 30) * 23,
+                Height = Height/30*23,
                 OutputPrecision = FontPrecision.Default,
                 Quality = FontQuality.ClearType
             });
@@ -71,11 +92,11 @@ namespace OKTRAIO.Utility
                 {
                     var recallDuration = recall.Duration;
                     var cd = recall.Started + recallDuration - Game.Time;
-                    var percent = (cd > 0 && Math.Abs(recallDuration) > float.Epsilon) ? 1f - (cd / recallDuration) : 1f;
-                    var textLength = (recall.Unit.ChampionName.Length + 6) * 7;
-                    var myLength = percent * Length;
+                    var percent = cd > 0 && Math.Abs(recallDuration) > float.Epsilon ? 1f - cd/recallDuration : 1f;
+                    var textLength = (recall.Unit.ChampionName.Length + 6)*7;
+                    var myLength = percent*Length;
                     var freeSpaceLength = myLength + textLength;
-                    var freeSpacePercent = freeSpaceLength / Length > 1 ? 1 : freeSpaceLength / Length;
+                    var freeSpacePercent = freeSpaceLength/Length > 1 ? 1 : freeSpaceLength/Length;
                     if (
                         Recalls.Any(
                             h =>
@@ -97,7 +118,7 @@ namespace OKTRAIO.Utility
 
                 if (recall.Status == RecallStatus.Active)
                 {
-                    var compatibleChamps = new[] { "Ashe", "Draven", "Ezreal",  "Jinx" };
+                    var compatibleChamps = new[] {"Ashe", "Draven", "Ezreal", "Jinx"};
                     if (recall.Unit.IsEnemy && compatibleChamps.Any(h => h == Player.Instance.ChampionName) &&
                         BaseUltUnits.All(h => h.Unit.NetworkId != recall.Unit.NetworkId))
                     {
@@ -134,7 +155,9 @@ namespace OKTRAIO.Utility
 
                 if (Math.Round(unit.FireTime, 1) == Math.Round(Game.Time, 1) && Game.Time >= unit.LastSeen)
                 {
-                    var spell = Player.Instance.Spellbook.GetSpell(BaseUltSpells.Find(h => h.Name == Player.Instance.ChampionName).Slot);
+                    var spell =
+                        Player.Instance.Spellbook.GetSpell(
+                            BaseUltSpells.Find(h => h.Name == Player.Instance.ChampionName).Slot);
                     if (spell.IsReady)
                     {
                         Player.Instance.Spellbook.CastSpell(spell.Slot, GetFountainPos());
@@ -143,33 +166,16 @@ namespace OKTRAIO.Utility
             }
         }
 
-        static int BarX
-        {
-            get { return Value.Get("baseult.x"); }
-        }
-
-        static int BarY
-        {
-            get { return Value.Get("baseult.y"); }
-        }
-
-        static int BarWidth
-        {
-            get { return Value.Get("baseult.width"); }
-        } 
-
-        static int BarHeight = 10;
-
         public static void DrawRect(float x, float y, float width, float height, float thickness, Color color)
         {
-            for (int i = 0; i < height; i++)
+            for (var i = 0; i < height; i++)
                 Drawing.DrawLine(x, y + i, x + width, y + i, thickness, color);
         }
 
         public static void OnEndScene(EventArgs args)
         {
             var recalls = Recalls.Where(
-                x => 
+                x =>
                     (x.Unit.IsAlly && Value.Use("baseult.recallsAlly"))
                     || (x.Unit.IsEnemy && Value.Use("baseult.recallsEnemy"))).OrderBy(x => x.Started);
 
@@ -191,11 +197,11 @@ namespace OKTRAIO.Utility
                     var percent = GetRecallPercent(recall);
                     var colorBar = isBaseUlt ? Color.Red : (recall.Unit.IsAlly ? Color.DarkGreen : Color.DarkOrange);
 
-                    DrawRect(BarX, BarY, BarWidth * (float)percent, BarHeight, 1, colorBar);
+                    DrawRect(BarX, BarY, BarWidth*(float) percent, BarHeight, 1, colorBar);
 
                     Text.Color = Color.White;
-                    Text.TextValue = "(" + (int)(percent * 100) + "%) " + recall.Unit.ChampionName;
-                    Text.Position = new Vector2(BarWidth * (float)percent + BarX - 20, BarY + 10 + (recall.TextPos*20));
+                    Text.TextValue = "(" + (int) (percent*100) + "%) " + recall.Unit.ChampionName;
+                    Text.Position = new Vector2(BarWidth*(float) percent + BarX - 20, BarY + 10 + recall.TextPos*20);
                     Text.Draw();
                 }
 
@@ -222,12 +228,12 @@ namespace OKTRAIO.Utility
             foreach (var unit in BaseUltUnits)
             {
                 var duration = Recalls.Find(h => h.Unit.NetworkId == unit.Unit.NetworkId).Duration;
-                var barPos = (unit.FireTime - Recalls.Find(h => unit.Unit.NetworkId == h.Unit.NetworkId).Started) /
+                var barPos = (unit.FireTime - Recalls.Find(h => unit.Unit.NetworkId == h.Unit.NetworkId).Started)/
                              duration;
 
                 Drawing.DrawLine(
-                    (int)(barPos * BarWidth) + BarX, BarY - 15,
-                    (int)(barPos * BarWidth) + BarX, BarY - 5, 
+                    (int) (barPos*BarWidth) + BarX, BarY - 15,
+                    (int) (barPos*BarWidth) + BarX, BarY - 5,
                     LineThickness, Color.Lime);
             }
         }
@@ -237,11 +243,11 @@ namespace OKTRAIO.Utility
             switch (Game.MapId)
             {
                 case GameMapId.SummonersRift:
-                    {
-                        return Player.Instance.Team == GameObjectTeam.Order
-                            ? new Vector3(14296, 14362, 171)
-                            : new Vector3(408, 414, 182);
-                    }
+                {
+                    return Player.Instance.Team == GameObjectTeam.Order
+                        ? new Vector3(14296, 14362, 171)
+                        : new Vector3(408, 414, 182);
+                }
             }
 
             return new Vector3();
@@ -251,7 +257,7 @@ namespace OKTRAIO.Utility
         {
             var recallDuration = recall.Duration;
             var cd = recall.Started + recallDuration - Game.Time;
-            var percent = (cd > 0 && Math.Abs(recallDuration) > float.Epsilon) ? 1f - (cd / recallDuration) : 1f;
+            var percent = cd > 0 && Math.Abs(recallDuration) > float.Epsilon ? 1f - cd/recallDuration : 1f;
             return percent;
         }
 
@@ -259,7 +265,7 @@ namespace OKTRAIO.Utility
         {
             if (Player.Instance.ChampionName == "Karthus")
             {
-                return delay / 1000;
+                return delay/1000;
             }
 
             var distance = Vector3.Distance(Player.Instance.ServerPosition, GetFountainPos());
@@ -274,11 +280,11 @@ namespace OKTRAIO.Utility
                 }
 
                 var difference = distance - 1500f;
-                missilespeed = (1350f * speed + acceldifference * (speed + accelerationrate * acceldifference) +
-                                difference * 2200f) / distance;
+                missilespeed = (1350f*speed + acceldifference*(speed + accelerationrate*acceldifference) +
+                                difference*2200f)/distance;
             }
 
-            return (distance / missilespeed + ((delay - 65) / 1000));
+            return distance/missilespeed + (delay - 65)/1000;
         }
 
         private static double GetBaseUltSpellDamage(BaseUltSpell spell, AIHeroClient target)
@@ -287,31 +293,31 @@ namespace OKTRAIO.Utility
             switch (spell.Name)
             {
                 case "Ashe":
-                    {
-                        var damage = new float[] { 250, 425, 600 }[level] + 1 * Player.Instance.FlatMagicDamageMod;
-                        return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, damage);
-                    }
+                {
+                    var damage = new float[] {250, 425, 600}[level] + 1*Player.Instance.FlatMagicDamageMod;
+                    return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, damage);
+                }
 
                 case "Draven":
-                    {
-                        var damage = new float[] { 175, 275, 375 }[level] + 1.1f * Player.Instance.FlatPhysicalDamageMod;
-                        return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, damage) * 0.7;
-                    }
+                {
+                    var damage = new float[] {175, 275, 375}[level] + 1.1f*Player.Instance.FlatPhysicalDamageMod;
+                    return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, damage)*0.7;
+                }
 
                 case "Ezreal":
-                    {
-                        var damage = new float[] { 350, 500, 650 }[level] + 0.9f * Player.Instance.FlatMagicDamageMod +
-                                     1 * Player.Instance.FlatPhysicalDamageMod;
-                        return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, damage) * 0.7;
-                    }
+                {
+                    var damage = new float[] {350, 500, 650}[level] + 0.9f*Player.Instance.FlatMagicDamageMod +
+                                 1*Player.Instance.FlatPhysicalDamageMod;
+                    return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, damage)*0.7;
+                }
 
                 case "Jinx":
-                    {
-                        var damage = new float[] { 250, 350, 450 }[level] +
-                                     new float[] { 25, 30, 35 }[level] / 100 * (target.MaxHealth - target.Health) +
-                                     1 * Player.Instance.FlatPhysicalDamageMod;
-                        return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, damage);
-                    }
+                {
+                    var damage = new float[] {250, 350, 450}[level] +
+                                 new float[] {25, 30, 35}[level]/100*(target.MaxHealth - target.Health) +
+                                 1*Player.Instance.FlatPhysicalDamageMod;
+                    return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, damage);
+                }
             }
 
             return 0;
@@ -347,40 +353,40 @@ namespace OKTRAIO.Utility
             switch (args.Status)
             {
                 case TeleportStatus.Start:
-                    {
-                        unit.Status = RecallStatus.Active;
-                        unit.Started = Game.Time;
-                        unit.TextPos = 0;
-                        unit.Duration = (float)args.Duration / 1000;
-                        break;
-                    }
+                {
+                    unit.Status = RecallStatus.Active;
+                    unit.Started = Game.Time;
+                    unit.TextPos = 0;
+                    unit.Duration = (float) args.Duration/1000;
+                    break;
+                }
 
                 case TeleportStatus.Abort:
-                    {
-                        unit.Status = RecallStatus.Abort;
-                        unit.Ended = Game.Time;
-                        break;
-                    }
+                {
+                    unit.Status = RecallStatus.Abort;
+                    unit.Ended = Game.Time;
+                    break;
+                }
 
                 case TeleportStatus.Finish:
-                    {
-                        unit.Status = RecallStatus.Finished;
-                        unit.Ended = Game.Time;
-                        break;
-                    }
+                {
+                    unit.Status = RecallStatus.Finished;
+                    unit.Ended = Game.Time;
+                    break;
+                }
             }
         }
 
         private static IEnumerable<Obj_AI_Base> GetCollision(float spellwidth, BaseUltSpell spell)
         {
             return (from unit in EntityManager.Heroes.Enemies.Where(h => Player.Instance.Distance(h) < 2000)
-                    let pred =
-                        Prediction.Position.PredictLinearMissile(unit, 2000, (int)spell.Radius, (int)spell.Delay,
-                            spell.Speed, -1)
-                    let endpos = Player.Instance.ServerPosition.Extend(GetFountainPos(), 2000)
-                    let projectOn = pred.UnitPosition.To2D().ProjectOn(Player.Instance.ServerPosition.To2D(), endpos)
-                    where projectOn.SegmentPoint.Distance(endpos) < spellwidth + unit.BoundingRadius
-                    select unit).Cast<Obj_AI_Base>().ToList();
+                let pred =
+                    Prediction.Position.PredictLinearMissile(unit, 2000, (int) spell.Radius, (int) spell.Delay,
+                        spell.Speed, -1)
+                let endpos = Player.Instance.ServerPosition.Extend(GetFountainPos(), 2000)
+                let projectOn = pred.UnitPosition.To2D().ProjectOn(Player.Instance.ServerPosition.To2D(), endpos)
+                where projectOn.SegmentPoint.Distance(endpos) < spellwidth + unit.BoundingRadius
+                select unit).Cast<Obj_AI_Base>().ToList();
         }
     }
 

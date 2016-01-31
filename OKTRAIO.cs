@@ -1,24 +1,21 @@
-﻿namespace OKTRAIO
+﻿using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.IO;
+using System.Media;
+using System.Net;
+using EloBuddy;
+using EloBuddy.Sandbox;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu.Values;
+using OKTRAIO.Champions;
+using OKTRAIO.Menu_Settings;
+using OKTRAIO.Utility;
+using OKTRAIO.Utility.SkinManager;
+using Activator = System.Activator;
+
+namespace OKTRAIO
 {
-    using System;
-    using System.ComponentModel;
-    using System.Drawing;
-    using System.IO;
-    using System.Media;
-    using System.Net;
-
-    using EloBuddy;
-    using EloBuddy.Sandbox;
-    using EloBuddy.SDK.Events;
-    using EloBuddy.SDK.Menu.Values;
-
-    using OKTRAIO.Champions;
-    using OKTRAIO.Menu_Settings;
-    using OKTRAIO.Utility;
-    using OKTRAIO.Utility.SkinManager;
-
-    using Activator = System.Activator;
-
     internal class Brain
     {
         public static AIOChampion Champion;
@@ -45,7 +42,7 @@
             if (champion != null)
             {
                 Console.Write("[MarksmanAIO] " + Player.Instance.ChampionName + " Loaded");
-                Champion = (AIOChampion)Activator.CreateInstance(champion);
+                Champion = (AIOChampion) Activator.CreateInstance(champion);
                 Events.Init();
                 MainMenu.Init();
                 UtilityMenu.Init();
@@ -54,12 +51,20 @@
                 Utility.Activator.Init();
                 Humanizer.Init();
                 SkinManagement.Init();
-                if (MainMenu._menu["playsound"].Cast<CheckBox>().CurrentValue) { PlayWelcome(); }
+                if (MainMenu._menu["playsound"].Cast<CheckBox>().CurrentValue)
+                {
+                    PlayWelcome();
+                }
                 Chat.Print("MarksmanAIO: " + Player.Instance.ChampionName + " Loaded", Color.CornflowerBlue);
             }
             else
             {
                 Chat.Print("MarksmanAIO doesn't support: " + Player.Instance.ChampionName);
+            }
+
+            if (RandomUlt.IsCompatibleChamp() && champion == null)
+            {
+                UtilityMenu.Init();
             }
             if (BaseUlt.IsCompatibleChamp())
             {
@@ -97,13 +102,15 @@
                 if (File.Exists(sandBox + Player.Instance.ChampionName + ".wav"))
                 {
                     _welcomeSound = new SoundPlayer
-                                        {
-                                            SoundLocation =
-                                                SandboxConfig.DataDirectory + @"\OKTR\" + Player.Instance.ChampionName
-                                                + ".wav"
-                                        };
-                    _welcomeSound.Load();
+                    {
+                        SoundLocation =
+                            SandboxConfig.DataDirectory + @"\OKTR\" + Player.Instance.ChampionName
+                            + ".wav"
+                    };
 
+                    _welcomeSound.Load();
+                    if (_welcomeSound == null || !_welcomeSound.IsLoadCompleted)
+                        return;
                     _welcomeSound.Play();
                 }
             }
@@ -116,10 +123,10 @@
         private static void Client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
             _welcomeSound = new SoundPlayer
-                                {
-                                    SoundLocation =
-                                        SandboxConfig.DataDirectory + @"\OKTR\" + Player.Instance.ChampionName + ".wav"
-                                };
+            {
+                SoundLocation =
+                    SandboxConfig.DataDirectory + @"\OKTR\" + Player.Instance.ChampionName + ".wav"
+            };
             _welcomeSound.Load();
             _welcomeSound.Play();
         }

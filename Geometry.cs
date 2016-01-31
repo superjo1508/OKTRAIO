@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
+using OKTRAIO.Database.Spell_Library;
 using SharpDX;
+using Spell = EloBuddy.SDK.Spell;
 
 //ReSharper disable InconsistentNaming
 //ReSharper disable CompareOfFloatsByEqualityOperator
@@ -12,23 +14,14 @@ namespace OKTRAIO
 {
     public class OKTRGeometry
     {
-        public struct OptimizedLocation
-        {
-            public int ChampsHit;
-            public Vector2 Position;
-
-            public OptimizedLocation(Vector2 position, int champsHit)
-            {
-                Position = position;
-                ChampsHit = champsHit;
-            }
-        }
-
         /// <summary>
-        /// Uses MEC to get the perfect position on Circle Skillshots
+        ///     Uses MEC to get the perfect position on Circle Skillshots
         /// </summary>
         /// <param name="spell">Give it a spell and it will do the rest of the logic for you</param>
-        /// <param name="targetHero">If you give it a target it will look around that target for other targets but will always focus that target</param>
+        /// <param name="targetHero">
+        ///     If you give it a target it will look around that target for other targets but will always
+        ///     focus that target
+        /// </param>
         /// <returns></returns>
         internal static OptimizedLocation? GetOptimizedCircleLocation(Spell.Skillshot spell,
             AIHeroClient targetHero = null)
@@ -43,7 +36,7 @@ namespace OKTRAIO
                         .Select(
                             champ =>
                                 Prediction.Position.PredictUnitPosition(champ,
-                                    ((int)Player.Instance.Distance(champ) / spell.Speed) + spell.CastDelay))
+                                    (int) Player.Instance.Distance(champ)/spell.Speed + spell.CastDelay))
                         .ToList();
                 return GetOptimizedCircleLocation(champs, spell.Width, spell.Range);
             }
@@ -54,7 +47,7 @@ namespace OKTRAIO
                         .Select(
                             champ =>
                                 Prediction.Position.PredictUnitPosition(champ,
-                                    ((int)Player.Instance.Distance(champ) / spell.Speed) + spell.CastDelay)).ToList();
+                                    (int) Player.Instance.Distance(champ)/spell.Speed + spell.CastDelay)).ToList();
 
                 return GetOptimizedCircleLocation(champs, spell.Width, spell.Range);
             }
@@ -62,7 +55,7 @@ namespace OKTRAIO
         }
 
         /// <summary>
-        /// Uses MEC to get the perfect position on Circle Skillshots
+        ///     Uses MEC to get the perfect position on Circle Skillshots
         /// </summary>
         /// <param name="targetPositions">Vector2's to target. Example could be all minions inside a range</param>
         /// <param name="spellWidth">Width of spell (Radius*2)</param>
@@ -78,7 +71,7 @@ namespace OKTRAIO
             var targetsHit = 0;
             var startPos = Player.Instance.ServerPosition.To2D();
 
-            spellRange = spellRange * spellRange;
+            spellRange = spellRange*spellRange;
 
             if (targetPositions.Count == 0)
             {
@@ -108,7 +101,7 @@ namespace OKTRAIO
                 {
                     if (pos.Distance(startPos, true) <= spellRange)
                     {
-                        var count = targetPositions.Count(pos2 => pos.Distance(pos2, true) <= spellWidth * spellWidth);
+                        var count = targetPositions.Count(pos2 => pos.Distance(pos2, true) <= spellWidth*spellWidth);
 
                         if (count >= targetsHit)
                         {
@@ -125,7 +118,7 @@ namespace OKTRAIO
         private static IEnumerable<List<Vector2>> GetCombinations(IReadOnlyCollection<Vector2> allValues)
         {
             var collection = new List<List<Vector2>>();
-            for (var counter = 0; counter < (1 << allValues.Count); ++counter)
+            for (var counter = 0; counter < 1 << allValues.Count; ++counter)
             {
                 var combination = allValues.Where((t, i) => (counter & (1 << i)) == 0).ToList();
 
@@ -135,7 +128,188 @@ namespace OKTRAIO
         }
 
         /// <summary>
-        /// Provides method to calculate the minimum enclosing circle.
+        ///     Angle Rotation which will output a Vector2 that represents the new Position.
+        /// </summary>
+        /// <param name="point1">Source location for the rotation</param>
+        /// <param name="point2">Target location which will be turned</param>
+        /// <param name="angle">The angle that point2 will be turned</param>
+        public static Vector2 Rotatoes(Vector2 point1, Vector2 point2, double angle)
+        {
+            var direction = (point2 - point1).Normalized();
+            return point1 + point1.Distance(point2)*direction.Rotated(Geometry.DegreeToRadian(angle));
+        }
+
+        /// <summary>
+        ///     Gets a specified amount of Rotated Positions. Useful for getting safe dash positions.
+        /// </summary>
+        /// <param name="rotateAround">The source position</param>
+        /// <param name="rotateTowards">The target position</param>
+        /// <param name="degrees">It will get rotated positions from -degrees to +degrees</param>
+        /// <param name="positionAmount">The amount of positions to get. Can be left blank</param>
+        /// <param name="distance">Can be left blan</param>
+        /// <returns></returns>
+        public static List<Vector3> RotatedPositions(Vector3 rotateAround, Vector3 rotateTowards, int degrees,
+            int positionAmount = 0, float distance = 0)
+        {
+            if (distance == 0) distance = rotateAround.Distance(rotateTowards);
+            if (positionAmount == 0) positionAmount = degrees/10;
+            var direction = (rotateTowards - rotateAround).Normalized().To2D();
+            var posList = new List<Vector3>();
+            var step = degrees/positionAmount;
+            for (var i = -degrees/2; i <= degrees/2; i += step)
+            {
+                var rotatedPosition = rotateAround.To2D() + distance*direction.Rotated(Geometry.DegreeToRadian(i));
+                posList.Add(rotatedPosition.To3D());
+            }
+            return posList;
+        }
+
+        /// <summary>
+        ///     OKTR turkey magic :x
+        /// </summary>
+        /// <param name="pos">Pretty self-explainatory tbh</param>
+        /// <returns></returns>
+        internal static float GetSafeScoreTM(Vector3 pos)
+        {
+            var score = 0f;
+            foreach (var enemy in Variables.CloseEnemies(Player.Instance.GetAutoAttackRange()))
+            {
+                var enemySafeScore = 0f;
+
+                for (var i = 0; i < 4; i++)
+                {
+                    var spell = SpellSlot.Unknown;
+                    var spellSafeScore = 0f;
+                    switch (i)
+                    {
+                        case 0:
+                            spell = SpellSlot.Q;
+                            break;
+                        case 1:
+                            spell = SpellSlot.W;
+                            break;
+                        case 2:
+                            spell = SpellSlot.E;
+                            break;
+                        case 3:
+                            spell = SpellSlot.R;
+                            break;
+                    }
+
+                    if (enemy.Spellbook.GetSpell(spell).IsReady)
+                    {
+                        if (
+                            TargetSpellDatabase.Spells.Any(
+                                s => s.ChampionName == enemy.ChampionName && s.Spellslot == spell) &&
+                            (TargetSpellDatabase.Spells.First(
+                                s => s.ChampionName == enemy.ChampionName && s.Spellslot == spell).Type ==
+                             SpellType.Skillshot
+                             ||
+                             TargetSpellDatabase.Spells.First(
+                                 s => s.ChampionName == enemy.ChampionName && s.Spellslot == spell).Type ==
+                             SpellType.Targeted))
+                        {
+                            var spellDmg = enemy.GetSpellDamage(Player.Instance, spell);
+                            var isCC = CCDataBase.IsCC(enemy.Spellbook.GetSpell(spell).Name);
+                            if ((spellDmg > Player.Instance.MaxHealth*0.05 || isCC)
+                                && enemy.Distance(pos) < enemy.Spellbook.GetSpell(spell).SData.CastRange)
+                            {
+                                if (spellDmg > Player.Instance.MaxHealth*0.05)
+                                {
+                                    spellSafeScore += (Player.Instance.MaxHealth - spellDmg)/Player.Instance.MaxHealth*
+                                                      100;
+                                }
+                                if (isCC)
+                                {
+                                    spellSafeScore += Variables.CloseEnemies(1000, pos).Count*20;
+                                }
+                            }
+                        }
+                    }
+                    enemySafeScore += spellSafeScore;
+                }
+
+                if (!enemy.IsMelee)
+                {
+                    if (pos.Distance(enemy) < enemy.GetAutoAttackRange())
+                        enemySafeScore += 80;
+                    enemySafeScore += enemy.Distance(Player.Instance)/20;
+                }
+                if (enemy.IsMelee)
+                {
+                    if (pos.Distance(enemy) < enemy.GetAutoAttackRange())
+                        enemySafeScore += 1000;
+                    enemySafeScore += enemy.Distance(Player.Instance)/5;
+                }
+                score += enemySafeScore;
+            }
+            if (pos.IsUnderTurret()) score += 200;
+            return score;
+        }
+
+        /// <summary>
+        ///     Use this to make sure everyone report iRaxe after game.
+        /// </summary>
+        /// <param name="range">Use your fucking imagination</param>
+        /// <param name="target">Your mom fappa. No but really</param>
+        /// <param name="dashDuration">length divided by speed, it's primary school stuff</param>
+        /// <returns>Completely random position fappa</returns>
+        public static Vector3 SafeDashPosRework(float range, Obj_AI_Base target, float dashDuration)
+        {
+            var Positions =
+                RotatedPositions(Player.Instance.ServerPosition, Game.CursorPos, 360, 72, range)
+                    .Where(p => !EnemyPoints().Contains(p.To2D()) && (!Variables.JinxTrap(p) || !Variables.CaitTrap(p)))
+                    .Where(
+                        pos =>
+                            Prediction.Position.PredictUnitPosition(target,
+                                (int) (dashDuration + Player.Instance.AttackDelay*1000)).Distance(pos) <
+                            Player.Instance.GetAutoAttackRange(target) - 72)
+                    .Select(pos => new DashPos(pos))
+                    .ToList();
+            if (!Positions.Any(pos => pos.SafeScoreTM < 120))
+            {
+                Positions =
+                    RotatedPositions(Player.Instance.ServerPosition, Game.CursorPos, 360, 50, range)
+                        .Where(
+                            p => !EnemyPoints().Contains(p.To2D()) && (!Variables.JinxTrap(p) || !Variables.CaitTrap(p)))
+                        .Select(pos => new DashPos(pos))
+                        .ToList();
+            }
+            if (Positions.Any())
+            {
+                var bestPos = Positions.OrderBy(p => p.SafeScoreTM).First();
+                return bestPos.Pos;
+            }
+            return Vector3.Zero;
+        }
+
+        public static List<Vector2> EnemyPoints()
+        {
+            return Geometry.ClipPolygons(EntityManager.Heroes.Enemies.Where(e => e.IsValidTarget(1500))
+                .Select(
+                    e =>
+                        new Geometry.Polygon.Circle(e.ServerPosition,
+                            (e.IsMelee ? e.AttackRange*1.5f : e.AttackRange) +
+                            e.BoundingRadius + 20))
+                .ToList()).SelectMany(path => path, (path, point) => new Vector2(point.X, point.Y))
+                .Where(point => !point.ToNavMeshCell().CollFlags.HasFlag(CollisionFlags.Wall))
+                .ToList();
+        }
+
+        public struct OptimizedLocation
+        {
+            public int ChampsHit;
+            public Vector2 Position;
+
+            public OptimizedLocation(Vector2 position, int champsHit)
+            {
+                Position = position;
+                ChampsHit = champsHit;
+            }
+        }
+
+        /// <summary>
+        ///     Provides method to calculate the minimum enclosing circle.
         /// </summary>
         public static class MEC
         {
@@ -186,7 +360,7 @@ namespace OKTRAIO
                     }
                 }
 
-                g_MinMaxCorners = new[] { ul, ur, lr, ll }; // For debugging.
+                g_MinMaxCorners = new[] {ul, ur, lr, ll}; // For debugging.
             }
 
             // Find a box that fits inside the MinMax quadrilateral.
@@ -250,7 +424,7 @@ namespace OKTRAIO
 
                 // Find the remaining point with the smallest Y value.
                 // if (there's a tie, take the one with the smaller X value.
-                Vector2[] best_pt = { points[0] };
+                Vector2[] best_pt = {points[0]};
                 foreach (
                     var pt in
                         points.Where(pt => (pt.Y < best_pt[0].Y) || ((pt.Y == best_pt[0].Y) && (pt.X < best_pt[0].X)))
@@ -260,7 +434,7 @@ namespace OKTRAIO
                 }
 
                 // Move this point to the convex hull.
-                var hull = new List<Vector2> { best_pt[0] };
+                var hull = new List<Vector2> {best_pt[0]};
                 points.Remove(best_pt[0]);
 
                 // Start wrapping up the other points.
@@ -321,11 +495,11 @@ namespace OKTRAIO
                 if (ax + ay == 0)
                 {
                     // if (the two points are the same, return 360.
-                    t = 360f / 9f;
+                    t = 360f/9f;
                 }
                 else
                 {
-                    t = dy / (ax + ay);
+                    t = dy/(ax + ay);
                 }
                 if (dx < 0)
                 {
@@ -335,7 +509,7 @@ namespace OKTRAIO
                 {
                     t = 4 + t;
                 }
-                return t * 90;
+                return t*90;
             }
 
             public static void FindMinimalBoundingCircle(List<Vector2> points, out Vector2 center, out float radius)
@@ -345,7 +519,7 @@ namespace OKTRAIO
 
                 // The best solution so far.
                 var best_center = points[0];
-                var best_radius2 = Single.MaxValue;
+                var best_radius2 = float.MaxValue;
 
                 // Look at pairs of hull points.
                 for (var i = 0; i < hull.Count - 1; i++)
@@ -353,10 +527,10 @@ namespace OKTRAIO
                     for (var j = i + 1; j < hull.Count; j++)
                     {
                         // Find the circle through these two points.
-                        var test_center = new Vector2((hull[i].X + hull[j].X) / 2f, (hull[i].Y + hull[j].Y) / 2f);
+                        var test_center = new Vector2((hull[i].X + hull[j].X)/2f, (hull[i].Y + hull[j].Y)/2f);
                         var dx = test_center.X - hull[i].X;
                         var dy = test_center.Y - hull[i].Y;
-                        var test_radius2 = dx * dx + dy * dy;
+                        var test_radius2 = dx*dx + dy*dy;
 
                         // See if this circle would be an improvement.
                         if (test_radius2 < best_radius2)
@@ -400,13 +574,13 @@ namespace OKTRAIO
                 } // for j
 
                 center = best_center;
-                if (best_radius2 == Single.MaxValue)
+                if (best_radius2 == float.MaxValue)
                 {
                     radius = 0;
                 }
                 else
                 {
-                    radius = (float)Math.Sqrt(best_radius2);
+                    radius = (float) Math.Sqrt(best_radius2);
                 }
             }
 
@@ -418,33 +592,33 @@ namespace OKTRAIO
                 int skip3)
             {
                 return (from point in points.Where((t, i) => (i != skip1) && (i != skip2) && (i != skip3))
-                        let dx = center.X - point.X
-                        let dy = center.Y - point.Y
-                        select dx * dx + dy * dy).All(test_radius2 => !(test_radius2 > radius2));
+                    let dx = center.X - point.X
+                    let dy = center.Y - point.Y
+                    select dx*dx + dy*dy).All(test_radius2 => !(test_radius2 > radius2));
             }
 
             private static void FindCircle(Vector2 a, Vector2 b, Vector2 c, out Vector2 center, out float radius2)
             {
                 // Get the perpendicular bisector of (x1, y1) and (x2, y2).
-                var x1 = (b.X + a.X) / 2;
-                var y1 = (b.Y + a.Y) / 2;
+                var x1 = (b.X + a.X)/2;
+                var y1 = (b.Y + a.Y)/2;
                 var dy1 = b.X - a.X;
                 var dx1 = -(b.Y - a.Y);
 
                 // Get the perpendicular bisector of (x2, y2) and (x3, y3).
-                var x2 = (c.X + b.X) / 2;
-                var y2 = (c.Y + b.Y) / 2;
+                var x2 = (c.X + b.X)/2;
+                var y2 = (c.Y + b.Y)/2;
                 var dy2 = c.X - b.X;
                 var dx2 = -(c.Y - b.Y);
 
                 // See where the lines intersect.
-                var cx = (y1 * dx1 * dx2 + x2 * dx1 * dy2 - x1 * dy1 * dx2 - y2 * dx1 * dx2) / (dx1 * dy2 - dy1 * dx2);
-                var cy = (cx - x1) * dy1 / dx1 + y1;
+                var cx = (y1*dx1*dx2 + x2*dx1*dy2 - x1*dy1*dx2 - y2*dx1*dx2)/(dx1*dy2 - dy1*dx2);
+                var cy = (cx - x1)*dy1/dx1 + y1;
                 center = new Vector2(cx, cy);
 
                 var dx = cx - a.X;
                 var dy = cy - a.Y;
-                radius2 = dx * dx + dy * dy;
+                radius2 = dx*dx + dy*dy;
             }
 
             public struct MecCircle
@@ -460,204 +634,16 @@ namespace OKTRAIO
             }
         }
 
-        /// <summary>
-        /// Angle Deviation which will output a Vector2 that represents the new Position.
-        /// </summary>
-        /// <param name="point1">Source location for the deviation</param>
-        /// <param name="point2">Target location which will be turned</param>
-        /// <param name="angle">The angle that point2 will be turned</param>
-        public static Vector2 Deviation(Vector2 point1, Vector2 point2, double angle)
+        private struct DashPos
         {
-            angle *= Math.PI / 180.0;
-            var temp = Vector2.Subtract(point2, point1);
-            var result = new Vector2(0)
-            {
-                X = (float)(temp.X * Math.Cos(angle) - temp.Y * Math.Sin(angle)) / 4,
-                Y = (float)(temp.X * Math.Sin(angle) + temp.Y * Math.Cos(angle)) / 4
-            };
-            result = Vector2.Add(result, point1);
-            return result;
-        }
+            internal readonly Vector3 Pos;
+            internal readonly float SafeScoreTM;
 
-        /// <summary>
-        /// Gets a specified amount of Rotated Positions. Useful for getting safe dash positions.
-        /// </summary>
-        /// <param name="rotateAround">The source position</param>
-        /// <param name="rotateTowards">The target position</param>
-        /// <param name="degrees">It will get rotated positions from -degrees to +degrees</param>
-        /// <param name="positionAmount">The amount of positions to get. Can be left blank</param>
-        /// <param name="distance">Can be left blan</param>
-        /// <returns></returns>
-        public static List<Vector3> RotatedPositions(Vector3 rotateAround, Vector3 rotateTowards, int degrees,
-            int positionAmount = 0, float distance = 0)
-        {
-            if (distance == 0) distance = rotateAround.Distance(rotateTowards);
-            if (positionAmount == 0) positionAmount = degrees / 10;
-            var realRotateTowards = rotateAround.Extend(rotateTowards, distance);
-            var posList = new List<Vector3>();
-            var step = (degrees * 2) / positionAmount;
-            for (var i = -degrees; i <= degrees; i += step)
+            public DashPos(Vector3 pos)
             {
-                var rotatedPosition = Deviation(rotateAround.To2D(), realRotateTowards, i);
-                posList.Add(rotatedPosition.To3D());
+                SafeScoreTM = GetSafeScoreTM(pos);
+                Pos = pos;
             }
-            return posList;
-        }
-
-
-        public static Vector3 SafeDashPos(float range)
-        {
-            if (Variables.CloseEnemies().Count <= 1)
-            {
-                var dashPos = (Player.Instance.ServerPosition.To2D() + range * Player.Instance.Direction.To2D()).To3D();
-                if (!dashPos.IsUnderTurret() && (!Variables.JinxTrap(dashPos) || !Variables.CaitTrap(dashPos)))
-                {
-                    return dashPos;
-                }
-            }
-            if (Variables.CloseAllies().Count == 0 &&
-                Variables.CloseEnemies(Player.Instance.AttackRange + range * 1.1f).Count <= 2)
-            {
-                if (Variables.CloseEnemies(Player.Instance.AttackRange + range * 1.1f).Any(
-                    t => t.Health + 15 <
-                         Player.Instance.GetAutoAttackDamage(t) + Player.Instance.GetSpellDamage(t, SpellSlot.Q)
-                         && t.Distance(Player.Instance) < Player.Instance.AttackRange + 80f))
-                {
-                    var dashPos =
-                        Player.Instance.ServerPosition.Extend(
-                            Variables.CloseEnemies()
-                                .Where(e => e.HealthPercent > 10)
-                                .OrderBy(t => t.Health)
-                                .First()
-                                .ServerPosition, range);
-
-                    if (!dashPos.IsUnderTurret())
-                    {
-                        return dashPos.To3D();
-                    }
-                }
-            }
-            if (Variables.CloseAllies().Count == 0 &&
-                Variables.CloseEnemies(Player.Instance.AttackRange + range * 1.1f).Count(e => e.HealthPercent > 10) <=
-                2)
-            {
-                var dashPos = (Player.Instance.ServerPosition.To2D() + range * Player.Instance.Direction.To2D()).To3D();
-                if (!dashPos.IsUnderTurret())
-                {
-                    return dashPos;
-                }
-            }
-            var closestEnemy =
-                Variables.CloseEnemies()
-                    .OrderBy(e => e.Distance(Player.Instance))
-                    .FirstOrDefault(e => e.Distance(Player.Instance) < e.AttackRange);
-            if (closestEnemy != null
-                && !closestEnemy.IsMelee)
-            {
-                if (SafeCheckTwo((Player.Instance.ServerPosition.Extend(Game.CursorPos, range).To3D())))
-                    return Player.Instance.ServerPosition.Extend(Game.CursorPos, range).To3D();
-            }
-            var bestWeight = 0f;
-            var bestPos = Player.Instance.ServerPosition.Extend(Game.CursorPos, range).To3D();
-            foreach (
-                var pos in
-                    RotatedPositions(Player.Instance.ServerPosition, Game.CursorPos, 20, 0, range)
-                        .Where(p => !EnemyPoints().Contains(p.To2D())))
-            {
-                if (pos.CountEnemiesInRange(1150) == 0 ||
-                    Variables.CloseEnemies().FirstOrDefault(e => e.Distance(pos) < 1150) == null)
-                    continue;
-                var enemies =
-                    EntityManager.Heroes.Enemies.Where(
-                        e =>
-                            e.IsValidTarget(1200, true, pos) &&
-                            e.TotalShieldHealth() > Variables.GetChampionDamage(e)).ToList();
-                var enemiesEx =
-                    EntityManager.Heroes.Enemies.Where(en => en.IsValidTarget(1200f, true, pos)).ToList();
-                var totalDistance = (enemiesEx.Count() - enemies.Count() > 1 && enemiesEx.Count() > 2)
-                    ? enemiesEx.Sum(en => en.Distance(Player.Instance.ServerPosition))
-                    : enemies.Sum(en => en.Distance(Player.Instance.ServerPosition));
-                var avg = totalDistance / pos.CountEnemiesInRange(1150);
-                var closest =
-                    Player.Instance.ServerPosition.Distance(
-                        Variables.CloseEnemies().FirstOrDefault(e => e.Distance(pos) < 1150));
-                var weightedAvg = closest * .4f + avg * .6f;
-                if (!(weightedAvg > bestWeight) || !SafeCheckTwo(pos)) continue;
-                bestWeight = weightedAvg;
-                bestPos = pos;
-            }
-            var finalDash = (SafeCheck(bestPos) ? bestPos : Vector3.Zero);
-            if (finalDash == Vector3.Zero)
-            {
-                if (Variables.CloseAllies().Any() && Variables.CloseEnemies().Any())
-                {
-                    var safestAlly =
-                        Variables.CloseAllies()
-                            .OrderBy(a => a.Distance(Player.Instance.ServerPosition))
-                            .ThenByDescending(a => a.Health).FirstOrDefault();
-                    if (safestAlly != null &&
-                        safestAlly.Distance(
-                            Variables.CloseEnemies().OrderBy(e => e.Distance(Player.Instance)).FirstOrDefault()) >
-                        Player.Instance.Distance(
-                            Variables.CloseEnemies().OrderBy(e => e.Distance(Player.Instance)).FirstOrDefault()))
-                    {
-                        // ReSharper disable once PossibleNullReferenceException
-                        var dashPos = Player.Instance.ServerPosition.Extend(safestAlly.ServerPosition,
-                            range).To3D();
-                        if (SafeCheckTwo(dashPos)) finalDash = dashPos;
-                    }
-                }
-            }
-            if (finalDash != Vector3.Zero) return finalDash;
-            if (SafeCheck(Player.Instance.ServerPosition.Extend(Game.CursorPos, range).To3D()))
-            {
-                finalDash = Player.Instance.ServerPosition.Extend(Game.CursorPos, range).To3D();
-            }
-            return finalDash;
-        }
-
-
-        public static bool SafeCheck(Vector3 pos)
-        {
-            return SafeCheckTwo(pos)
-                   && SafeCheckThree(pos)
-                   && EntityManager.Heroes.Enemies.All(e => e.Distance(pos) > 350f)
-                   && (!pos.IsUnderTurret() && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos))) || Player.Instance.IsUnderTurret() && pos.IsUnderTurret() && Player.Instance.HealthPercent > 10 && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos));
-        }
-
-        public static bool SafeCheckTwo(Vector3 pos)
-        {
-            return (!pos.IsUnderTurret() && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos)) || Player.Instance.IsUnderTurret()) && (!Variables.JinxTrap(pos) || !Variables.CaitTrap(pos)) &&
-                   Variables.CloseAllies(1000).Count(a => a.HealthPercent > 10) +
-                   EntityManager.Turrets.Allies.Count(t => t.Distance(Player.Instance) < 1000) * 2 >=
-                   Variables.CloseEnemies(1000).Count(e => e.HealthPercent > 10) +
-                   (Player.Instance.IsUnderTurret()
-                       ? EntityManager.Turrets.Enemies.Count(t => t.Distance(Player.Instance) < 1000) * 2
-                       : 0);
-        }
-
-        public static bool SafeCheckThree(Vector3 pos)
-        {
-            return (!EnemyPoints().Contains(pos.To2D()) ||
-                    EnemyPoints().Contains(Player.Instance.ServerPosition.To2D())) &&
-                   !EntityManager.Heroes.Enemies.FindAll(
-                       e =>
-                           e.IsValidTarget(1500) &&
-                           !(e.Distance(Player.Instance.ServerPosition) < e.GetAutoAttackRange() + 65))
-                       .All(e => pos.CountEnemiesInRange(e.GetAutoAttackRange()) <= 1);
-        }
-
-        public static List<Vector2> EnemyPoints()
-        {
-            return Geometry.ClipPolygons(EntityManager.Heroes.Enemies.Where(e => e.IsValidTarget(1500))
-                .Select(
-                    e =>
-                        new Geometry.Polygon.Circle(e.ServerPosition,
-                            (e.IsMelee ? e.AttackRange * 1.5f : e.AttackRange) +
-                            e.BoundingRadius + 20))
-                .ToList()).SelectMany(path => path, (path, point) => new Vector2(point.X, point.Y))
-                .Where(point => !point.ToNavMeshCell().CollFlags.HasFlag(CollisionFlags.Wall))
-                .ToList();
         }
     }
 }

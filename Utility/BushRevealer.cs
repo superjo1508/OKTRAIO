@@ -12,14 +12,12 @@ namespace OKTRAIO.Utility
 
         public static ItemId[] WardIds =
         {
-
             Activator.WardingTotem.Id,
             Activator.GreaterStealthTotem.Id,
             Activator.GreaterVisionTotem.Id,
             Activator.PinkVision.Id,
             Activator.PinkVision.Id,
             Activator.FarsightAlteration.Id
-
         };
 
         public static InventorySlot GetWardSlot()
@@ -38,7 +36,7 @@ namespace OKTRAIO.Utility
         {
             if (Value.Use("bushreveal.use"))
             {
-                Random rnd = new Random();
+                var rnd = new Random();
                 var random = Value.Use("bushreveal.humanize") ? rnd.Next(200, 500) : 0;
                 if (Value.Mode(Orbwalker.ActiveModes.Combo))
                 {
@@ -50,7 +48,8 @@ namespace OKTRAIO.Utility
 
                         if (NavMesh.IsWallOfGrass(path, 1))
                         {
-                            if (NavMesh.IsWallOfGrass(Player.Instance.Position, 1) && Player.Instance.Distance(path) < 200 || heros.Distance(path) > 200)
+                            if (NavMesh.IsWallOfGrass(Player.Instance.Position, 1) &&
+                                Player.Instance.Distance(path) < 200 || heros.Distance(path) > 200)
                                 return;
 
                             if (Player.Instance.Distance(path) < 500)
@@ -72,7 +71,6 @@ namespace OKTRAIO.Utility
                                     Core.DelayAction(() => wardslot.Cast(path), random);
                                     lastWarded = Environment.TickCount;
                                 }
-
                             }
                         }
                     }

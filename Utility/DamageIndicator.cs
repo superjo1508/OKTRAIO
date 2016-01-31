@@ -10,10 +10,14 @@ namespace OKTRAIO.Utility
 {
     public class DamageIndicator
     {
+        public delegate float DamageToUnitDelegate(Obj_AI_Base minion);
+
         private static int _height;
         private static int _width;
         private static int _xOffset;
         private static int _yOffset;
+
+        private static DamageToUnitDelegate _damageToUnit;
 
         private static bool EnemyEnabled
         {
@@ -26,10 +30,7 @@ namespace OKTRAIO.Utility
 
         private static Color EnemyColor
         {
-            get
-            {
-                return MainMenu._draw.GetColor("draw.color.enemyDmg");
-            }
+            get { return MainMenu._draw.GetColor("draw.color.enemyDmg"); }
         }
 
         private static bool JungleEnabled
@@ -43,21 +44,12 @@ namespace OKTRAIO.Utility
 
         private static Color JungleColor
         {
-            get
-            {
-                return MainMenu._draw.GetColor("draw.color.jungleDmg");
-            }
+            get { return MainMenu._draw.GetColor("draw.color.jungleDmg"); }
         }
-
-        private static DamageToUnitDelegate _damageToUnit;
-        public delegate float DamageToUnitDelegate(Obj_AI_Base minion);
 
         public static DamageToUnitDelegate DamageToUnit
         {
-            get
-            {
-                return _damageToUnit;
-            }
+            get { return _damageToUnit; }
 
             set
             {
@@ -78,7 +70,7 @@ namespace OKTRAIO.Utility
             {
                 foreach (var hero in EntityManager.Heroes.Enemies
                     .Where(x => x.IsValidTarget()
-                            && x.IsHPBarRendered))
+                                && x.IsHPBarRendered))
                 {
                     _height = 9;
                     _width = 104;
@@ -92,10 +84,10 @@ namespace OKTRAIO.Utility
             if (JungleEnabled)
             {
                 foreach (
-                var unit in
-                EntityManager.MinionsAndMonsters.GetJungleMonsters(Player.Instance.Position, 2000)
-                        .Where(x => x.IsValidTarget()
-                                    && x.IsHPBarRendered))
+                    var unit in
+                        EntityManager.MinionsAndMonsters.GetJungleMonsters(Player.Instance.Position, 2000)
+                            .Where(x => x.IsValidTarget()
+                                        && x.IsHPBarRendered))
                 {
                     if ((unit.Name.Contains("Blue") || unit.Name.Contains("Red")) && !unit.Name.Contains("Mini"))
                     {
@@ -125,7 +117,8 @@ namespace OKTRAIO.Utility
                         _xOffset = -4;
                         _yOffset = -8;
                     }
-                    else if ((unit.Name.Contains("Razorbeak") || unit.Name.Contains("Murkwolf")) && !unit.Name.Contains("Mini"))
+                    else if ((unit.Name.Contains("Razorbeak") || unit.Name.Contains("Murkwolf")) &&
+                             !unit.Name.Contains("Mini"))
                     {
                         _width = 74;
                         _height = 3;
@@ -153,7 +146,8 @@ namespace OKTRAIO.Utility
                         _xOffset = 36;
                         _yOffset = 21;
                     }
-                    else if (unit.Name.Contains("RedMini") || unit.Name.Contains("BlueMini") || unit.Name.Contains("RazorbeakMini"))
+                    else if (unit.Name.Contains("RedMini") || unit.Name.Contains("BlueMini") ||
+                             unit.Name.Contains("RazorbeakMini"))
                     {
                         _height = 2;
                         _width = 49;
@@ -185,12 +179,14 @@ namespace OKTRAIO.Utility
             var barPos = unit.HPBarPosition;
 
             //Get remaining HP after damage applied in percent and the current percent of health
-            var percentHealthAfterDamage = Math.Max(0, unit.TotalShieldHealth() - damage) / (unit.MaxHealth + unit.AllShield + unit.AttackShield + unit.MagicShield);
-            var currentHealthPercentage = unit.TotalShieldHealth() / (unit.MaxHealth + unit.AllShield + unit.AttackShield + unit.MagicShield);
+            var percentHealthAfterDamage = Math.Max(0, unit.TotalShieldHealth() - damage)/
+                                           (unit.MaxHealth + unit.AllShield + unit.AttackShield + unit.MagicShield);
+            var currentHealthPercentage = unit.TotalShieldHealth()/
+                                          (unit.MaxHealth + unit.AllShield + unit.AttackShield + unit.MagicShield);
 
             //Calculate start and end point of the bar indicator
-            var startPoint = barPos.X + _xOffset + (percentHealthAfterDamage * _width);
-            var endPoint = barPos.X + _xOffset + (currentHealthPercentage * _width);
+            var startPoint = barPos.X + _xOffset + percentHealthAfterDamage*_width;
+            var endPoint = barPos.X + _xOffset + currentHealthPercentage*_width;
             var yPos = barPos.Y + _yOffset;
 
             //Draw the line

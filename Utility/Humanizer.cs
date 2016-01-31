@@ -9,17 +9,21 @@ namespace OKTRAIO.Utility
     public static class Humanizer
     {
         public static List<IssueOrder> LastMove = new List<IssueOrder>();
-        public static List<SpellCast> SpellCasts = new List<SpellCast>(); 
+        public static List<SpellCast> SpellCasts = new List<SpellCast>();
 
         public static void Init()
-        {
+        {   if (Player.Instance.ChampionName == "Vayne" || Player.Instance.ChampionName == "Lucian") return;
             Player.OnIssueOrder += Player_OnIssueOrder;
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
         }
 
         private static void Player_OnIssueOrder(Obj_AI_Base sender, PlayerIssueOrderEventArgs args)
         {
-            if (LastMove.Any(m => m.Order == args.Order && args.TargetPosition == m.Pos && DateTime.Now - m.Time < TimeSpan.FromSeconds(0.1)))
+            if (
+                LastMove.Any(
+                    m =>
+                        m.Order == args.Order && args.TargetPosition == m.Pos &&
+                        DateTime.Now - m.Time < TimeSpan.FromSeconds(0.05)))
             {
                 args.Process = false;
             }

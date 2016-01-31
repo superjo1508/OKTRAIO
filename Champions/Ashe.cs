@@ -7,25 +7,21 @@ using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using OKTRAIO.Menu_Settings;
-using OKTRAIO.Utility;
 using SharpDX;
 using Color = System.Drawing.Color;
 
 namespace OKTRAIO.Champions
 {
-    class Ashe : AIOChampion
+    internal class Ashe : AIOChampion
     {
-
         #region Initialize and Declare
 
         private static Spell.Active _q;
         private static Spell.Skillshot _w, _e, _r;
         private static readonly Vector2 Offset = new Vector2(1, 0);
 
-
         public override void Init()
         {
-
             try
             {
                 //spells
@@ -39,12 +35,12 @@ namespace OKTRAIO.Champions
 
 
                 //menu
-                MainMenu.ComboKeys(true, true, false, true);
+                MainMenu.ComboKeys(useE: false);
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
                 MainMenu._combo.Add("combo.rbind",
-                new KeyBind("Semi-Auto R (No Lock)", false, KeyBind.BindTypes.HoldActive, 'T'))
-                .OnValueChange += OnUltButton;
+                    new KeyBind("Semi-Auto R (No Lock)", false, KeyBind.BindTypes.HoldActive, 'T'))
+                    .OnValueChange += OnUltButton;
                 MainMenu._combo.AddCheckBox("combo.r.aoe", "Use R for AOE", true, true);
                 MainMenu._combo.AddSlider("combo.r.slider", "{0} Enemies hit with R explosion", 3, 0, 5, true);
                 MainMenu._combo.AddSeparator();
@@ -52,39 +48,39 @@ namespace OKTRAIO.Champions
                 MainMenu._combo.AddSlider("combo.wr.prediction", "Hitchance Percentage for W/R", 80, 0, 100, true);
 
                 //flee
-                MainMenu.FleeKeys(false, true, false, false);
+                MainMenu.FleeKeys(false, useE: false, useR: false);
                 MainMenu._flee.AddSeparator();
                 MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
                 MainMenu.FleeManaManager(false, true, false, false, 0, 20, 0, 0);
 
                 //lasthit
-                MainMenu.LastHitKeys(false, true, false, false);
+                MainMenu.LastHitKeys(false, useE: false, useR: false);
                 MainMenu._lasthit.AddSeparator();
                 MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
                 MainMenu.LasthitManaManager(false, true, false, false, 0, 80, 0, 0);
 
 
                 //laneclear
-                MainMenu.LaneKeys(true, true, false, false);
+                MainMenu.LaneKeys(useE: false, useR: false);
                 MainMenu._lane.AddSeparator();
                 MainMenu._lane.AddSlider("lane.w.min", "Min. {0} minions for W", 3, 1, 7, true);
                 MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
                 MainMenu.LaneManaManager(true, true, false, false, 60, 70, 0, 0);
 
                 //jungleclear
-                MainMenu.JungleKeys(true, true, false, false);
+                MainMenu.JungleKeys(useE: false, useR: false);
                 MainMenu._jungle.AddSeparator();
                 MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
                 MainMenu.JungleManaManager(true, true, false, false, 60, 30, 0, 0);
 
                 //harass
-                MainMenu.HarassKeys(true, true, false, false);
+                MainMenu.HarassKeys(useE: false, useR: false);
                 MainMenu._harass.AddSeparator();
                 MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
                 MainMenu.HarassManaManager(true, true, false, false, 20, 20, 0, 0);
 
                 //ks
-                MainMenu.KsKeys(false, true, false, true);
+                MainMenu.KsKeys(false, useE: false);
                 MainMenu._ks.AddSeparator();
                 MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
                 MainMenu.KsManaManager(false, true, false, true, 20, 30, 10, 5);
@@ -105,7 +101,7 @@ namespace OKTRAIO.Champions
                 MainMenu._misc.AddCheckBox("misc.w.taunt", "Use W on Taunted Enemy", true, true);
 
                 //draw
-                MainMenu.DrawKeys(false, true, false, false);
+                MainMenu.DrawKeys(false, useE: false, useR: false);
                 MainMenu._draw.AddSeparator();
                 MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
             }
@@ -139,12 +135,10 @@ namespace OKTRAIO.Champions
 
             catch (Exception e)
             {
-
                 Console.WriteLine(e);
                 Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>"); 
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
             }
-
         }
 
         #endregion
@@ -152,18 +146,19 @@ namespace OKTRAIO.Champions
         #region Gamerelated Logic
 
         #region UltButton
+
         private static void OnUltButton(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
         {
             if (args.NewValue && TargetSelector.GetTarget(_r.Range, DamageType.Physical) != null)
                 _r.Cast(_r.GetPrediction(TargetSelector.GetTarget(_r.Range, DamageType.Physical)).CastPosition);
         }
+
         #endregion
 
         #region Combo
+
         public override void Combo()
         {
-
-
             var target = TargetSelector.GetTarget(_w.Range, DamageType.Physical);
             var targetr = TargetSelector.GetTarget(_r.Range, DamageType.Magical);
 
@@ -195,7 +190,8 @@ namespace OKTRAIO.Champions
                     }
 
                     //Rcombo
-                    if (targetr.TotalShieldHealth() <= ComboDamage(targetr) && !Overkill(targetr) && !Player.Instance.IsInAutoAttackRange(targetr))
+                    if (targetr.TotalShieldHealth() <= ComboDamage(targetr) && !Overkill(targetr) &&
+                        !Player.Instance.IsInAutoAttackRange(targetr))
                     {
                         if (rpred.HitChancePercent >= Predslider)
                         {
@@ -205,6 +201,7 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Harass
@@ -240,9 +237,11 @@ namespace OKTRAIO.Champions
                     }
             }
         }
+
         #endregion
 
         #region Laneclear
+
         public override void Laneclear()
         {
             var lanemonsters =
@@ -259,7 +258,7 @@ namespace OKTRAIO.Champions
                     EntityManager.MinionsAndMonsters.GetLaneMinions()
                         .Where(a => a.IsInRange(Player.Instance.ServerPosition, _w.Range));
 
-                var wfarm = EntityManager.MinionsAndMonsters.GetLineFarmLocation(minionsw, _w.Width * 3, (int)_w.Range);
+                var wfarm = EntityManager.MinionsAndMonsters.GetLineFarmLocation(minionsw, _w.Width*3, (int) _w.Range);
 
                 if (wfarm.HitNumber >= Value.Get("lane.w.min"))
                 {
@@ -267,12 +266,21 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Lasthit
+
         public override void LastHit()
         {
-            var minion = EntityManager.MinionsAndMonsters.GetLaneMinions().OrderByDescending(a => a.MaxHealth).FirstOrDefault(a => a.IsValidTarget(_w.Range) && a.Distance(Player.Instance.Position) > Player.Instance.GetAutoAttackRange() + 50 && a.Health <= Player.Instance.GetSpellDamage(a, SpellSlot.W));
+            var minion =
+                EntityManager.MinionsAndMonsters.GetLaneMinions()
+                    .OrderByDescending(a => a.MaxHealth)
+                    .FirstOrDefault(
+                        a =>
+                            a.IsValidTarget(_w.Range) &&
+                            a.Distance(Player.Instance.Position) > Player.Instance.GetAutoAttackRange() + 50 &&
+                            a.Health <= Player.Instance.GetSpellDamage(a, SpellSlot.W));
 
             if (Value.Use("lasthit.w") && _w.IsReady() && Player.Instance.ManaPercent >= Value.Get("lasthit.w.mana"))
             {
@@ -282,9 +290,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Jungleclear
+
         public override void Jungleclear()
         {
             var monsters =
@@ -305,9 +315,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region Flee
+
         public override void Flee()
         {
             var target = TargetSelector.GetTarget(_w.Range, DamageType.Physical);
@@ -324,6 +336,7 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #endregion
@@ -331,6 +344,7 @@ namespace OKTRAIO.Champions
         #region Utils
 
         #region OnUpdate
+
         private static void GameOnUpdate(EventArgs args)
         {
             if (Player.Instance.IsDead || Player.Instance.HasBuff("Recall")
@@ -346,19 +360,17 @@ namespace OKTRAIO.Champions
             {
                 AutoE();
             }
-
-
         }
+
         #endregion
 
         #region Interrupter
+
         private static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender,
             Interrupter.InterruptableSpellEventArgs e)
         {
-
             try
             {
-
                 if (sender.IsAlly || !Value.Use("misc.r.interrupter") ||
                     e.DangerLevel != DangerLevel.High)
                 {
@@ -377,9 +389,11 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INTERRUPTER)</font>");
             }
         }
+
         #endregion
 
         #region AntiGapCloser
+
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
             try
@@ -400,7 +414,6 @@ namespace OKTRAIO.Champions
                 Chat.Print(
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code Gapcloser)</font>");
             }
-
         }
 
         private static void GameObject_OnCreate(GameObject sender, EventArgs args)
@@ -414,12 +427,12 @@ namespace OKTRAIO.Champions
                 {
                     if (khazix != null)
                     {
-                        if (sender.Name == ("Khazix_Base_E_Tar.troy") &&
+                        if (sender.Name == "Khazix_Base_E_Tar.troy" &&
                             sender.Position.Distance(Player.Instance) <= 400)
                             _r.Cast(khazix);
                     }
                     if (rengar == null) return;
-                    if (sender.Name == ("Rengar_LeapSound.troy") && sender.Position.Distance(Player.Instance) < 600)
+                    if (sender.Name == "Rengar_LeapSound.troy" && sender.Position.Distance(Player.Instance) < 600)
                         _r.Cast(rengar);
                 }
             }
@@ -430,12 +443,13 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code ONCREATE)</font>");
             }
         }
+
         #endregion
 
         #region Orbwalker
+
         private void Orbwalker_OnPreAttack(AttackableUnit target, Orbwalker.PreAttackArgs args)
         {
-
             if (Value.Use("combo.q") && _q.IsReady() && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
             {
                 foreach (var a in Player.Instance.Buffs)
@@ -446,12 +460,10 @@ namespace OKTRAIO.Champions
             }
 
 
-
             if (Value.Use("jungle.q") && _q.IsReady() &&
                 Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.JungleClear) &&
                 Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
             {
-
                 if (Variables.SummonerRiftJungleList.Contains(target.Name))
                 {
                     foreach (var a in Player.Instance.Buffs)
@@ -478,9 +490,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region OnSpellCast
+
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             if (sender.IsAlly || !Value.Use("misc.e"))
@@ -494,16 +508,20 @@ namespace OKTRAIO.Champions
                 _e.Cast(args.End);
             }
         }
+
         #endregion
 
         #region Prediciton
+
         public static int Predslider
         {
             get { return Value.Get("combo.wr.prediction"); }
         }
+
         #endregion
 
         #region AutoE
+
         private static void AutoE()
         {
             foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => a.IsValidTarget(3000)))
@@ -521,17 +539,19 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region AutoW
+
         private static void AutoW()
         {
             var target =
                 EntityManager.Heroes.Enemies.FirstOrDefault(
                     a => a.IsValidTarget(_w.Range) &&
-                        (a.HasBuffOfType(BuffType.Charm) || a.HasBuffOfType(BuffType.Knockup) ||
-                        a.HasBuffOfType(BuffType.Snare) || a.HasBuffOfType(BuffType.Stun) ||
-                        a.HasBuffOfType(BuffType.Suppression) || a.HasBuffOfType(BuffType.Taunt)));
+                         (a.HasBuffOfType(BuffType.Charm) || a.HasBuffOfType(BuffType.Knockup) ||
+                          a.HasBuffOfType(BuffType.Snare) || a.HasBuffOfType(BuffType.Stun) ||
+                          a.HasBuffOfType(BuffType.Suppression) || a.HasBuffOfType(BuffType.Taunt)));
 
             if (target != null)
             {
@@ -561,19 +581,22 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region KillSteal
+
         private static void Ks()
         {
             try
             {
                 foreach (
-                        var enemy in
-                            EntityManager.Heroes.Enemies.Where(
-                                a => a.IsValidTarget(2000) && !a.IsDead && !a.IsZombie && a.HealthPercent <= 30))
+                    var enemy in
+                        EntityManager.Heroes.Enemies.Where(
+                            a => a.IsValidTarget(2000) && !a.IsDead && !a.IsZombie && a.HealthPercent <= 30))
                 {
-                    if (Value.Use("killsteal.w") && _w.IsReady() && Player.Instance.ManaPercent >= Value.Get("killsteal.w.mana"))
+                    if (Value.Use("killsteal.w") && _w.IsReady() &&
+                        Player.Instance.ManaPercent >= Value.Get("killsteal.w.mana"))
                     {
                         if (_w.IsInRange(enemy) &&
                             enemy.TotalShieldHealth() < Player.Instance.GetSpellDamage(enemy, SpellSlot.W))
@@ -586,11 +609,13 @@ namespace OKTRAIO.Champions
                         }
                     }
 
-                    if (Value.Use("killsteal.r") && _r.IsReady() && Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
+                    if (Value.Use("killsteal.r") && _r.IsReady() &&
+                        Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
                     {
                         if (_r.IsInRange(enemy) &&
                             enemy.TotalShieldHealth() < RDamage(enemy) &&
-                            enemy.Distance(Player.Instance.Position) > 1000 && enemy.CountAlliesInRange(700) == 0 && !Overkill(enemy))
+                            enemy.Distance(Player.Instance.Position) > 1000 && enemy.CountAlliesInRange(700) == 0 &&
+                            !Overkill(enemy))
                         {
                             var rpred = _r.GetPrediction(enemy);
                             if (rpred.HitChancePercent >= Predslider)
@@ -599,7 +624,6 @@ namespace OKTRAIO.Champions
                             }
                         }
                     }
-
                 }
             }
             catch (Exception e)
@@ -609,14 +633,16 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code KILLSTEAL)</font>");
             }
         }
+
         #endregion
 
         #region Damage
+
         public static double RDamage(Obj_AI_Base target)
         {
             if (!Player.GetSpell(SpellSlot.R).IsLearned) return 0;
             return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical,
-                (float)new double[] { 250, 425, 600 }[_r.Level - 1] + 1 * Player.Instance.FlatMagicDamageMod);
+                (float) new double[] {250, 425, 600}[_r.Level - 1] + 1*Player.Instance.FlatMagicDamageMod);
         }
 
         private static double ComboDamage(Obj_AI_Base target)
@@ -664,14 +690,16 @@ namespace OKTRAIO.Champions
             }
             return enemy.TotalShieldHealth() <= damage;
         }
-        #endregion 
+
+        #endregion
 
         #endregion
 
         #region Drawings
+
         private static void GameOnDraw(EventArgs args)
         {
-            Color colorW = MainMenu._draw.GetColor("color.w");
+            var colorW = MainMenu._draw.GetColor("color.w");
             var widthW = MainMenu._draw.GetWidth("width.w");
 
             if (!Value.Use("draw.disable"))
@@ -695,16 +723,20 @@ namespace OKTRAIO.Champions
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => !a.IsDead && a.IsHPBarRendered))
                 {
                     var damage = ComboDamage(enemy);
-                    var damagepercent = ((enemy.TotalShieldHealth() - damage) > 0 ? (enemy.TotalShieldHealth() - damage) : 0) / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var hppercent = enemy.TotalShieldHealth() / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var start = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + damagepercent * 104), (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
-                    var end = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + hppercent * 104) + 2, (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var damagepercent = (enemy.TotalShieldHealth() - damage > 0 ? enemy.TotalShieldHealth() - damage : 0)/
+                                        (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var hppercent = enemy.TotalShieldHealth()/
+                                    (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var start = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + damagepercent*104),
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var end = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + hppercent*104) + 2,
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
 
                     Drawing.DrawLine(start, end, 9, Color.Chartreuse);
                 }
             }
         }
-        #endregion     
 
+        #endregion
     }
 }

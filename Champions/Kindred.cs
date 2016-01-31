@@ -8,13 +8,14 @@ using OKTRAIO.Menu_Settings;
 
 namespace OKTRAIO.Champions
 {
-    class Kindred : AIOChampion
+    internal class Kindred : AIOChampion
     {
+        private static int qcombomode;
+        private Spell.Targeted E, R;
         private Spell.Skillshot Q;
         private Spell.Active W;
-        private Spell.Targeted E, R;
-        private static int qcombomode;
 
+        public Geometry.Polygon.Circle WArea { get; set; }
 
         public override void Init()
         {
@@ -29,25 +30,25 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("< font color = '#23ADDB' > Marksman AIO:</ font >< font color = '#E81A0C' > can't declare spells </ font >");
+                Chat.Print(
+                    "< font color = '#23ADDB' > Marksman AIO:</ font >< font color = '#E81A0C' > can't declare spells </ font >");
             }
 
             //Menu
             try
             {
-                MainMenu.ComboKeys(true,true,true,false);
-                MainMenu._combo.AddGroupLabel("Combo Settings","combo.settings.label",true);
+                MainMenu.ComboKeys(useR: false);
+                MainMenu._combo.AddGroupLabel("Combo Settings", "combo.settings.label", true);
                 MainMenu._combo.AddSlider("combo.q.mode", "Q mode on Combo", 1, 1, 3, true);
                 MainMenu._combo["combo.q.mode"].Cast<Slider>().OnValueChange += ComboQMode;
                 MainMenu._combo.AddCheckBox("combo.q.inside", "Lock Player position in W position", true, true);
                 MainMenu._combo.AddSlider("combo.w.enemy", "Use W only if is {0} enemies in Range", 1, 1, 5, true);
-                MainMenu._combo.AddCheckBox("combo.e.focus", "Focus E Passive target", true,true);
+                MainMenu._combo.AddCheckBox("combo.e.focus", "Focus E Passive target", true, true);
                 MainMenu._combo.AddSeparator();
-                MainMenu._combo.AddGroupLabel("Mana Manager","combo.manamanager.label",true);
-                MainMenu.ComboManaManager(true,true,true,false, 10,10,10,0);
+                MainMenu._combo.AddGroupLabel("Mana Manager", "combo.manamanager.label", true);
+                MainMenu.ComboManaManager(true, true, true, false, 10, 10, 10, 0);
 
                 Value.Init();
-
             }
             catch (Exception e)
             {
@@ -58,7 +59,6 @@ namespace OKTRAIO.Champions
 
             W.OnSpellCasted += WOnOnSpellCasted;
             Game.OnUpdate += GameOnOnUpdate;
-
         }
 
         private void GameOnOnUpdate(EventArgs args)
@@ -67,7 +67,7 @@ namespace OKTRAIO.Champions
 
         private void WOnOnSpellCasted(Spell.SpellBase spell, GameObjectProcessSpellCastEventArgs args)
         {
-            WArea = new Geometry.Polygon.Circle(args.Start,W.Range);
+            WArea = new Geometry.Polygon.Circle(args.Start, W.Range);
             var timer = new Timer
             {
                 Interval = Math.Max(0, Player.Instance.GetBuff( /*Todo Passive name*/"").EndTime - Game.Time)*100
@@ -81,8 +81,6 @@ namespace OKTRAIO.Champions
             Chat.Print("Teste");
             WArea = null;
         }
-
-        public Geometry.Polygon.Circle WArea { get; set; }
 
         public override void Combo()
         {
@@ -104,7 +102,6 @@ namespace OKTRAIO.Champions
                     }
                 }
             }
-
         }
 
         private static void ComboQMode(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)

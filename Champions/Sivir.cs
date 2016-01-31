@@ -2,14 +2,12 @@
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
-using EloBuddy.SDK.Constants;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using OKTRAIO.Menu_Settings;
 using SharpDX;
 using Color = System.Drawing.Color;
-using Spell = EloBuddy.SDK.Spell;
 
 namespace OKTRAIO.Champions
 {
@@ -21,7 +19,6 @@ namespace OKTRAIO.Champions
         private static Spell.Skillshot _q;
         private static readonly Vector2 Offset = new Vector2(1, 0);
         private static float _qmana, _wmana, _rmana;
-
 
         public override void Init()
         {
@@ -40,7 +37,7 @@ namespace OKTRAIO.Champions
                 //menu
 
                 //combo
-                MainMenu.ComboKeys(true, true, false, true);
+                MainMenu.ComboKeys(useE: false);
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
                 MainMenu._combo.AddSlider("combo.r.enemy", "Min. {0} Enemies in Range for R", 3, 0, 5, true);
@@ -50,7 +47,7 @@ namespace OKTRAIO.Champions
                     100, true);
 
                 //flee
-                MainMenu.FleeKeys(false, false, false, true);
+                MainMenu.FleeKeys(false, useW: false, useE: false);
                 MainMenu._flee.AddSeparator();
                 MainMenu._flee.AddSlider("flee.r.enemy", "Min. {0} Enemies in Range for R", 2, 0, 5, true);
                 MainMenu._flee.AddSeparator();
@@ -58,13 +55,13 @@ namespace OKTRAIO.Champions
                 MainMenu.FleeManaManager(false, false, false, true, 0, 0, 0, 20);
 
                 //lasthit
-                MainMenu.LastHitKeys(true, false, false, false);
+                MainMenu.LastHitKeys(useW: false, useE: false, useR: false);
                 MainMenu._lasthit.AddSeparator();
                 MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
                 MainMenu.LasthitManaManager(true, false, false, false, 20, 0, 0, 0);
 
                 //laneclear
-                MainMenu.LaneKeys(true, true, false, false);
+                MainMenu.LaneKeys(useE: false, useR: false);
                 MainMenu._lane.AddSeparator();
                 MainMenu._lane.AddSlider("lane.q.min", "Min. {0} Minions for Q", 4, 1, 7, true);
                 MainMenu._lane.AddSlider("lane.w.min", "Min. {0} Minions for W", 3, 1, 7, true);
@@ -76,19 +73,19 @@ namespace OKTRAIO.Champions
                 MainMenu.LaneManaManager(true, true, false, false, 60, 60, 0, 0);
 
                 //jungleclear
-                MainMenu.JungleKeys(true, true, false, false);
+                MainMenu.JungleKeys(useE: false, useR: false);
                 MainMenu._jungle.AddSeparator();
                 MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
                 MainMenu.JungleManaManager(true, true, false, false, 60, 60, 0, 0);
 
                 //harass
-                MainMenu.HarassKeys(true, true, false, false);
+                MainMenu.HarassKeys(useE: false, useR: false);
                 MainMenu._harass.AddSeparator();
                 MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
                 MainMenu.HarassManaManager(true, true, false, false, 40, 40, 0, 0);
 
                 //Ks
-                MainMenu.KsKeys(true, false, false, false);
+                MainMenu.KsKeys(useW: false, useE: false, useR: false);
                 MainMenu._ks.AddSeparator();
                 MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
                 MainMenu.KsManaManager(true, false, false, false, 20, 0, 0, 0);
@@ -143,7 +140,7 @@ namespace OKTRAIO.Champions
 
 
                 //draw
-                MainMenu.DrawKeys(true, false, false, true);
+                MainMenu.DrawKeys(useW: false, useE: false);
                 MainMenu._draw.AddSeparator();
                 MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
             }
@@ -396,13 +393,12 @@ namespace OKTRAIO.Champions
                                 a.IsValidTarget(_q.Range) && Variables.SummonerRiftJungleList.Contains(a.BaseSkinName) &&
                                 a.Health >= Player.Instance.GetAutoAttackDamage(a, true));
 
-                    
+
                     if (bigboys != null && target.NetworkId == bigboys.NetworkId)
                     {
                         _w.Cast();
                         Orbwalker.ResetAutoAttack();
                     }
-                    
                 }
 
                 if (_w.IsReady() && Value.Use("lane.w") &&
@@ -432,35 +428,27 @@ namespace OKTRAIO.Champions
 
         private static void AIHeroClient_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            if (sender == null || args.Target == null || sender.IsStructure() || sender.IsAlly || sender.IsMinion ||
-                sender.IsMonster || sender.IsMe || args.SData.IsAutoAttack() || !_e.IsReady() ||
-                (args.Slot != SpellSlot.Q && args.Slot != SpellSlot.W && args.Slot != SpellSlot.E && args.Slot != SpellSlot.R) ||
-                (args.SData.TargettingType != SpellDataTargetType.Self &&
-                 args.SData.TargettingType != SpellDataTargetType.Unit &&
-                 args.SData.TargettingType != SpellDataTargetType.SelfAndUnit &&
-                 args.SData.TargettingType != SpellDataTargetType.SelfAoe &&
-                 args.SData.TargettingType != SpellDataTargetType.Cone &&
-                 args.SData.TargettingType != SpellDataTargetType.Location &&
-                 args.SData.TargettingType != SpellDataTargetType.Location2 &&
-                 args.SData.TargettingType != SpellDataTargetType.Location3 &&
-                 args.SData.TargettingType != SpellDataTargetType.LocationAoe &&
-                 args.SData.TargettingType != SpellDataTargetType.LocationSummon &&
-                 args.SData.TargettingType != SpellDataTargetType.LocationTunnel &&
-                 args.SData.TargettingType != SpellDataTargetType.LocationVector))
+            if ((args.Slot == SpellSlot.Q || args.Slot == SpellSlot.W || args.Slot == SpellSlot.E ||
+                 args.Slot == SpellSlot.R) && sender.IsEnemy && _e.IsReady())
             {
-                return;
-            }
+                var castvector = new Geometry.Polygon.Rectangle(args.Start, args.End, args.SData.LineWidth);
 
-            //var castvector = new Geometry.Polygon.Rectangle(args.Start, args.End, args.SData.LineWidth);
+                if (castvector.IsOutside(Player.Instance.ServerPosition.To2D()))
+                {
+                    return;
+                }
 
-            //if (MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue && castvector.IsInside(Player.Instance.ServerPosition))
-            //{
-            //    _e.Cast();
-            //}
-
-            if (MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue && (args.Target.NetworkId == Player.Instance.NetworkId && args.Time < 1.5 || args.End.Distance(Player.Instance.Position) <= Player.Instance.BoundingRadius * 3))
-            {
-                _e.Cast();
+                if (castvector.IsInside(Player.Instance.ServerPosition) &&
+                    MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                {
+                    _e.Cast();
+                }
+                if (MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue &&
+                    (args.Target.NetworkId == Player.Instance.NetworkId ||
+                     args.End.Distance(Player.Instance.Position) <= Player.Instance.BoundingRadius*3))
+                {
+                    _e.Cast();
+                }
             }
         }
 
@@ -478,7 +466,8 @@ namespace OKTRAIO.Champions
             {
                 return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical,
                     new[] {46.25f, 83.25f, 120.25f, 159.1f, 194.25f}[_q.Level - 1] +
-                    (new[] {1.295f, 1.48f, 1.665f, 1.85f, 2.035f}[_q.Level - 1]*Player.Instance.TotalAttackDamage + .925f * Player.Instance.TotalMagicalDamage));
+                    (new[] {1.295f, 1.48f, 1.665f, 1.85f, 2.035f}[_q.Level - 1]*Player.Instance.TotalAttackDamage +
+                     .925f*Player.Instance.TotalMagicalDamage));
             }
             return 0f;
         }
@@ -488,8 +477,9 @@ namespace OKTRAIO.Champions
             if (_q.IsLearned)
             {
                 return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical,
-                    new[] { 25f, 45f, 65f, 85f, 105f }[_q.Level - 1] +
-                    (new[] { .7f, .8f, .9f, 1f, 1.1f }[_q.Level - 1] * Player.Instance.TotalAttackDamage + .925f * Player.Instance.TotalMagicalDamage));
+                    new[] {25f, 45f, 65f, 85f, 105f}[_q.Level - 1] +
+                    (new[] {.7f, .8f, .9f, 1f, 1.1f}[_q.Level - 1]*Player.Instance.TotalAttackDamage +
+                     .925f*Player.Instance.TotalMagicalDamage));
             }
             return 0f;
         }

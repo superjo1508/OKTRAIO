@@ -5,7 +5,7 @@ using EloBuddy.SDK;
 
 namespace OKTRAIO.Utility
 {
-    static class Extensions
+    internal static class Extensions
     {
         public static bool CanUseItem(string name)
         {
@@ -21,10 +21,10 @@ namespace OKTRAIO.Utility
 
         public static bool CanUseItem(int id)
         {
-            foreach (var slot in ObjectManager.Player.InventoryItems.Where(slot => slot.Id == (ItemId)id))
+            foreach (var slot in ObjectManager.Player.InventoryItems.Where(slot => slot.Id == (ItemId) id))
             {
                 var inst = ObjectManager.Player.Spellbook.Spells.FirstOrDefault(spell =>
-                    (int)spell.Slot == slot.Slot + (int)SpellSlot.Item1);
+                    (int) spell.Slot == slot.Slot + (int) SpellSlot.Item1);
                 return inst != null && inst.State == SpellState.Ready;
             }
 
@@ -33,35 +33,37 @@ namespace OKTRAIO.Utility
 
         public static InventorySlot GetWardSlot()
         {
-            var wardIds = new[] { 2045, 2049, 2050, 2301, 2302, 2303, 3340, 3361, 3362, 3711, 1408, 1409, 1410, 1411, 2043 };
+            var wardIds = new[]
+            {2045, 2049, 2050, 2301, 2302, 2303, 3340, 3361, 3362, 3711, 1408, 1409, 1410, 1411, 2043};
             return (from wardId in wardIds
-                    where CanUseItem(wardId)
-                    select ObjectManager.Player.InventoryItems.FirstOrDefault(slot => slot.Id == (ItemId)wardId))
+                where CanUseItem(wardId)
+                select ObjectManager.Player.InventoryItems.FirstOrDefault(slot => slot.Id == (ItemId) wardId))
                 .FirstOrDefault();
         }
     }
+
     /// <summary>
-    /// Represents a last casted spell.
+    ///     Represents a last casted spell.
     /// </summary>
     public class LastCastedSpellEntry
     {
         /// <summary>
-        /// The name
+        ///     The name
         /// </summary>
         public string Name;
 
         /// <summary>
-        /// The target
+        ///     The target
         /// </summary>
         public Obj_AI_Base Target;
 
         /// <summary>
-        /// The tick
+        ///     The tick
         /// </summary>
         public int Tick;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LastCastedSpellEntry"/> class.
+        ///     Initializes a new instance of the <see cref="LastCastedSpellEntry" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="tick">The tick.</param>
@@ -75,27 +77,27 @@ namespace OKTRAIO.Utility
     }
 
     /// <summary>
-    /// Represents the last cast packet sent.
+    ///     Represents the last cast packet sent.
     /// </summary>
     public class LastCastPacketSentEntry
     {
         /// <summary>
-        /// The slot
+        ///     The slot
         /// </summary>
         public SpellSlot Slot;
 
         /// <summary>
-        /// The target network identifier
+        ///     The target network identifier
         /// </summary>
         public int TargetNetworkId;
 
         /// <summary>
-        /// The tick
+        ///     The tick
         /// </summary>
         public int Tick;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LastCastPacketSentEntry"/> class.
+        ///     Initializes a new instance of the <see cref="LastCastPacketSentEntry" /> class.
         /// </summary>
         /// <param name="slot">The slot.</param>
         /// <param name="tick">The tick.</param>
@@ -109,23 +111,23 @@ namespace OKTRAIO.Utility
     }
 
     /// <summary>
-    /// Gets the last casted spell of the unit.
+    ///     Gets the last casted spell of the unit.
     /// </summary>
     public static class LastCastedSpell
     {
         /// <summary>
-        /// The casted spells
+        ///     The casted spells
         /// </summary>
         internal static readonly Dictionary<int, LastCastedSpellEntry> CastedSpells =
             new Dictionary<int, LastCastedSpellEntry>();
 
         /// <summary>
-        /// The last cast packet sent
+        ///     The last cast packet sent
         /// </summary>
         public static LastCastPacketSentEntry LastCastPacketSent;
 
         /// <summary>
-        /// Initializes static members of the <see cref="LastCastedSpell"/> class. 
+        ///     Initializes static members of the <see cref="LastCastedSpell" /> class.
         /// </summary>
         static LastCastedSpell()
         {
@@ -134,24 +136,24 @@ namespace OKTRAIO.Utility
         }
 
         /// <summary>
-        /// Fired then a spell is casted.
+        ///     Fired then a spell is casted.
         /// </summary>
         /// <param name="spellbook">The spellbook.</param>
-        /// <param name="args">The <see cref="SpellbookCastSpellEventArgs"/> instance containing the event data.</param>
-        static void SpellbookOnCastSpell(Spellbook spellbook, SpellbookCastSpellEventArgs args)
+        /// <param name="args">The <see cref="SpellbookCastSpellEventArgs" /> instance containing the event data.</param>
+        private static void SpellbookOnCastSpell(Spellbook spellbook, SpellbookCastSpellEventArgs args)
         {
             if (spellbook.Owner.IsMe)
             {
                 LastCastPacketSent = new LastCastPacketSentEntry(
-                        args.Slot, Core.GameTickCount, (args.Target is Obj_AI_Base) ? args.Target.NetworkId : 0);
+                    args.Slot, Core.GameTickCount, args.Target is Obj_AI_Base ? args.Target.NetworkId : 0);
             }
         }
 
         /// <summary>
-        /// Fired when the game processes the spell cast.
+        ///     Fired when the game processes the spell cast.
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="args">The <see cref="GameObjectProcessSpellCastEventArgs"/> instance containing the event data.</param>
+        /// <param name="args">The <see cref="GameObjectProcessSpellCastEventArgs" /> instance containing the event data.</param>
         private static void AIHeroClient_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             if (sender is AIHeroClient)
@@ -169,17 +171,19 @@ namespace OKTRAIO.Utility
         }
 
         /// <summary>
-        /// Gets the last casted spell tick.
+        ///     Gets the last casted spell tick.
         /// </summary>
         /// <param name="unit">The unit.</param>
         /// <returns></returns>
         public static int LastCastedSpellT(this AIHeroClient unit)
         {
-            return CastedSpells.ContainsKey(unit.NetworkId) ? CastedSpells[unit.NetworkId].Tick : (Core.GameTickCount > 0 ? 0 : int.MinValue);
+            return CastedSpells.ContainsKey(unit.NetworkId)
+                ? CastedSpells[unit.NetworkId].Tick
+                : (Core.GameTickCount > 0 ? 0 : int.MinValue);
         }
 
         /// <summary>
-        /// Gets the last casted spell name.
+        ///     Gets the last casted spell name.
         /// </summary>
         /// <param name="unit">The unit.</param>
         /// <returns></returns>
@@ -189,7 +193,7 @@ namespace OKTRAIO.Utility
         }
 
         /// <summary>
-        /// Gets the last casted spell's target.
+        ///     Gets the last casted spell's target.
         /// </summary>
         /// <param name="unit">The unit.</param>
         /// <returns></returns>
@@ -199,7 +203,7 @@ namespace OKTRAIO.Utility
         }
 
         /// <summary>
-        /// Gets the last casted spell.
+        ///     Gets the last casted spell.
         /// </summary>
         /// <param name="unit">The unit.</param>
         /// <returns></returns>

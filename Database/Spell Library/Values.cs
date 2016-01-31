@@ -8,17 +8,17 @@ using OKTRAIO.Utility;
 
 namespace OKTRAIO.Database.Spell_Library
 {
+
     #region Spelldamage values
 
     public class SpellDb
     {
         public string CharName;
-        public string SpellKey;
         public float Damage;
+        public string SpellKey;
 
         public SpellDb()
         {
-
         }
 
         public SpellDb(
@@ -57,11 +57,14 @@ namespace OKTRAIO.Database.Spell_Library
             High
         }
 
-        public CollisionObjectTypes[] CollisionObjects = { };
         public bool AddHitbox;
+        public string BuffName;
         public bool CanBeRemoved = false;
         public bool Centered;
         public string ChampionName;
+
+        public CollisionObjectTypes[] CollisionObjects = {};
+        public InterruptableDangerLevel DangerLevel;
         public int DangerValue;
         public int Delay;
         public bool DisabledByDefault = false;
@@ -71,17 +74,18 @@ namespace OKTRAIO.Database.Spell_Library
         public bool DontCross = false;
         public bool DontRemove = false;
         public int ExtraDuration;
-        public string[] ExtraMissileNames = { };
+        public string[] ExtraMissileNames = {};
         public int ExtraRange = -1;
-        public string[] ExtraSpellNames = { };
+        public string[] ExtraSpellNames = {};
         public bool FixedRange;
-        public bool ForceRemove = false;
         public bool FollowCaster = false;
+        public bool ForceRemove = false;
         public string FromObject = "";
-        public string[] FromObjects = { };
+        public string[] FromObjects = {};
         public int Id = -1;
         public bool Invert;
         public bool IsDangerous = false;
+        public bool IsInterruptableSpell;
         public int MissileAccel = 0;
         public bool MissileDelayed;
         public bool MissileFollowsUnit;
@@ -97,11 +101,6 @@ namespace OKTRAIO.Database.Spell_Library
         public bool TakeClosestPath = false;
         public string ToggleParticleName = "";
         public SkillShotType Type;
-        private int _radius;
-        private int _range;
-        public string BuffName;
-        public InterruptableDangerLevel DangerLevel;
-        public bool IsInterruptableSpell;
 
         public Spell()
         {
@@ -125,7 +124,7 @@ namespace OKTRAIO.Database.Spell_Library
             Type = type;
             Delay = delay;
             Range = range;
-            _radius = radius;
+            Radius = radius;
             MissileSpeed = missileSpeed;
             AddHitbox = addHitbox;
             FixedRange = fixedRange;
@@ -137,33 +136,26 @@ namespace OKTRAIO.Database.Spell_Library
             get { return ChampionName + " - " + SpellName; }
         }
 
-        public int Radius
-        {
-            get { return _radius; }
-            set { _radius = value; }
-        }
+        public int Radius { get; set; }
 
         public int RawRadius
         {
-            get { return _radius; }
+            get { return Radius; }
         }
 
-        public int RawRange
-        {
-            get { return _range; }
-        }
+        public int RawRange { get; private set; }
 
         public int Range
         {
-            get { return _range; }
-            set { _range = value; }
+            get { return RawRange; }
+            set { RawRange = value; }
         }
 
         public bool Collisionable
         {
             get
             {
-                for (int i = 0; i < CollisionObjects.Length; i++)
+                for (var i = 0; i < CollisionObjects.Length; i++)
                 {
                     if (CollisionObjects[i] == CollisionObjectTypes.Champions ||
                         CollisionObjects[i] == CollisionObjectTypes.Minion)
@@ -176,7 +168,7 @@ namespace OKTRAIO.Database.Spell_Library
 
     internal class InterrupterExtensions
     {
-        private List<Spell> Spells = new List<Spell>();
+        private readonly List<Spell> Spells = new List<Spell>();
 
         public bool IsChannelingImportantSpell(AIHeroClient unit)
         {
@@ -186,15 +178,16 @@ namespace OKTRAIO.Database.Spell_Library
                         spell.ChampionName == unit.ChampionName &&
                         spell.IsInterruptableSpell &&
                         ((unit.LastCastedspell() != null &&
-                            String.Equals(
-                                unit.LastCastedspell().Name, spell.SpellName, StringComparison.CurrentCultureIgnoreCase) &&
-                            Core.GameTickCount - unit.LastCastedSpellT() < 350 + spell.ExtraDuration) ||
-                        (spell.BuffName != null && unit.HasBuff(spell.BuffName)) ||
-                        (unit.IsMe &&
-                            LastCastedSpell.LastCastPacketSent != null &&
-                            LastCastedSpell.LastCastPacketSent.Slot == spell.Slot &&
-                            Core.GameTickCount - LastCastedSpell.LastCastPacketSent.Tick < 150 + Game.Ping)));
+                          string.Equals(
+                              unit.LastCastedspell().Name, spell.SpellName, StringComparison.CurrentCultureIgnoreCase) &&
+                          Core.GameTickCount - unit.LastCastedSpellT() < 350 + spell.ExtraDuration) ||
+                         (spell.BuffName != null && unit.HasBuff(spell.BuffName)) ||
+                         (unit.IsMe &&
+                          LastCastedSpell.LastCastPacketSent != null &&
+                          LastCastedSpell.LastCastPacketSent.Slot == spell.Slot &&
+                          Core.GameTickCount - LastCastedSpell.LastCastPacketSent.Tick < 150 + Game.Ping)));
         }
     }
+
     #endregion
 }

@@ -2,8 +2,9 @@
 
 namespace OKTRAIO.Champions
 {
-    class Urgot : AIOChampion
-    {//Hi im an example done by Riot <-- see ? ^^
+    internal class Urgot : AIOChampion
+    {
+//Hi im an example done by Riot <-- see ? ^^
         //This is a second example done by FinnFap
         // best commit NA by Cuntr
         public override void Combo()

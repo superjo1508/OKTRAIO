@@ -13,7 +13,7 @@ using Color = System.Drawing.Color;
 
 namespace OKTRAIO.Champions
 {
-    class Jinx : AIOChampion
+    internal class Jinx : AIOChampion
     {
         private static Spell.Active _q;
         private static Spell.Skillshot _w;
@@ -22,29 +22,23 @@ namespace OKTRAIO.Champions
 
         private static bool MissleActive
         {
-            get
-            {
-                return Player.HasBuff("JinxQ");
-            }
+            get { return Player.HasBuff("JinxQ"); }
         }
 
         private static float MissleRange
         {
-            get
-            {
-                return 670f + Player.Instance.BoundingRadius + new [] { 75, 100, 125, 150, 175 }[_q.Level - 1];
-            }
+            get { return 670f + Player.Instance.BoundingRadius + new[] {75, 100, 125, 150, 175}[_q.Level - 1]; }
         }
 
         private static float NormalRange(GameObject target = null)
         {
             return 650f + Player.Instance.BoundingRadius + (target == null ? 0f : target.BoundingRadius);
-
         }
 
         private static float GetBoundingDistance(Obj_AI_Base target)
         {
-            return Player.Instance.ServerPosition.Distance(target.ServerPosition) + Player.Instance.BoundingRadius + target.BoundingRadius;
+            return Player.Instance.ServerPosition.Distance(target.ServerPosition) + Player.Instance.BoundingRadius +
+                   target.BoundingRadius;
         }
 
         private static bool EnoughMana(bool countE = false, float extra = 0f)
@@ -54,7 +48,7 @@ namespace OKTRAIO.Champions
             var eMana = countE ? 50f : 0f;
             var rMana = _r.IsReady() ? 100f : 0f;
 
-            return Player.Instance.Mana > (qMana + wMana + eMana + rMana + extra);
+            return Player.Instance.Mana > qMana + wMana + eMana + rMana + extra;
         }
 
         public override void Init()
@@ -79,24 +73,24 @@ namespace OKTRAIO.Champions
                     #region Create menu
 
                     //Combo Menu Settings
-                    MainMenu.ComboKeys(true, true, true, true);
+                    MainMenu.ComboKeys();
                     MainMenu.ComboManaManager(false, true, false, false, 0, 40, 0, 0);
 
                     //Lane Clear Menu Settings
-                    MainMenu.LaneKeys(true, false, false, false);
+                    MainMenu.LaneKeys(useW: false, useE: false, useR: false);
                     MainMenu._lane.Add("lane.mana", new Slider("Minimum {0}% mana to laneclear with Q", 80));
 
                     //Jungle Clear Menu Settings
-                    MainMenu.JungleKeys(true, true, false, false);
+                    MainMenu.JungleKeys(useE: false, useR: false);
                     MainMenu.JungleManaManager(false, true, false, false, 0, 40, 0, 0);
 
                     //Harras Menu Settings
-                    MainMenu.HarassKeys(true, true, true, false);
+                    MainMenu.HarassKeys(useR: false);
                     MainMenu.HarassManaManager(false, true, false, false, 0, 40, 0, 0);
 
                     //Killsteal Menu
-                    MainMenu.KsKeys(false, false, false, true);
-                    
+                    MainMenu.KsKeys(false, useW: false, useE: false);
+
 
                     //Misc Menu
                     MainMenu.MiscMenu();
@@ -106,7 +100,7 @@ namespace OKTRAIO.Champions
                     MainMenu._misc.Add("misc.enemyTurretR", new CheckBox("Don't use R under enemy turret"));
 
                     //Draw Menu
-                    MainMenu.DrawKeys(false, true, true, false);
+                    MainMenu.DrawKeys(false, useR: false);
                     MainMenu.DamageIndicator(false, "Ultimate (R) damage");
 
                     Value.Init();
@@ -116,13 +110,15 @@ namespace OKTRAIO.Champions
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code MENU)</font>");
+                    Chat.Print(
+                        "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code MENU)</font>");
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 503)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 503)</font>");
             }
 
             try
@@ -137,7 +133,8 @@ namespace OKTRAIO.Champions
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Chat.Print("<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
+                Chat.Print(
+                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
             }
 
             foreach (var hero in ObjectManager.Get<AIHeroClient>())
@@ -147,6 +144,7 @@ namespace OKTRAIO.Champions
         }
 
         #region Drawings
+
         private static void OnDraw(EventArgs args)
         {
             if (Value.Use("draw.disable") || Player.Instance.IsDead) return;
@@ -177,6 +175,7 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         private static void OnTick(EventArgs args)
@@ -193,8 +192,10 @@ namespace OKTRAIO.Champions
                 var qTarget = GetValidMissleTarget();
                 if (qTarget != null && !MissleActive)
                 {
-                    if (EnoughMana() 
-                        || (Player.Instance.GetAutoAttackDamage(qTarget) * 3 > qTarget.TotalShieldHealth() && Player.Instance.Mana > 60))
+                    if (EnoughMana()
+                        ||
+                        (Player.Instance.GetAutoAttackDamage(qTarget)*3 > qTarget.TotalShieldHealth() &&
+                         Player.Instance.Mana > 60))
                     {
                         _q.Cast();
                     }
@@ -215,7 +216,7 @@ namespace OKTRAIO.Champions
             }
 
             if (Value.Use("combo.e")
-                && _e.IsReady() 
+                && _e.IsReady()
                 && EnoughMana())
             {
                 ELogic();
@@ -285,9 +286,9 @@ namespace OKTRAIO.Champions
                 if (!Orbwalker.IsAutoAttacking) return;
 
                 var monsters =
-                EntityManager.MinionsAndMonsters.GetJungleMonsters(ObjectManager.Player.ServerPosition,
-                    _q.Range)
-                    .FirstOrDefault(x => x.IsValidTarget(_q.Range));
+                    EntityManager.MinionsAndMonsters.GetJungleMonsters(ObjectManager.Player.ServerPosition,
+                        _q.Range)
+                        .FirstOrDefault(x => x.IsValidTarget(_q.Range));
 
                 if (monsters != null)
                 {
@@ -309,9 +310,9 @@ namespace OKTRAIO.Champions
             if (!_q.IsReady()) return;
 
             if (!MissleActive
-                && EnoughMana() 
-                && !Orbwalker.IsAutoAttacking 
-                && Orbwalker.CanAutoAttack 
+                && EnoughMana()
+                && !Orbwalker.IsAutoAttacking
+                && Orbwalker.CanAutoAttack
                 && Value.Use("misc.farmQAARange"))
             {
                 var qMissleKillableMinion = EntityManager.MinionsAndMonsters.GetLaneMinions(
@@ -344,7 +345,7 @@ namespace OKTRAIO.Champions
                     _q.Cast();
                 }
             }
-            
+
             else if (MissleActive)
             {
                 _q.Cast();
@@ -358,7 +359,8 @@ namespace OKTRAIO.Champions
             var enemy = TargetSelector.GetTarget(MissleRange + 60, DamageType.Physical);
             if (enemy == null || !enemy.IsValidTarget()) return null;
 
-            if (!MissleActive && (!Player.Instance.IsInAutoAttackRange(enemy) || enemy.CountEnemiesInRange(250) > 2) && TargetSelector.GetTarget(_q.Range, DamageType.Physical) == null)
+            if (!MissleActive && (!Player.Instance.IsInAutoAttackRange(enemy) || enemy.CountEnemiesInRange(250) > 2) &&
+                TargetSelector.GetTarget(_q.Range, DamageType.Physical) == null)
             {
                 return enemy;
             }
@@ -370,14 +372,16 @@ namespace OKTRAIO.Champions
         {
             if (!_w.IsReady()) return;
 
-            var target = TargetSelector.SelectedTarget != null && _w.IsInRange(TargetSelector.SelectedTarget) ?
-                    TargetSelector.SelectedTarget : TargetSelector.GetTarget(_w.Range, DamageType.Physical);
+            var target = TargetSelector.SelectedTarget != null && _w.IsInRange(TargetSelector.SelectedTarget)
+                ? TargetSelector.SelectedTarget
+                : TargetSelector.GetTarget(_w.Range, DamageType.Physical);
 
             if (target != null && target.IsValidTarget() && Player.Instance.Distance(target) > 400)
             {
                 _w.Cast(target);
             }
         }
+
         private static void ELogic()
         {
             if (!_e.IsReady() || !EnoughMana()) return;
@@ -413,12 +417,12 @@ namespace OKTRAIO.Champions
             }
 
             var rTarget = EntityManager.Heroes.Enemies.FirstOrDefault(
-                            x =>
-                                !x.IsDead
-                                && x.IsEnemy
-                                && ValidTarget(x)
-                                && !Player.Instance.IsInAutoAttackRange(x)
-                                && RDamage(x) > x.TotalShieldHealth());
+                x =>
+                    !x.IsDead
+                    && x.IsEnemy
+                    && ValidTarget(x)
+                    && !Player.Instance.IsInAutoAttackRange(x)
+                    && RDamage(x) > x.TotalShieldHealth());
 
             if (rTarget != null && _r.IsReady())
             {
@@ -480,41 +484,41 @@ namespace OKTRAIO.Champions
 
                 if (Value.Use("combo.q")
                     && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo)
-                    && NormalRange(target) > distance 
+                    && NormalRange(target) > distance
                     && target.IsValidTarget())
                 {
                     _q.Cast();
                 }
 
-                else if (Value.Use("lane.q") 
-                    && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear)
-                    && (distance > MissleRange || distance < NormalRange(target) || !EnoughMana(true)))
+                else if (Value.Use("lane.q")
+                         && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear)
+                         && (distance > MissleRange || distance < NormalRange(target) || !EnoughMana(true)))
                 {
                     _q.Cast();
                 }
 
-                else if (Value.Use("harass.q")  
-                    && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Harass)
-                    && (distance > MissleRange || distance < NormalRange(target) || !EnoughMana(true)))
+                else if (Value.Use("harass.q")
+                         && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Harass)
+                         && (distance > MissleRange || distance < NormalRange(target) || !EnoughMana(true)))
                 {
                     _q.Cast();
                 }
             }
 
-            else if (Value.Use("lane.q") 
-                && !MissleActive 
-                && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear)
-                && Player.Instance.ManaPercent > Value.Get("lane.mana") 
-                && EnoughMana())
+            else if (Value.Use("lane.q")
+                     && !MissleActive
+                     && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear)
+                     && Player.Instance.ManaPercent > Value.Get("lane.mana")
+                     && EnoughMana())
             {
                 var qMinions = EntityManager.MinionsAndMonsters.GetLaneMinions(
                     EntityManager.UnitTeam.Enemy, Player.Instance.Position, MissleRange)
                     .FirstOrDefault(
-                                x => 
-                                    args.Target.NetworkId != x.NetworkId 
-                                    && x.Distance(args.Target.Position) < 200 
-                                    && (5 - _q.Level) * Player.Instance.GetAutoAttackDamage(x) < args.Target.Health
-                                    && (5 - _q.Level) * Player.Instance.GetAutoAttackDamage(x) < x.Health);
+                        x =>
+                            args.Target.NetworkId != x.NetworkId
+                            && x.Distance(args.Target.Position) < 200
+                            && (5 - _q.Level)*Player.Instance.GetAutoAttackDamage(x) < args.Target.Health
+                            && (5 - _q.Level)*Player.Instance.GetAutoAttackDamage(x) < x.Health);
 
                 if (qMinions != null)
                 {
@@ -527,34 +531,12 @@ namespace OKTRAIO.Champions
         {
             if (unit.IsMinion || !_e.IsReady()) return;
 
-            if (unit.IsEnemy && Value.Use("misc.spellcastE") && unit.IsValidTarget(_e.Range) && ShouldUseE(args.SData.Name))
+            if (unit.IsEnemy && Value.Use("misc.spellcastE") && unit.IsValidTarget(_e.Range) &&
+                ShouldUseE(args.SData.Name))
             {
                 _e.Cast(unit.ServerPosition);
             }
         }
-
-        #region ult speed
-
-        private static readonly List<Recall> Recalls = new List<Recall>();
-
-        private static float UltTime(Vector3 location, float delay, float speed)
-        {
-            var distance = Vector3.Distance(Player.Instance.ServerPosition, location);
-            var missilespeed = speed;
-
-            if (distance > 1350)
-            {
-                const float accelerationrate = 0.3f;
-                var acceldifference = distance - 1350f;
-                if (acceldifference > 150f) acceldifference = 150f;
-                var difference = distance - 1500f;
-                missilespeed = (1350f * speed + acceldifference * (speed + accelerationrate * acceldifference) + difference * 2200f) / distance;
-            }
-
-            return (distance / missilespeed + (_r.CastDelay / 1000f));
-        }
-
-        #endregion
 
         public static float DamageInidicatorDmg(Obj_AI_Base target)
         {
@@ -579,15 +561,15 @@ namespace OKTRAIO.Champions
         private static float WDamage(Obj_AI_Base target)
         {
             return Player.Instance.CalculateDamageOnUnit(
-                target, DamageType.Physical, new float[] { 10, 60, 110, 160, 210 }[_w.Level - 1]
-                + (Player.Instance.TotalAttackDamage * 1.4f));
+                target, DamageType.Physical, new float[] {10, 60, 110, 160, 210}[_w.Level - 1]
+                                             + Player.Instance.TotalAttackDamage*1.4f);
         }
 
         private static float EDamage(Obj_AI_Base target)
         {
             return Player.Instance.CalculateDamageOnUnit(
-                target, DamageType.Magical, new float[] { 80, 135, 190, 245, 300 }[_e.Level - 1] 
-                + (Player.Instance.TotalMagicalDamage * 1.0f));
+                target, DamageType.Magical, new float[] {80, 135, 190, 245, 300}[_e.Level - 1]
+                                            + Player.Instance.TotalMagicalDamage*1.0f);
         }
 
         public static float RDamage(Obj_AI_Base target)
@@ -595,13 +577,37 @@ namespace OKTRAIO.Champions
             if (!_r.IsReady()) return 0f;
 
             var distance = target.Distance(Player.Instance);
-            var percentage = 0.1f + (distance < 100f ? 0f : (distance / 100) * 0.06f);
+            var percentage = 0.1f + (distance < 100f ? 0f : distance/100*0.06f);
             var dmgPercentage = percentage > 1f ? 1f : percentage;
 
             return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical,
-                    new float[] { 250, 350, 450 }[_r.Level - 1] * dmgPercentage +
-                    new float[] { 25, 30, 35 }[_r.Level - 1] / 100 * (target.MaxHealth - target.Health) +
-                    dmgPercentage * Player.Instance.FlatPhysicalDamageMod);
+                new float[] {250, 350, 450}[_r.Level - 1]*dmgPercentage +
+                new float[] {25, 30, 35}[_r.Level - 1]/100*(target.MaxHealth - target.Health) +
+                dmgPercentage*Player.Instance.FlatPhysicalDamageMod);
         }
+
+        #region ult speed
+
+        private static readonly List<Recall> Recalls = new List<Recall>();
+
+        private static float UltTime(Vector3 location, float delay, float speed)
+        {
+            var distance = Vector3.Distance(Player.Instance.ServerPosition, location);
+            var missilespeed = speed;
+
+            if (distance > 1350)
+            {
+                const float accelerationrate = 0.3f;
+                var acceldifference = distance - 1350f;
+                if (acceldifference > 150f) acceldifference = 150f;
+                var difference = distance - 1500f;
+                missilespeed = (1350f*speed + acceldifference*(speed + accelerationrate*acceldifference) +
+                                difference*2200f)/distance;
+            }
+
+            return distance/missilespeed + _r.CastDelay/1000f;
+        }
+
+        #endregion
     }
 }

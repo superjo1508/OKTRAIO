@@ -7,16 +7,60 @@ using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using OKTRAIO.Menu_Settings;
-using OKTRAIO.Utility;
 using SharpDX;
 using Color = System.Drawing.Color;
 
 namespace OKTRAIO.Champions
 {
-    class Ezreal : AIOChampion
+    internal class Ezreal : AIOChampion
     {
+        #region Drawings
+
+        private static void GameOnDraw(EventArgs args)
+        {
+            var colorW = MainMenu._draw.GetColor("color.w");
+            var widthW = MainMenu._draw.GetWidth("width.w");
+            var colorE = MainMenu._draw.GetColor("color.e");
+            var widthE = MainMenu._draw.GetWidth("width.e");
+            var colorR = MainMenu._draw.GetColor("color.r");
+            var widthR = MainMenu._draw.GetWidth("width.r");
+
+            if (!Value.Use("draw.disable"))
+            {
+                if (Value.Use("draw.w") && ((Value.Use("draw.ready") && _w.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorW,
+                        Radius = _w.Range,
+                        BorderWidth = widthW
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.e") && ((Value.Use("draw.ready") && _e.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorE,
+                        Radius = _e.Range,
+                        BorderWidth = widthE
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorR,
+                        Radius = _q.Range,
+                        BorderWidth = widthR
+                    }.Draw(Player.Instance.Position);
+                }
+            }
+        }
+
+        #endregion
 
         #region Initialize and Declare
+
         //Spells
         private static Spell.Skillshot _q, _w, _r;
         private static Spell.Targeted _e;
@@ -40,20 +84,23 @@ namespace OKTRAIO.Champions
             {
                 //Menu Init
                 //Combo
-                MainMenu.ComboKeys(true, true, true, false);
+                MainMenu.ComboKeys(useR: false, defaultE: false);
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.mode", true);
                 MainMenu._combo.Add("combo.mode", new Slider("Combo Mode", 0, 0, 1)).OnValueChange += ModeSlider;
                 Value.AdvancedMenuItemUiDs.Add("combo.mode");
-                MainMenu._combo["combo.mode"].IsVisible = MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
+                MainMenu._combo["combo.mode"].IsVisible =
+                    MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
                 MainMenu._combo.Add("combo.emode", new Slider("E Mode: ", 0, 0, 2)).OnValueChange += ComboEModeSlider;
                 Value.AdvancedMenuItemUiDs.Add("combo.emode");
-                MainMenu._combo["combo.emode"].Cast<Slider>().IsVisible = MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
+                MainMenu._combo["combo.emode"].Cast<Slider>().IsVisible =
+                    MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
                 MainMenu._combo.Add("combo.rbind",
-                new KeyBind("Semi-Auto R (No Lock)", false, KeyBind.BindTypes.HoldActive, 'T'))
-                .OnValueChange += OnUltButton;
+                    new KeyBind("Semi-Auto R (No Lock)", false, KeyBind.BindTypes.HoldActive, 'T'))
+                    .OnValueChange += OnUltButton;
                 Value.AdvancedMenuItemUiDs.Add("combo.rbind");
-                MainMenu._combo["combo.rbind"].IsVisible = MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
+                MainMenu._combo["combo.rbind"].IsVisible =
+                    MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddGroupLabel("Prediction Settings", "combo.advanced.predctionlabel", true);
                 MainMenu._combo.AddSlider("combo.q.pred", "Use Q if HitChance is above than {0}%", 45, 0, 100, true);
@@ -64,13 +111,14 @@ namespace OKTRAIO.Champions
                 MainMenu.ComboManaManager(true, true, true, true, 10, 10, 10, 10);
 
                 //Harass
-                MainMenu.HarassKeys(true, true, true, false);
+                MainMenu.HarassKeys(useR: false, defaultE: false);
                 MainMenu._harass.AddSeparator();
                 MainMenu._harass.AddGroupLabel("Harass Preferences", "harass.grouplabel.mode", true);
                 MainMenu._harass.AddCheckBox("harass.auto", "Use AUTO HARASS", false, true);
                 MainMenu._harass.Add("harass.emode", new Slider("E Mode: ", 0, 0, 2)).OnValueChange += HarassEModeSlider;
                 Value.AdvancedMenuItemUiDs.Add("harass.emode");
-                MainMenu._harass["harass.emode"].IsVisible = MainMenu._harass["harass.advanced"].Cast<CheckBox>().CurrentValue;
+                MainMenu._harass["harass.emode"].IsVisible =
+                    MainMenu._harass["harass.advanced"].Cast<CheckBox>().CurrentValue;
                 MainMenu._harass.AddSeparator();
                 MainMenu._harass.AddGroupLabel("Prediction Settings", "harass.advanced.predctionlabel", true);
                 MainMenu._harass.AddSlider("harass.q.pred", "Use Q if HitChance is above than {0}%", 45, 0, 100, true);
@@ -78,9 +126,9 @@ namespace OKTRAIO.Champions
                 MainMenu._harass.AddSeparator();
                 MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.advanced.manamanagerlabel", true);
                 MainMenu.HarassManaManager(true, true, true, false, 60, 60, 0, 0);
-                
+
                 //Farm
-                MainMenu.LaneKeys(true, true, false, false);
+                MainMenu.LaneKeys(useE: false, useR: false);
                 MainMenu._lane.AddSeparator();
                 MainMenu._lane.AddGroupLabel("Q Settings", "lane.advanced.qsettingslabel", true);
                 MainMenu._lane.AddCheckBox("lane.q.aa", "Use Q only when can't AA", true, true);
@@ -89,7 +137,7 @@ namespace OKTRAIO.Champions
                 MainMenu.LaneManaManager(true, true, false, false, 65, 0, 0, 0);
 
                 //Jungle Clear Menu Settings
-                MainMenu.JungleKeys(true, true, true, false);
+                MainMenu.JungleKeys(useR: false, defaultE: false);
                 MainMenu._jungle.AddSeparator();
                 MainMenu._jungle.AddGroupLabel("Jungleclear Preferences", "jungle.grouplabel.1", true);
                 MainMenu._jungle.AddCheckBox("jungle.monsters.spell", "Use Abilities on Big Monster", true, true);
@@ -99,19 +147,19 @@ namespace OKTRAIO.Champions
                 MainMenu.JungleManaManager(true, true, true, false, 60, 50, 40, 50);
 
                 //Last hit Menu Settings
-                MainMenu.LastHitKeys(true, false, false, false);
+                MainMenu.LastHitKeys(useW: false, useE: false, useR: false);
                 MainMenu._lasthit.AddSeparator();
                 MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.1", true);
                 MainMenu.LasthitManaManager(true, false, false, false, 60, 50, 40, 50);
 
                 //Ks
-                MainMenu.KsKeys(true, true, true, true);
+                MainMenu.KsKeys(defaultE: false);
                 MainMenu._ks.AddSeparator();
                 MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.5", true);
                 MainMenu.KsManaManager(true, true, true, true, 60, 50, 40, 50);
 
                 //Flee Menu
-                MainMenu.FleeKeys(false, false, true, false);
+                MainMenu.FleeKeys(false, useW: false, useR: false);
 
                 //Misc
                 MainMenu.MiscMenu();
@@ -139,7 +187,7 @@ namespace OKTRAIO.Champions
                     true);
                 MainMenu._misc.AddSlider("misc.w.mana", "Use W on CC Enemy if Mana is above than {0}%", 30, 0, 100,
                     true);
-                MainMenu.DrawKeys(true, true, true, true);
+                MainMenu.DrawKeys();
                 MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
                 MainMenu.DamageIndicator(true);
                 //Value
@@ -166,7 +214,6 @@ namespace OKTRAIO.Champions
                     Game.OnTick += GameOnUpdate;
                 }
                 Drawing.OnEndScene += Drawing_OnEndScene;
-
             }
             catch (Exception e)
             {
@@ -175,11 +222,13 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 503)</font>");
             }
         }
+
         #endregion
 
         #region Gamerelated Logic
 
         #region Combo
+
         public override void Combo()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
@@ -206,8 +255,8 @@ namespace OKTRAIO.Champions
                 else if (_w.IsReady() && Value.Use("combo.w"))
                 {
                     var ally =
-                       EntityManager.Heroes.Allies
-                           .FirstOrDefault(x => x.IsValidTarget(_w.Range));
+                        EntityManager.Heroes.Allies
+                            .FirstOrDefault(x => x.IsValidTarget(_w.Range));
 
                     if (Value.Use("misc.w.ally"))
                     {
@@ -221,7 +270,7 @@ namespace OKTRAIO.Champions
                         }
                     }
                     else if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("combo.w.pred")) &&
-                        (Player.Instance.ManaPercent >= Value.Get("combo.w.mana")))
+                             (Player.Instance.ManaPercent >= Value.Get("combo.w.mana")))
                     {
                         _w.Cast(_w.GetPrediction(target).CastPosition);
                     }
@@ -254,9 +303,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
-        #endregion 
+
+        #endregion
 
         #region Harass
+
         public override void Harass()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
@@ -274,8 +325,8 @@ namespace OKTRAIO.Champions
             else if (_w.IsReady() && Value.Use("harass.w"))
             {
                 var ally =
-                       EntityManager.Heroes.Allies
-                           .FirstOrDefault(x => x.IsValidTarget(_w.Range));
+                    EntityManager.Heroes.Allies
+                        .FirstOrDefault(x => x.IsValidTarget(_w.Range));
 
                 if (Value.Use("misc.w.ally"))
                 {
@@ -290,7 +341,7 @@ namespace OKTRAIO.Champions
                 }
 
                 else if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("harass.w.pred")) &&
-                    (Player.Instance.ManaPercent >= Value.Get("harass.w.mana")))
+                         (Player.Instance.ManaPercent >= Value.Get("harass.w.mana")))
                 {
                     _w.Cast(_w.GetPrediction(target).CastPosition);
                 }
@@ -303,9 +354,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
-        #endregion 
+
+        #endregion
 
         #region Laneclear
+
         public override void Laneclear()
         {
             //only q when cant aa
@@ -334,9 +387,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
-        #endregion 
+
+        #endregion
 
         #region Jungleclear
+
         public override void Jungleclear()
         {
             var monsters =
@@ -402,12 +457,13 @@ namespace OKTRAIO.Champions
                         _e.Cast(DetectWall());
                     }
                 }
-
             }
         }
-        #endregion 
+
+        #endregion
 
         #region Flee
+
         public override void Flee()
         {
             if (_e.IsReady() && Value.Use("flee.e") && _e.IsLearned)
@@ -415,14 +471,16 @@ namespace OKTRAIO.Champions
                 _e.Cast(Player.Instance.ServerPosition.Extend(Game.CursorPos, _e.Range).To3D());
             }
         }
-        #endregion 
+
+        #endregion
 
         #region Lasthit
+
         public override void LastHit()
         {
             var source =
                 EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault
-                (m =>
+                    (m =>
                         m.IsValidTarget(_q.Range) &&
                         (Player.Instance.GetSpellDamage(m, SpellSlot.Q) > m.TotalShieldHealth()));
 
@@ -436,6 +494,7 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #endregion
@@ -443,6 +502,7 @@ namespace OKTRAIO.Champions
         #region Utils
 
         #region Orbwalker
+
         private void OrbwalkerOnOnPostAttack(AttackableUnit target, EventArgs args)
         {
             if (_minionId != target.NetworkId) return;
@@ -466,9 +526,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
-        #endregion 
+
+        #endregion
 
         #region OnUpdate
+
         private void GameOnUpdate(EventArgs args)
         {
             if (Player.Instance.IsDead || Player.Instance.HasBuff("Recall")
@@ -488,11 +550,12 @@ namespace OKTRAIO.Champions
             }
 
             KillSteal();
-
         }
-        #endregion 
+
+        #endregion
 
         #region Damage
+
         private static void Drawing_OnEndScene(EventArgs args)
         {
             if (Value.Use("draw.hp.bar"))
@@ -500,10 +563,14 @@ namespace OKTRAIO.Champions
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => !a.IsDead && a.IsHPBarRendered))
                 {
                     var damage = ComboDamage(enemy);
-                    var damagepercent = ((enemy.TotalShieldHealth() - damage) > 0 ? (enemy.TotalShieldHealth() - damage) : 0) / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var hppercent = enemy.TotalShieldHealth() / (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var start = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + damagepercent * 104), (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
-                    var end = new Vector2((int)(enemy.HPBarPosition.X + Offset.X + hppercent * 104) + 2, (int)(enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var damagepercent = (enemy.TotalShieldHealth() - damage > 0 ? enemy.TotalShieldHealth() - damage : 0)/
+                                        (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var hppercent = enemy.TotalShieldHealth()/
+                                    (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
+                    var start = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + damagepercent*104),
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
+                    var end = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + hppercent*104) + 2,
+                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
 
                     Drawing.DrawLine(start, end, 9, Color.Chartreuse);
                 }
@@ -512,7 +579,7 @@ namespace OKTRAIO.Champions
 
         private static float ComboDamage(Obj_AI_Base enemy)
         {
-            float damage = Player.Instance.GetAutoAttackDamage(enemy);
+            var damage = Player.Instance.GetAutoAttackDamage(enemy);
 
             if (_q.IsReady())
             {
@@ -536,9 +603,11 @@ namespace OKTRAIO.Champions
 
             return damage;
         }
-        #endregion 
+
+        #endregion
 
         #region AntiGapCloser
+
         private void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
             if (!e.Sender.IsValidTarget() || (e.Sender.Type != Player.Instance.Type) || !e.Sender.IsEnemy)
@@ -556,21 +625,26 @@ namespace OKTRAIO.Champions
                 }
             }
         }
-        #endregion 
+
+        #endregion
 
         #region Geometry-Cone
+
         private static bool InsideCone()
         {
             var target = TargetSelector.GetTarget(_e.Range, DamageType.Mixed);
             if (target == null) return false;
             var cone = new Geometry.Polygon.Sector(Player.Instance.Position,
-                            OKTRGeometry.Deviation(Player.Instance.Position.To2D(), target.Position.To2D(), 90).To3D(), Geometry.DegreeToRadian(180),
-                            (Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2));
+                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), 90).To3D(),
+                Geometry.DegreeToRadian(180),
+                Player.Instance.AttackRange + Player.Instance.BoundingRadius*2);
             return cone.IsInside(Game.CursorPos.To2D());
         }
-        #endregion 
+
+        #endregion
 
         #region Slider
+
         private static void ComboEModeSlider(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
         {
             UpdateSlider(2);
@@ -649,34 +723,38 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code anal)</font>");
             }
         }
-        #endregion 
+
+        #endregion
 
         #region UltButton
+
         private static void OnUltButton(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
         {
             if (args.NewValue && (TargetSelector.GetTarget(_r.Range, DamageType.Mixed) != null))
                 _r.Cast(_r.GetPrediction(TargetSelector.GetTarget(_r.Range, DamageType.Mixed)).CastPosition);
         }
-        #endregion 
+
+        #endregion
 
         #region ELogic
+
         private static void ELogic()
         {
-            var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
+            var target = TargetSelector.GetTarget(Player.Instance.GetAutoAttackRange(), DamageType.Mixed);
             if (target == null) return;
 
             if (Value.Mode(Orbwalker.ActiveModes.Combo))
             {
                 if (Value.Get("combo.emode") == 0)
                 {
-                    var ePos = OKTRGeometry.SafeDashPos(_e.Range);
+                    var ePos = OKTRGeometry.SafeDashPosRework(_e.Range/2f, target, _e.CastDelay);
                     if (ePos != Vector3.Zero)
                         _e.Cast(ePos);
                 }
                 else if (Value.Get("combo.emode") == 1)
                 {
                     if ((Game.CursorPos.Distance(Player.Instance.Position) >
-                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2) &&
+                         Player.Instance.AttackRange + Player.Instance.BoundingRadius*2) &&
                         !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
                     {
                         _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
@@ -686,13 +764,13 @@ namespace OKTRAIO.Champions
                         if (InsideCone())
                         {
                             _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), target.Position.To2D(), -65)
+                                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), -65)
                                     .To3D());
                         }
                         else
                         {
                             _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), target.Position.To2D(), 65)
+                                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), 65)
                                     .To3D());
                         }
                     }
@@ -706,14 +784,14 @@ namespace OKTRAIO.Champions
             {
                 if (Value.Get("harass.emode") == 0)
                 {
-                    var ePos = OKTRGeometry.SafeDashPos(_e.Range);
+                    var ePos = OKTRGeometry.SafeDashPosRework(_e.Range/2f, target, _e.CastDelay);
                     if (ePos != Vector3.Zero)
                         _e.Cast(ePos);
                 }
                 else if (Value.Get("harass.emode") == 1)
                 {
                     if ((Game.CursorPos.Distance(Player.Instance.Position) >
-                        Player.Instance.AttackRange + Player.Instance.BoundingRadius * 2) &&
+                         Player.Instance.AttackRange + Player.Instance.BoundingRadius*2) &&
                         !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
                     {
                         _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
@@ -723,13 +801,13 @@ namespace OKTRAIO.Champions
                         if (InsideCone())
                         {
                             _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), target.Position.To2D(), 255)
+                                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), 255)
                                     .To3D());
                         }
                         else
                         {
                             _e.Cast(
-                                OKTRGeometry.Deviation(Player.Instance.Position.To2D(), target.Position.To2D(), 65)
+                                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), 65)
                                     .To3D());
                         }
                     }
@@ -740,9 +818,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
-        #endregion 
+
+        #endregion
 
         #region AutoHarass
+
         private static void AutoHarass()
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
@@ -780,9 +860,11 @@ namespace OKTRAIO.Champions
                 }
             }
         }
-        #endregion 
+
+        #endregion
 
         #region AutoCC
+
         private static void AutoQwCc()
         {
             var enemy =
@@ -846,17 +928,19 @@ namespace OKTRAIO.Champions
                 }
             }
         }
-        #endregion 
+
+        #endregion
 
         #region KillSteal
+
         private static void KillSteal()
         {
             foreach (
-                    var target in
-                        EntityManager.Heroes.Enemies.Where(
-                            hero =>
-                                hero.IsValidTarget(1200) && !hero.IsDead && !hero.IsZombie &&
-                                (hero.HealthPercent <= 25)))
+                var target in
+                    EntityManager.Heroes.Enemies.Where(
+                        hero =>
+                            hero.IsValidTarget(1200) && !hero.IsDead && !hero.IsZombie &&
+                            (hero.HealthPercent <= 25)))
             {
                 if (Value.Use("killsteal.q") && _q.IsReady())
                 {
@@ -917,81 +1001,41 @@ namespace OKTRAIO.Champions
                 }
             }
         }
+
         #endregion
 
         #region DetectWall
+
         private Vector3 DetectWall()
         {
-
             const int circleLineSegmentN = 20;
 
-            var outRadius = 700 / (float)Math.Cos(2 * Math.PI / circleLineSegmentN);
-            var inRadius = 300 / (float)Math.Cos(2 * Math.PI / circleLineSegmentN);
+            var outRadius = 700/(float) Math.Cos(2*Math.PI/circleLineSegmentN);
+            var inRadius = 300/(float) Math.Cos(2*Math.PI/circleLineSegmentN);
             var bestPoint = ObjectManager.Player.Position;
             for (var i = 1; i <= circleLineSegmentN; i++)
             {
-                var angle = i * 2 * Math.PI / circleLineSegmentN;
-                var point = new Vector2(ObjectManager.Player.Position.X + outRadius * (float)Math.Cos(angle), ObjectManager.Player.Position.Y + outRadius * (float)Math.Sin(angle)).To3D();
-                var point2 = new Vector2(ObjectManager.Player.Position.X + inRadius * (float)Math.Cos(angle), ObjectManager.Player.Position.Y + inRadius * (float)Math.Sin(angle)).To3D();
+                var angle = i*2*Math.PI/circleLineSegmentN;
+                var point =
+                    new Vector2(ObjectManager.Player.Position.X + outRadius*(float) Math.Cos(angle),
+                        ObjectManager.Player.Position.Y + outRadius*(float) Math.Sin(angle)).To3D();
+                var point2 =
+                    new Vector2(ObjectManager.Player.Position.X + inRadius*(float) Math.Cos(angle),
+                        ObjectManager.Player.Position.Y + inRadius*(float) Math.Sin(angle)).To3D();
                 if (((point.ToNavMeshCell().CollFlags & CollisionFlags.Wall) != 0) &&
                     ((point2.ToNavMeshCell().CollFlags & CollisionFlags.Wall) != 0) &&
                     (Game.CursorPos.Distance(point) < Game.CursorPos.Distance(bestPoint)))
                 {
                     bestPoint = point;
                     return bestPoint;
-                } 
+                }
             }
 
             return new Vector3();
         }
-        #endregion 
 
         #endregion
 
-        #region Drawings
-
-        private static void GameOnDraw(EventArgs args)
-        {
-            Color colorW = MainMenu._draw.GetColor("color.w");
-            var widthW = MainMenu._draw.GetWidth("width.w");
-            Color colorE = MainMenu._draw.GetColor("color.e");
-            var widthE = MainMenu._draw.GetWidth("width.e");
-            Color colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
-
-            if (!Value.Use("draw.disable"))
-            {
-                if (Value.Use("draw.w") && ((Value.Use("draw.ready") && _w.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorW,
-                        Radius = _w.Range,
-                        BorderWidth = widthW
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.e") && ((Value.Use("draw.ready") && _e.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorE,
-                        Radius = _e.Range,
-                        BorderWidth = widthE
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorR,
-                        Radius = _q.Range,
-                        BorderWidth = widthR
-                    }.Draw(Player.Instance.Position);
-                }
-            }
-        }
-
         #endregion
-
     }
 }

@@ -8,7 +8,7 @@ namespace OKTRAIO.Menu_Settings
     {
         private static readonly float[] Values =
         {
-            0.01f,0.50f,1f,1.50f,2f,2.50f,3f
+            0.01f, 0.50f, 1f, 1.50f, 2f, 2.50f, 3f
         };
 
         private static readonly string[] ValuesName =

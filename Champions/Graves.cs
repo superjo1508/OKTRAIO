@@ -2,7 +2,7 @@
 
 namespace OKTRAIO.Champions
 {
-    class Graves : AIOChampion
+    internal class Graves : AIOChampion
     {
         public override void Combo()
         {
