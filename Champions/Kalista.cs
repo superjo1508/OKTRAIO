@@ -3,6 +3,7 @@ using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using OKTRAIO.Menu_Settings;
 using SharpDX;
@@ -12,36 +13,6 @@ namespace OKTRAIO.Champions
 {
     internal class Kalista : AIOChampion
     {
-        public override void Combo()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Harass()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Laneclear()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Jungleclear()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Flee()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void LastHit()
-        {
-            throw new NotImplementedException();
-        }
-
         #region Initialize and Declare
 
         private static Spell.Skillshot _q;
@@ -78,10 +49,10 @@ namespace OKTRAIO.Champions
                     MainMenu._combo.AddCheckBox("combo.r.allin.prevent", "Use R if the ally can use R too", false, true);
                     MainMenu._combo.AddCheckBox("combo.r.allin", "Use R if u guys can kill those faggs", false, true);
                     MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Prediction Settings", "combo.grouplabel.1", true);
+                    MainMenu._combo.AddGroupLabel("Prediction Settings", "combo.grouplabel.addonmenu.2", true);
                     MainMenu._combo.AddSlider("combo.q.prediction", "Use Q if Hitchance > {0}%", 80, 0, 100, true);
                     MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Mana Manager:", "combo.grouplabel.addonmenu.1", true);
+                    MainMenu._combo.AddGroupLabel("Mana Manager:", "combo.grouplabel.addonmenu.3", true);
                     MainMenu._combo.AddCheckBox("combo.e.save.mana", "Save mana for Use E", true, true);
                     MainMenu._combo.AddCheckBox("combo.r.save.mana", "Save mana for Use R", true, true);
                     MainMenu.ComboManaManager(true, false, true, true, 20, 10, 10, 5);
@@ -89,7 +60,7 @@ namespace OKTRAIO.Champions
                     //Lane Clear Menu Settings
                     MainMenu.LaneKeys(useW: false, useE: false, useR: false);
                     MainMenu._lane.AddSeparator();
-                    MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu.1", true);
+                    MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
                     MainMenu.LaneManaManager(true, false, false, false, 80, 80, 80, 50);
 
                     //Jungle Clear Menu Settings
@@ -109,7 +80,7 @@ namespace OKTRAIO.Champions
                     MainMenu._jungle.AddCheckBox("jungle.monsters.krug", "Execute the Golem", true, true);
                     MainMenu._jungle.AddCheckBox("jungle.monsters.crab", "Execute the Crab", true, true);
                     MainMenu._jungle.AddSeparator();
-                    MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu.1", true);
+                    MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu.2", true);
                     MainMenu.JungleManaManager(true, false, true, false, 40, 80, 50, 40);
 
                     //Last hit Menu Settings
@@ -118,24 +89,24 @@ namespace OKTRAIO.Champions
                     MainMenu._lasthit.AddGroupLabel("LastHit Preferences", "lasthit.grouplabel.addonmenu", true);
                     MainMenu._lasthit.AddSlider("lasthit.q.count", "Execute {0} minions with Q", 2, 1, 10, true);
                     MainMenu._lasthit.AddSlider("lasthit.e.count", "Execute {0} minions with E", 4, 1, 10, true);
-                    MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
+                    MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu.2", true);
                     MainMenu.LasthitManaManager(true, false, false, true, 70, 90, 60, 50);
 
                     //Harras
                     MainMenu.HarassKeys(useW: false, useR: false);
                     MainMenu._harass.AddSeparator();
-                    MainMenu._harass.AddGroupLabel("Harass Preferences", "harass.grouplabel.addonmenu.12", true);
+                    MainMenu._harass.AddGroupLabel("Harass Preferences", "harass.grouplabel.addonmenu", true);
                     MainMenu._harass.AddCheckBox("harass.q.trough", "Use Q for transfer the E Stacks", true, true);
                     MainMenu._harass.AddCheckBox("harass.e.minions", "Use E on minions for Harass", true, true);
                     MainMenu._harass.AddCheckBox("harass.aa.mark", "Force AA to target with W Passive", true, true);
                     MainMenu._harass.AddSeparator();
-                    MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
+                    MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu.2", true);
                     MainMenu.HarassManaManager(true, true, true, true, 60, 80, 50, 40);
 
                     //Flee Menu
                     MainMenu.FleeKeys(useW: false, useR: false);
                     MainMenu._flee.AddSeparator();
-                    MainMenu._flee.AddGroupLabel("Flee Preferences", "flee.grouplabel.addonmenu.12", true);
+                    MainMenu._flee.AddGroupLabel("Flee Preferences", "flee.grouplabel.addonmenu", true);
                     MainMenu._flee.AddCheckBox("flee.q.wall", "Use Q for jump the wall", true, true);
                     MainMenu._flee.AddCheckBox("flee.aa.gapcloser", "Use AA for reach the target / run away", true, true);
 
@@ -147,8 +118,9 @@ namespace OKTRAIO.Champions
 
                     //Misc Menu
                     MainMenu.MiscMenu();
-                    MainMenu._misc.AddCheckBox("misc.q", "Use Auto Q");
                     MainMenu._misc.AddCheckBox("misc.q.gapcloser", "Use Auto Q on GapCloser", false);
+                    MainMenu._misc.AddCheckBox("misc.r.gapcloser", "Use Auto R on GapCloser if not braindead", false);
+                    MainMenu._misc.AddCheckBox("misc.q", "Use Auto Q on CC");
                     MainMenu._misc.AddCheckBox("misc.w.auto", "Use Auto W", false);
                     MainMenu._misc.AddCheckBox("misc.r.save", "Use Auto R for save Ally");
                     MainMenu._misc.AddCheckBox("misc.aa.exploit", "Use DoubleJump Exploit");
@@ -185,12 +157,12 @@ namespace OKTRAIO.Champions
                         true);
                     MainMenu._misc.AddSlider("misc.r.save.ally", "Use R if ally is under {0}  HP", 15, 0, 100, true);
                     MainMenu._misc.AddSeparator();
-                    MainMenu._misc.AddGroupLabel("Mana Manager:", "misc.grouplabel.addonmenu.5", true);
+                    MainMenu._misc.AddGroupLabel("Mana Manager:", "misc.grouplabel.addonmenu.3", true);
                     MainMenu._misc.AddSlider("misc.q.mana", "Use Q on CC Enemy if Mana is above than {0}%", 30, 0, 100,
                         true);
                     MainMenu._misc.AddSlider("misc.w.mana", "Use W if Mana is above than {0}%", 70, 0, 100,
                         true);
-                    MainMenu._misc.AddSlider("misc.r.mana", "Use R on CC Enemy if Mana is above than {0}%", 30, 0, 100,
+                    MainMenu._misc.AddSlider("misc.r.mana", "Use R if Mana is above than {0}%", 30, 0, 100,
                         true);
 
                     //Draw Menu
@@ -226,6 +198,8 @@ namespace OKTRAIO.Champions
                 }
 
                 Obj_AI_Base.OnBuffGain += BuffGain;
+                Gapcloser.OnGapcloser += AntiGapCloser;
+                Obj_AI_Base.OnProcessSpellCast += AaReset;
             }
             catch (Exception e)
             {
@@ -234,6 +208,92 @@ namespace OKTRAIO.Champions
                     "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code INIT)</font>");
             }
         }
+
+        #endregion
+
+        #region Gamerelated Logic
+
+        #region Combo
+
+        public override void Combo()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Harass
+
+        public override void Harass()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Laneclear
+
+        public override void Laneclear()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Jungleclear
+
+        public override void Jungleclear()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Flee
+
+        public override void Flee()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Lasthit
+
+        public override void LastHit()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Exploit
+
+        private static void Exploit()
+        {
+            if (Value.Use("misc.aa.exploit") && Player.Instance.AttackDelay/1 > 1.70)
+            {
+                if (Value.Mode(Orbwalker.ActiveModes.Combo) || Value.Mode(Orbwalker.ActiveModes.Harass) ||
+                    Value.Mode(Orbwalker.ActiveModes.LaneClear) || Value.Mode(Orbwalker.ActiveModes.JungleClear) ||
+                    Value.Mode(Orbwalker.ActiveModes.Flee) || Value.Mode(Orbwalker.ActiveModes.LastHit))
+                {
+                    var target = TargetSelector.GetTarget(_q.Range + Player.Instance.GetAutoAttackRange() + 50,
+                        DamageType.Physical);
+
+                    if (Game.Time*1000 >= Orbwalker.LastAutoAttack + 1)
+                    {
+                        Orbwalker.OrbwalkTo(OKTRGeometry.SafeDashPosRework(_q.Range, target, 190));
+                    }
+
+                    if (Game.Time*1000 > Orbwalker.LastAutoAttack + Player.Instance.AttackDelay*1000 - 150)
+                    {
+                        Orbwalker.OrbwalkTo(OKTRGeometry.SafeDashPosRework(_q.Range, target, 190));
+                    }
+                }
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -252,6 +312,8 @@ namespace OKTRAIO.Champions
             //Tahmlista();
             Pact();
             AutoSentinel();
+            AutoSave();
+            Exploit();
         }
 
         #endregion
@@ -260,15 +322,82 @@ namespace OKTRAIO.Champions
 
         private static void Pact()
         {
-            if (Variables.CloseAllies(1000).Any(a => Variables.IsSupport(a)
-                                                     && a.HasBuff("kalistacoopstrikeally")) == false) return;
-            if (Value.Use("misc.passive.pact") 
-                && Activator.KalistaSpear.IsOwned() 
+            var ally = Variables.CloseAllies(Activator.KalistaSpear.Range).FirstOrDefault(a => Variables.IsSupport(a)
+                                                                                               &&
+                                                                                               !a.HasBuff(
+                                                                                                   "kalistacoopstrikeally"));
+
+            if (ally == null) return;
+
+            if (Value.Use("misc.passive.pact")
+                && Activator.KalistaSpear.IsOwned()
                 && Shop.CanShop)
             {
-                Activator.KalistaSpear.Cast(
-                    Variables.CloseAllies(1000)
-                        .FirstOrDefault(a => Variables.IsSupport(a) && !a.HasBuff("kalistacoopstrikeally")));
+                Activator.KalistaSpear.Cast(ally);
+            }
+        }
+
+        #endregion
+
+        #region AutoSave
+
+        private static void AutoSave()
+        {
+            if (Value.Use("misc.r.save") && Player.Instance.ManaPercent >= Value.Get("misc.r.mana"))
+            {
+                var ally = Variables.CloseAllies(1000).FirstOrDefault(a => Variables.IsSupport(a)
+                                                                           && a.HasBuff("kalistacoopstrikeally"));
+
+                if (ally == null) return;
+
+                var target = TargetSelector.GetTarget(_r.Range, DamageType.Mixed, ally.ServerPosition);
+
+                if (Value.Get("misc.r.save.ally") >= ally.HealthPercent && ally.IsFacing(target))
+                {
+                    if (Value.Use("misc.r.save.prevent") && !ally.Spellbook.IsChanneling)
+                    {
+                        _r.Cast();
+                    }
+                    else
+                    {
+                        _r.Cast();
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region OnAntiGap
+
+        private static void AntiGapCloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
+        {
+            var ally = Variables.CloseAllies(1000).FirstOrDefault(a => Variables.IsSupport(a)
+                                                                       && a.HasBuff("kalistacoopstrikeally"));
+
+            if (!e.Sender.IsValidTarget() || e.Sender.Type != Player.Instance.Type || !e.Sender.IsEnemy)
+                return;
+
+            if (_r.IsReady() && Value.Use("misc.r.gapcloser") &&
+                Player.Instance.ManaPercent <= Value.Get("misc.r.mana") &&
+                (ally != null))
+            {
+                if (Value.Use("misc.r.save.prevent") && !ally.Spellbook.IsChanneling)
+                {
+                    _r.Cast();
+                }
+                else
+                {
+                    _r.Cast();
+                }
+            }
+
+            if (_q.IsReady() && _q.IsInRange(sender) && Value.Use("misc.q.gapcloser"))
+            {
+                var pred = e.End;
+
+                _q.Cast(_q.GetPrediction(sender).CastPosition);
+                Orbwalker.OrbwalkTo(pred + 5*(Player.Instance.Position - e.End));
             }
         }
 
@@ -278,19 +407,57 @@ namespace OKTRAIO.Champions
 
         private static void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
-            var blizzzyboz =
-                EntityManager.Heroes.Enemies.Find(
-                    a => a.ChampionName.Equals("Blitzcrank") && a.HasBuff("kalistacoopstrikeally"));
-
-            if (blizzzyboz != null)
+            if (Value.Use("misc.r.balista") && _r.IsReady())
             {
-                if (Value.Use("misc.r.balista") && _r.IsReady() &&
-                    (Player.Instance.Distance(blizzzyboz) >= Value.Get("misc.r.balista.range")) &&
-                    _r.IsInRange(blizzzyboz)
-                    && sender.HasBuff("rocketgrab2") && sender.IsEnemy)
+                var blizzzyboz =
+                    EntityManager.Heroes.Enemies.Find(
+                        a => a.ChampionName.Equals("Blitzcrank") && a.HasBuff("kalistacoopstrikeally"));
+
+                if (blizzzyboz != null)
                 {
-                    _r.Cast();
+                    if ((Player.Instance.Distance(blizzzyboz) >= Value.Get("misc.r.balista.range")) &&
+                        _r.IsInRange(blizzzyboz)
+                        && sender.HasBuff("rocketgrab2") && sender.IsEnemy)
+                    {
+                        _r.Cast();
+                    }
                 }
+            }
+
+            if (Value.Use("misc.q") && Player.Instance.ManaPercent >= Value.Get("misc.q.mana") && _q.IsInRange(sender))
+            {
+                if (Value.Use("misc.q.stun") && sender.IsStunned)
+                {
+                    _q.Cast(sender);
+                }
+                if (Value.Use("misc.q.snare") && sender.IsRooted)
+                {
+                    _q.Cast(sender);
+                }
+                if (Value.Use("misc.q.charm") && sender.IsCharmed)
+                {
+                    _q.Cast(sender);
+                }
+                if (Value.Use("misc.q.taunt") && sender.IsTaunted)
+                {
+                    _q.Cast(sender);
+                }
+                if (Value.Use("misc.q.fear") && sender.IsFeared)
+                {
+                    _q.Cast(sender);
+                }
+            }
+        }
+
+        #endregion
+
+        #region AAReset
+
+        private static void AaReset(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (Player.Instance.IsInAutoAttackRange(sender) && sender.HasBuff("KalistaExpungeWrapper"))
+            {
+                Orbwalker.ResetAutoAttack();
             }
         }
 
@@ -298,7 +465,8 @@ namespace OKTRAIO.Champions
 
         #region Balista
 
-        private static void Balista()
+        private static
+            void Balista()
         {
             if (EntityManager.Heroes.Allies.Any(a => a.ChampionName == "Blitzcrank"))
             {

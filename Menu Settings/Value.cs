@@ -61,22 +61,34 @@ namespace OKTRAIO.Menu_Settings
             return MenuList.Find(m => m.UniqueMenuId.Contains(MenuSubString(id)))[id].Cast<KeyBind>().CurrentValue;
         }
 
+        public static void AddComboBox(this Menu menu, string uid, string displayname, IEnumerable<string> textValues, int defaultIndex = 0,
+            bool advanced = false)
+        {
+            menu.Add(uid, new ComboBox(displayname, textValues, defaultIndex));
+            JsonSettings.Profile.Options.Add(new JsonSetting(uid, Setting.Combobox, menu[uid].Cast<ComboBox>().CurrentValue.ToString()));
+            if (!advanced) return;
+            AdvancedMenuItemUiDs.Add(uid);
+            menu[uid].IsVisible = menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
+        }
+
         public static void AddCheckBox(this Menu menu, string uid, string displayname, bool defaultvalue = true,
             bool advanced = false)
         {
             menu.Add(uid, new CheckBox(displayname, defaultvalue));
+            JsonSettings.Profile.Options.Add(new JsonSetting(uid, Setting.Checkbox, menu[uid].Cast<CheckBox>().CurrentValue.ToString()));
             if (!advanced) return;
             AdvancedMenuItemUiDs.Add(uid);
-            menu[uid].Cast<CheckBox>().IsVisible = menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
+            menu[uid].IsVisible = menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
         }
 
         public static void AddSlider(this Menu menu, string uid, string displayName, int defaultValue = 0,
             int minValue = 0, int maxValue = 100, bool advanced = false)
         {
             menu.Add(uid, new Slider(displayName, defaultValue, minValue, maxValue));
+            JsonSettings.Profile.Options.Add(new JsonSetting(uid, Setting.Slider, menu[uid].Cast<Slider>().CurrentValue.ToString()));
             if (!advanced) return;
             AdvancedMenuItemUiDs.Add(uid);
-            menu[uid].Cast<Slider>().IsVisible = menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
+            menu[uid].IsVisible = menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
         }
 
         public static void AddLabel(this Menu menu, string text, int size = 25, string uid = null, bool advanced = false)
@@ -86,7 +98,7 @@ namespace OKTRAIO.Menu_Settings
                 menu.Add(uid, new Label(text));
                 if (!advanced) return;
                 AdvancedMenuItemUiDs.Add(uid);
-                menu[uid].Cast<Label>().IsVisible =
+                menu[uid].IsVisible =
                     menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
             }
             else
@@ -102,7 +114,7 @@ namespace OKTRAIO.Menu_Settings
                 menu.Add(uid, new GroupLabel(text));
                 if (!advanced) return;
                 AdvancedMenuItemUiDs.Add(uid);
-                menu[uid].Cast<GroupLabel>().IsVisible =
+                menu[uid].IsVisible =
                     menu[GetMenuString(menu) + ".advanced"].Cast<CheckBox>().CurrentValue;
             }
             else

@@ -248,7 +248,7 @@ namespace OKTRAIO
         }
 
         /// <summary>
-        ///     Use this to make sure everyone report iRaxe after game.
+        ///     Use this to make sure everyone report iRaxe after game. Made by turkey.
         /// </summary>
         /// <param name="range">Use your fucking imagination</param>
         /// <param name="target">Your mom fappa. No but really</param>

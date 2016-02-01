@@ -47,6 +47,7 @@ namespace OKTRAIO
                 MainMenu.Init();
                 UtilityMenu.Init();
                 Champion.Init();
+                JsonSettings.Init();
                 Utility.Activator.LoadSpells();
                 Utility.Activator.Init();
                 Humanizer.Init();

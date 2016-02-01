@@ -2,6 +2,7 @@
 using EloBuddy;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
+using OKTRAIO.Utility;
 
 namespace OKTRAIO.Menu_Settings
 {
@@ -102,6 +103,7 @@ namespace OKTRAIO.Menu_Settings
             _misc.AddGroupLabel("Misc Settings");
             _misc.Add("misc.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
+            JsonSettings.Profile.Options.Add(new JsonSetting("misc.advanced", Setting.Checkbox, _misc["misc.advanced"].Cast<CheckBox>().CurrentValue.ToString()));
         }
 
         public static void DamageIndicator(bool jungle = false, string draw = "")
@@ -165,6 +167,7 @@ namespace OKTRAIO.Menu_Settings
             }
             _draw.Add("draw.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
+            JsonSettings.Profile.Options.Add(new JsonSetting("draw.advanced", Setting.Checkbox, _draw["draw.advanced"].Cast<CheckBox>().CurrentValue.ToString()));
         }
 
         public static void ComboManaManager(bool q, bool w, bool e, bool r, int qmana, int wmana, int emana, int rmana)
@@ -355,6 +358,7 @@ namespace OKTRAIO.Menu_Settings
             _combo.AddSeparator();
             _combo.Add("combo.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
+            JsonSettings.Profile.Options.Add(new JsonSetting("combo.advanced", Setting.Checkbox, _combo["combo.advanced"].Cast<CheckBox>().CurrentValue.ToString()));
         }
 
         /// <summary>
@@ -397,6 +401,7 @@ namespace OKTRAIO.Menu_Settings
             _ks.AddSeparator();
             _ks.Add("killsteal.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
+            JsonSettings.Profile.Options.Add(new JsonSetting("killsteal.advanced", Setting.Checkbox, _ks["killsteal.advanced"].Cast<CheckBox>().CurrentValue.ToString()));
         }
 
         /// <summary>
@@ -440,6 +445,7 @@ namespace OKTRAIO.Menu_Settings
             _lane.AddSeparator();
             _lane.Add("lane.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
+            JsonSettings.Profile.Options.Add(new JsonSetting("lane.advanced", Setting.Checkbox, _lane["lane.advanced"].Cast<CheckBox>().CurrentValue.ToString()));
         }
 
         /// <summary>
@@ -485,6 +491,7 @@ namespace OKTRAIO.Menu_Settings
             _jungle.AddSeparator();
             _jungle.Add("jungle.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
+            JsonSettings.Profile.Options.Add(new JsonSetting("jungle.advanced", Setting.Checkbox, _jungle["jungle.advanced"].Cast<CheckBox>().CurrentValue.ToString()));
             if (junglesteal)
             {
                 JungleSteal();
@@ -571,6 +578,7 @@ namespace OKTRAIO.Menu_Settings
             _lasthit.AddSeparator();
             _lasthit.Add("lasthit.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
+            JsonSettings.Profile.Options.Add(new JsonSetting("lasthit.advanced", Setting.Checkbox, _lasthit["lasthit.advanced"].Cast<CheckBox>().CurrentValue.ToString()));
         }
 
         /// <summary>
@@ -613,6 +621,7 @@ namespace OKTRAIO.Menu_Settings
             _harass.AddSeparator();
             _harass.Add("harass.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
+            JsonSettings.Profile.Options.Add(new JsonSetting("harass.advanced", Setting.Checkbox, _harass["harass.advanced"].Cast<CheckBox>().CurrentValue.ToString()));
         }
 
         public static void FleeKeys(
@@ -646,6 +655,7 @@ namespace OKTRAIO.Menu_Settings
             _flee.AddSeparator();
             _flee.Add("flee.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
                 Value.AdvancedModeChanged;
+            JsonSettings.Profile.Options.Add(new JsonSetting("flee.advanced", Setting.Checkbox, _flee["flee.advanced"].Cast<CheckBox>().CurrentValue.ToString()));
         }
     }
 }

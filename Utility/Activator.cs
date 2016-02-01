@@ -18,10 +18,10 @@ namespace OKTRAIO.Utility
 
             Machete = new Item((int)ItemId.Hunters_Machete),
             Potion = new Item((int)ItemId.Health_Potion),
-            Biscuit = new Item((int)ItemId.Total_Biscuit_of_Rejuvenation),
-            Refillable = new Item((int)ItemId.Refillable_Potion),
-            Hunter = new Item((int)ItemId.Hunters_Potion),
-            Corrupting = new Item((int)ItemId.Corrupting_Potion),
+            Biscuit = new Item(2010),
+            Refillable = new Item(2031),
+            Hunter = new Item(2032),
+            Corrupting = new Item(2033),
             Botrk = new Item((int)ItemId.Blade_of_the_Ruined_King, 550f),
             Cutlass = new Item((int)ItemId.Bilgewater_Cutlass, 550f),
             Youmuus = new Item((int)ItemId.Youmuus_Ghostblade, 650f),
@@ -35,7 +35,7 @@ namespace OKTRAIO.Utility
             #region AP Items
 
             Zhonya = new Item((int)ItemId.Zhonyas_Hourglass),
-            Seraph = new Item((int) ItemId.Seraphs_Embrace),
+            Seraph = new Item(3048),
 
             #endregion
 
@@ -58,7 +58,7 @@ namespace OKTRAIO.Utility
             PinkVision = new Item(2043, 1000f),
             GreaterStealthTotem = new Item((int)ItemId.Greater_Stealth_Totem_Trinket, 1000f),
             GreaterVisionTotem = new Item((int)ItemId.Greater_Vision_Totem_Trinket, 1000f),
-            FarsightAlteration = new Item((int)ItemId.Farsight_Alteration, 1000f),
+            FarsightAlteration = new Item(3363, 1000f),
             WardingTotem = new Item((int)ItemId.Warding_Totem_Trinket, 1000f);
 
         #endregion
@@ -184,7 +184,6 @@ namespace OKTRAIO.Utility
                 UtilityMenu.Activator.AddCheckBox("activator.qss.cc.8", "Use it on Stasis", true, true);
                 UtilityMenu.Activator.AddCheckBox("activator.qss.cc.9", "Use it on Stun", true, true);
                 UtilityMenu.Activator.AddCheckBox("activator.qss.cc.10", "Use it on Suppression", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.11", "Use it on Exhaust", true, true);
                 UtilityMenu.Activator.AddSeparator();
 
                 if (Value.Use("activator.qss.ulti"))
@@ -571,10 +570,6 @@ namespace OKTRAIO.Utility
                         AutoRemove();
                     }
                     if (Value.Use("activator.qss.cc.10") && args.Buff.Type == BuffType.Suppression)
-                    {
-                        AutoRemove();
-                    }
-                    if (Value.Use("activator.qss.cc.11") && Player.Instance.HasBuff("summonerexhaust"))
                     {
                         AutoRemove();
                     }
