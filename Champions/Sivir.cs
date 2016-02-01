@@ -38,7 +38,7 @@ namespace OKTRAIO.Champions
                 //menu
 
                 //combo
-                MainMenu.ComboKeys(useW: false);
+                MainMenu.ComboKeys(useE: false);
                 MainMenu._combo.AddSeparator();
                 MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
                 MainMenu._combo.AddSlider("combo.r.enemy", "Min. {0} Enemies in Range for R", 3, 0, 5, true);
