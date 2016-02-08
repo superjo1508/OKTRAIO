@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Properties;
 
-namespace OKTRAIO.Utility.AutoLVLUP
+/*namespace OKTRAIO.Utility.AutoLVLUP
 {
     internal class ParseModule
     {
@@ -188,5 +188,19 @@ namespace OKTRAIO.Utility.AutoLVLUP
                 Console.Write(e);
             }
         }
+         public static void LvlUpMenu()
+        {
+            Autolvlup = Menu.AddSubMenu("AutoLVLUP Menu", "autolvlup");
+            Autolvlup.AddGroupLabel("OKTR AIO - AutoLVLUP for " + Player.Instance.ChampionName,
+                "autolvlup.grouplabel.utilitymenu");
+            Autolvlup.AddCheckBox("autolvlup.use", "Use AutoLVLUP");
+            Autolvlup.Add("autolvlup.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
+            Autolvlup.AddSlider("autolvlup.mode", "Set Mode:", 1, 1, 2);
+            Autolvlup["autolvlup.damagetype"].Cast<Slider>().OnValueChange += LevelerMisc.DamageTypeSlider;
+            Autolvlup.AddSlider("autolvlup.role", "Set Role:", 1, 1, 3);
+            Autolvlup["autolvlup.role"].Cast<Slider>().OnValueChange += LevelerMisc.RoleSlider;
+            Autolvlup.AddCheckBox("autolvlup.ignorevers", "Ignore Version Differences", true, true);
+        }
     }
-}
+}*/

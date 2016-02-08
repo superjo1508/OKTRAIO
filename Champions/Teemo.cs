@@ -38,97 +38,97 @@ namespace OKTRAIO.Champions
 
                 //combo
                 MainMenu.ComboKeys(useE: false);
-                MainMenu._combo.AddSeparator();
-                MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
-                MainMenu._combo.AddGroupLabel("Use Q only on:", "combo.grouplabe2.addonmenu");
+                MainMenu.Combo.AddSeparator();
+                MainMenu.Combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
+                MainMenu.Combo.AddGroupLabel("Use Q only on:", "combo.grouplabe2.addonmenu");
                 if (EntityManager.Heroes.Enemies.Count > 0)
                 {
                     foreach (var enemy in EntityManager.Heroes.Enemies)
                     {
-                        MainMenu._combo.Add(enemy.ChampionName, new CheckBox(enemy.ChampionName));
+                        MainMenu.Combo.Add(enemy.ChampionName, new CheckBox(enemy.ChampionName));
                     }
                 }
-                MainMenu._combo.AddSlider("combo.w.distance", "Use W when there is an enemy in {0} range", 600, 1, 1200,
+                MainMenu.Combo.AddSlider("combo.w.distance", "Use W when there is an enemy in {0} range", 600, 1, 1200,
                     true);
-                MainMenu._combo.AddSlider("combo.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
+                MainMenu.Combo.AddSlider("combo.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
 
                 //flee
                 MainMenu.FleeKeys(useE: false);
-                MainMenu._flee.AddSeparator();
-                MainMenu._flee.AddSlider("flee.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
-                MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
+                MainMenu.Flee.AddSeparator();
+                MainMenu.Flee.AddSlider("flee.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
+                MainMenu.Flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
                 MainMenu.FleeManaManager(true, true, false, true, 20, 20, 0, 20);
 
                 //lasthit
                 MainMenu.LastHitKeys(useW: false, useE: false, useR: false);
-                MainMenu._lasthit.AddSeparator();
-                MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
+                MainMenu.Lasthit.AddSeparator();
+                MainMenu.Lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
                 MainMenu.LasthitManaManager(true, false, false, false, 20, 0, 0, 0);
 
                 //laneclear
                 MainMenu.LaneKeys(useW: false, useE: false);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddSlider("lane.r.min", "Min. {0} minions for R", 3, 1, 7, true);
-                MainMenu._lane.AddSlider("lane.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
-                MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddSlider("lane.r.min", "Min. {0} minions for R", 3, 1, 7, true);
+                MainMenu.Lane.AddSlider("lane.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
+                MainMenu.Lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
                 MainMenu.LaneManaManager(true, false, false, true, 60, 0, 0, 60);
 
                 //jungleclear
                 MainMenu.JungleKeys(useW: false, useE: false);
-                MainMenu._jungle.AddSeparator();
-                MainMenu._jungle.AddSlider("jungle.r.min", "Min. {0} minions for R", 3, 1, 4, true);
-                MainMenu._jungle.AddSlider("jungle.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
-                MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
+                MainMenu.Jungle.AddSeparator();
+                MainMenu.Jungle.AddSlider("jungle.r.min", "Min. {0} minions for R", 3, 1, 4, true);
+                MainMenu.Jungle.AddSlider("jungle.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3, true);
+                MainMenu.Jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
                 MainMenu.JungleManaManager(true, false, false, true, 60, 0, 0, 60);
 
                 //harass
                 MainMenu.HarassKeys(useW: false, useE: false, useR: false);
-                MainMenu._harass.AddSeparator();
-                MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
+                MainMenu.Harass.AddSeparator();
+                MainMenu.Harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
                 MainMenu.HarassManaManager(true, false, false, false, 60, 0, 0, 0);
 
                 //Ks
                 MainMenu.KsKeys(useW: false, useE: false, useR: false);
-                MainMenu._ks.AddSeparator();
-                MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
+                MainMenu.Ks.AddSeparator();
+                MainMenu.Ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
                 MainMenu.KsManaManager(true, false, false, false, 20, 0, 0, 0);
 
                 //misc
                 MainMenu.MiscMenu();
-                MainMenu._misc.Add("misc.r.auto",
+                MainMenu.Misc.Add("misc.r.auto",
                     new KeyBind("Auto shroom locations", true, KeyBind.BindTypes.PressToggle, 'G'));
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddSlider("misc.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3);
-                MainMenu._misc.AddSlider("misc.r.mana", "Auto Shroom until {0}% mana", 30);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddCheckBox("misc.q.gapcloser", "Use Q on gapcloser");
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddGroupLabel("Auto Q/R Settings", "misc.grouplabel1.addonmenu", true);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddCheckBox("misc.q.charm", "Use Q on Charmed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.stun", "Use Q on Stunned Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.knockup", "Use Q on Knocked Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.suppression", "Use Q on Suppressed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.taunt", "Use Q on Taunted Enemy", true, true);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddCheckBox("misc.r.charm", "Use R on Charmed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.r.stun", "Use R on Stunned Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.r.knockup", "Use R on Knocked Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.r.snare", "Use R on Snared Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.r.suppression", "Use R on Suppressed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.r.taunt", "Use R on Taunted Enemy", true, true);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddGroupLabel("Prediction", "combo.grouplabel2.addonmenu", true);
-                MainMenu._misc.AddSlider("misc.r.prediction", "Hitchance Percentage for R", 80, 0, 100, true);
-                MainMenu._misc.AddSlider("misc.r.delay", "Shroom Cast Delay", 1500, 1000, 4000, true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddSlider("misc.r.stacks", "Keep shrooms at {0} stacks", 1, 0, 3);
+                MainMenu.Misc.AddSlider("misc.r.mana", "Auto Shroom until {0}% mana", 30);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddCheckBox("misc.q.gapcloser", "Use Q on gapcloser");
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddGroupLabel("Auto Q/R Settings", "misc.grouplabel1.addonmenu", true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddCheckBox("misc.q.charm", "Use Q on Charmed Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.stun", "Use Q on Stunned Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.knockup", "Use Q on Knocked Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.suppression", "Use Q on Suppressed Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.taunt", "Use Q on Taunted Enemy", true, true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddCheckBox("misc.r.charm", "Use R on Charmed Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.r.stun", "Use R on Stunned Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.r.knockup", "Use R on Knocked Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.r.snare", "Use R on Snared Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.r.suppression", "Use R on Suppressed Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.r.taunt", "Use R on Taunted Enemy", true, true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddGroupLabel("Prediction", "combo.grouplabel2.addonmenu", true);
+                MainMenu.Misc.AddSlider("misc.r.prediction", "Hitchance Percentage for R", 80, 0, 100, true);
+                MainMenu.Misc.AddSlider("misc.r.delay", "Shroom Cast Delay", 1500, 1000, 4000, true);
 
                 //draw
                 MainMenu.DrawKeys(useW: false, useE: false);
-                MainMenu._draw.AddSeparator();
-                MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
-                MainMenu._draw.AddCheckBox("draw.r.auto", "Draw Auto Shroom Locations", true, true);
-                MainMenu._draw.AddCheckBox("draw.status", "Draw Auto Shroom Status", true, true);
+                MainMenu.Draw.AddSeparator();
+                MainMenu.Draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
+                MainMenu.Draw.AddCheckBox("draw.r.auto", "Draw Auto Shroom Locations", true, true);
+                MainMenu.Draw.AddCheckBox("draw.status", "Draw Auto Shroom Status", true, true);
             }
 
             catch (Exception e)
@@ -141,7 +141,7 @@ namespace OKTRAIO.Champions
             try
             {
                 Value.Init();
-                if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+                if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue)
                 {
                     Game.OnUpdate += GameOnUpdate;
                 }
@@ -171,13 +171,13 @@ namespace OKTRAIO.Champions
 
         public override void Combo()
         {
-            if (_q.IsReady() && Value.Use("combo.q"))
+            if (_q.IsReady() && Value.Use("combo.q".AddName()))
             {
                 foreach (
                     var enemy in
                         EntityManager.Heroes.Enemies.Where(
                             enemy =>
-                                MainMenu._combo[enemy.ChampionName].Cast<CheckBox>().CurrentValue &&
+                                MainMenu.Combo[enemy.ChampionName].Cast<CheckBox>().CurrentValue &&
                                 enemy.IsValidTarget() && !enemy.HasBuffOfType(BuffType.SpellShield) &&
                                 !enemy.IsZombie && _q.IsInRange(enemy) && !Orbwalker.IsAutoAttacking))
                 {
@@ -185,7 +185,7 @@ namespace OKTRAIO.Champions
                 }
             }
 
-            if (_w.IsReady() && Value.Use("combo.w"))
+            if (_w.IsReady() && Value.Use("combo.w".AddName()))
             {
                 if (Player.Instance.CountEnemiesInRange(Value.Get("combo.w.distance")) > 0)
                 {
@@ -193,7 +193,7 @@ namespace OKTRAIO.Champions
                 }
             }
 
-            if (_r.IsReady() && Value.Use("combo.r") && Rstacks > Value.Get("combo.r.stacks"))
+            if (_r.IsReady() && Value.Use("combo.r".AddName()) && Rstacks > Value.Get("combo.r.stacks"))
             {
                 var targetr = TargetSelector.GetTarget(_r.Range, DamageType.Magical);
 
@@ -874,10 +874,10 @@ namespace OKTRAIO.Champions
 
         private static void GameOnDraw(EventArgs args)
         {
-            var colorQ = MainMenu._draw.GetColor("color.q");
-            var widthQ = MainMenu._draw.GetWidth("width.q");
-            var colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
+            var colorQ = MainMenu.Draw.GetColor("color.q");
+            var widthQ = MainMenu.Draw.GetWidth("width.q");
+            var colorR = MainMenu.Draw.GetColor("color.r");
+            var widthR = MainMenu.Draw.GetWidth("width.r");
 
             if (!Value.Use("draw.disable"))
             {

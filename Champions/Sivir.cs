@@ -39,62 +39,62 @@ namespace OKTRAIO.Champions
 
                 //combo
                 MainMenu.ComboKeys(useE: false);
-                MainMenu._combo.AddSeparator();
-                MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
-                MainMenu._combo.AddSlider("combo.r.enemy", "Min. {0} Enemies in Range for R", 3, 0, 5, true);
-                MainMenu._combo.AddSlider("combo.r.ally", "Min. {0} Allys in Range for R", 3, 0, 5, true);
-                MainMenu._combo.AddCheckBox("combo.mana.management", "Smart Mana Management", true, true);
-                MainMenu._combo.AddSlider("combo.mana.health", "Ignore Mana Management when below {0}% Health", 30, 0,
+                MainMenu.Combo.AddSeparator();
+                MainMenu.Combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
+                MainMenu.Combo.AddSlider("combo.r.enemy", "Min. {0} Enemies in Range for R", 3, 0, 5, true);
+                MainMenu.Combo.AddSlider("combo.r.ally", "Min. {0} Allys in Range for R", 3, 0, 5, true);
+                MainMenu.Combo.AddCheckBox("combo.mana.management", "Smart Mana Management", true, true);
+                MainMenu.Combo.AddSlider("combo.mana.health", "Ignore Mana Management when below {0}% Health", 30, 0,
                     100, true);
 
                 //flee
                 MainMenu.FleeKeys(false, useW: false, useE: false);
-                MainMenu._flee.AddSeparator();
-                MainMenu._flee.AddSlider("flee.r.enemy", "Min. {0} Enemies in Range for R", 2, 0, 5, true);
-                MainMenu._flee.AddSeparator();
-                MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
+                MainMenu.Flee.AddSeparator();
+                MainMenu.Flee.AddSlider("flee.r.enemy", "Min. {0} Enemies in Range for R", 2, 0, 5, true);
+                MainMenu.Flee.AddSeparator();
+                MainMenu.Flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
                 MainMenu.FleeManaManager(false, false, false, true, 0, 0, 0, 20);
 
                 //lasthit
                 MainMenu.LastHitKeys(useW: false, useE: false, useR: false);
-                MainMenu._lasthit.AddSeparator();
-                MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
+                MainMenu.Lasthit.AddSeparator();
+                MainMenu.Lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
                 MainMenu.LasthitManaManager(true, false, false, false, 20, 0, 0, 0);
 
                 //laneclear
                 MainMenu.LaneKeys(useE: false, useR: false);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddSlider("lane.q.min", "Min. {0} Minions for Q", 4, 1, 7, true);
-                MainMenu._lane.AddSlider("lane.w.min", "Min. {0} Minions for W", 3, 1, 7, true);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddCheckBox("lane.q.harass", "Use Q for Harass", true, true);
-                MainMenu._lane.AddCheckBox("lane.w.turret", "Use W on Turret/Inhib/Nexus", true, true);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddSlider("lane.q.min", "Min. {0} Minions for Q", 4, 1, 7, true);
+                MainMenu.Lane.AddSlider("lane.w.min", "Min. {0} Minions for W", 3, 1, 7, true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddCheckBox("lane.q.harass", "Use Q for Harass", true, true);
+                MainMenu.Lane.AddCheckBox("lane.w.turret", "Use W on Turret/Inhib/Nexus", true, true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
                 MainMenu.LaneManaManager(true, true, false, false, 60, 60, 0, 0);
 
                 //jungleclear
                 MainMenu.JungleKeys(useE: false, useR: false);
-                MainMenu._jungle.AddSeparator();
-                MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
+                MainMenu.Jungle.AddSeparator();
+                MainMenu.Jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
                 MainMenu.JungleManaManager(true, true, false, false, 60, 60, 0, 0);
 
                 //harass
                 MainMenu.HarassKeys(useE: false, useR: false);
-                MainMenu._harass.AddSeparator();
-                MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
+                MainMenu.Harass.AddSeparator();
+                MainMenu.Harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
                 MainMenu.HarassManaManager(true, true, false, false, 40, 40, 0, 0);
 
                 //Ks
                 MainMenu.KsKeys(useW: false, useE: false, useR: false);
-                MainMenu._ks.AddSeparator();
-                MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
+                MainMenu.Ks.AddSeparator();
+                MainMenu.Ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
                 MainMenu.KsManaManager(true, false, false, false, 20, 0, 0, 0);
 
                 //misc
                 MainMenu.MiscMenu();
-                MainMenu._misc.AddGroupLabel("Auto E - Spell Settings", "misc.grouplabel.addonmenu");
-                MainMenu._misc.AddSeparator();
+                MainMenu.Misc.AddGroupLabel("Auto E - Spell Settings", "misc.grouplabel.addonmenu");
+                MainMenu.Misc.AddSeparator();
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => a.Team != Player.Instance.Team))
                 {
                     foreach (
@@ -106,44 +106,45 @@ namespace OKTRAIO.Champions
                     {
                         if (spell.Slot == SpellSlot.Q)
                         {
-                            MainMenu._misc.Add(spell.SData.Name,
+                            MainMenu.Misc.Add(spell.SData.Name,
                                 new CheckBox(enemy.ChampionName + " - Q - " + spell.Name, false));
                         }
                         else if (spell.Slot == SpellSlot.W)
                         {
-                            MainMenu._misc.Add(spell.SData.Name,
+                            MainMenu.Misc.Add(spell.SData.Name,
                                 new CheckBox(enemy.ChampionName + " - W - " + spell.Name, false));
                         }
                         else if (spell.Slot == SpellSlot.E)
                         {
-                            MainMenu._misc.Add(spell.SData.Name,
+                            MainMenu.Misc.Add(spell.SData.Name,
                                 new CheckBox(enemy.ChampionName + " - E - " + spell.Name, false));
                         }
                         else if (spell.Slot == SpellSlot.R)
                         {
-                            MainMenu._misc.Add(spell.SData.Name,
+                            MainMenu.Misc.Add(spell.SData.Name,
                                 new CheckBox(enemy.ChampionName + " - R - " + spell.Name, false));
                         }
                     }
                 }
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddGroupLabel("Auto Q Settings", "misc.grouplabel1.addonmenu", true);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddCheckBox("misc.q.charm", "Use Q on Charmed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.stun", "Use Q on Stunned Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.knockup", "Use Q on Knocked Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.suppression", "Use Q on Suppressed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.taunt", "Use Q on Taunted Enemy", true, true);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddGroupLabel("Prediction", "combo.grouplabel2.addonmenu", true);
-                MainMenu._misc.AddSlider("misc.Q.prediction", "Hitchance Percentage for Q", 80, 0, 100, true);
-
-
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddGroupLabel("Auto Q Settings", "misc.grouplabel.addonmenu", true);
+                MainMenu.Misc.AddCheckBox("misc.q.stun", "Use Q on Stunned Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.charm", "Use Q on Charmed Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.taunt", "Use Q on Taunted Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.fear", "Use Q on Feared Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddGroupLabel("Prediction", "combo.grouplabel2.addonmenu", true);
+                MainMenu.Misc.AddSlider("misc.Q.prediction", "Hitchance Percentage for Q", 80, 0, 100, true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddGroupLabel("Mana Manager:", "misc.grouplabel.addonmenu.1", true);
+                MainMenu.Misc.AddSlider("misc.q.mana", "Use Q on CC Enemy if Mana is above than {0}%", 30, 0, 100,
+                    true);
+                
                 //draw
                 MainMenu.DrawKeys(useW: false, useE: false);
-                MainMenu._draw.AddSeparator();
-                MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
+                MainMenu.Draw.AddSeparator();
+                MainMenu.Draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
             }
 
             catch (Exception e)
@@ -156,7 +157,7 @@ namespace OKTRAIO.Champions
             try
             {
                 Value.Init();
-                if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+                if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue)
                 {
                     Game.OnUpdate += GameOnUpdate;
                 }
@@ -164,6 +165,7 @@ namespace OKTRAIO.Champions
                 {
                     Game.OnTick += GameOnUpdate;
                 }
+                Obj_AI_Base.OnBuffGain += BuffGain; 
                 Obj_AI_Base.OnProcessSpellCast += AIHeroClient_OnProcessSpellCast;
                 Orbwalker.OnPostAttack += Orbwalker_OnPostAttack;
                 Drawing.OnDraw += GameOnDraw;
@@ -193,17 +195,17 @@ namespace OKTRAIO.Champions
             {
                 return;
             }
-            var qpred = _q.GetPrediction(targetq);
 
-            if (_q.IsReady() && Value.Use("combo.q") && Player.Instance.Mana > _qmana + _rmana)
+            if (_q.IsReady() && Value.Use("combo.q".AddName()) && Player.Instance.Mana >= _qmana + _rmana)
             {
+                var qpred = _q.GetPrediction(targetq);
                 if (qpred.HitChancePercent >= Value.Get("misc.q.prediction"))
                 {
                     _q.Cast(qpred.CastPosition);
                 }
             }
 
-            if (_r.IsReady() && Value.Use("combo.r"))
+            if (_r.IsReady() && Value.Use("combo.r".AddName()))
             {
                 if (ally.Count() >= Value.Get("combo.r.ally") && targetr.Count() >= Value.Get("combo.r.enemy"))
                 {
@@ -351,8 +353,6 @@ namespace OKTRAIO.Champions
         {
             Ks();
 
-            AutoQcc();
-
             ManaManagement();
         }
 
@@ -364,7 +364,7 @@ namespace OKTRAIO.Champions
         {
             if (Player.Instance.IsInAutoAttackRange(target))
             {
-                if (_w.IsReady() && Value.Use("combo.w") &&
+                if (_w.IsReady() && Value.Use("combo.w".AddName()) &&
                     Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) &&
                     Player.Instance.Mana > _wmana + _rmana)
                 {
@@ -438,7 +438,7 @@ namespace OKTRAIO.Champions
                 {
                     if ((args.Target.NetworkId == Player.Instance.NetworkId && args.Time < 1.5 ||
                          args.End.Distance(Player.Instance.ServerPosition) <= Player.Instance.BoundingRadius*3) &&
-                        MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                        MainMenu.Misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
                     {
                         _e.Cast();
                     }
@@ -449,7 +449,7 @@ namespace OKTRAIO.Champions
                         new Geometry.Polygon.Circle(args.End, args.SData.CastRadius).IsInside(
                             Player.Instance.ServerPosition);
 
-                    if (castvector && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                    if (castvector && MainMenu.Misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
                     {
                         _e.Cast();
                     }
@@ -461,7 +461,7 @@ namespace OKTRAIO.Champions
                         new Geometry.Polygon.Arc(args.Start, args.End, args.SData.CastConeAngle, args.SData.CastRange)
                             .IsInside(Player.Instance.ServerPosition);
 
-                    if (castvector && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                    if (castvector && MainMenu.Misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
                     {
                         _e.Cast();
                     }
@@ -473,7 +473,7 @@ namespace OKTRAIO.Champions
                         new Geometry.Polygon.Circle(sender.ServerPosition, args.SData.CastRadius).IsInside(
                             Player.Instance.ServerPosition);
 
-                    if (castvector && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                    if (castvector && MainMenu.Misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
                     {
                         _e.Cast();
                     }
@@ -484,7 +484,7 @@ namespace OKTRAIO.Champions
                         new Geometry.Polygon.Rectangle(args.Start, args.End, args.SData.LineWidth).IsInside(
                             Player.Instance.ServerPosition);
 
-                    if (castvector && MainMenu._misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
+                    if (castvector && MainMenu.Misc[args.SData.Name].Cast<CheckBox>().CurrentValue)
                     {
                         _e.Cast();
                     }
@@ -537,33 +537,38 @@ namespace OKTRAIO.Champions
 
         #endregion
 
-        #region AutoQ
+        #region OnBuffGain
 
-        private static void AutoQcc()
+        private void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
-            var targetq =
-                EntityManager.Heroes.Enemies.FirstOrDefault(
-                    a => a.IsValidTarget(_q.Range) &&
-                         (a.HasBuffOfType(BuffType.Charm) || a.HasBuffOfType(BuffType.Knockup) ||
-                          a.HasBuffOfType(BuffType.Snare) || a.HasBuffOfType(BuffType.Stun) ||
-                          a.HasBuffOfType(BuffType.Suppression) || a.HasBuffOfType(BuffType.Taunt)));
+            if (sender == null || sender.IsValidTarget(_q.Range)) return;
 
-
-            if (_q.IsReady() && targetq != null)
+            if (Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
             {
-                if (Value.Use("misc.q.charm") && targetq.IsCharmed ||
-                    Value.Use("misc.q.knockup") ||
-                    Value.Use("misc.q.stun") && targetq.IsStunned ||
-                    Value.Use("misc.q.snare") && targetq.IsRooted ||
-                    Value.Use("misc.q.suppression") && targetq.IsSuppressCallForHelp ||
-                    Value.Use("misc.q.taunt") && targetq.IsTaunted)
+                if (Value.Use("misc.q.stun") && sender.IsStunned)
                 {
-                    _q.Cast(_q.GetPrediction(targetq).CastPosition);
+                    _q.Cast(sender);
+                }
+                if (Value.Use("misc.q.snare") && sender.IsRooted)
+                {
+                    _q.Cast(sender);
+                }
+                if (Value.Use("misc.q.charm") && sender.IsCharmed)
+                {
+                    _q.Cast(sender);
+                }
+                if (Value.Use("misc.q.taunt") && sender.IsTaunted)
+                {
+                    _q.Cast(sender);
+                }
+                if (Value.Use("misc.q.fear") && sender.IsFeared)
+                {
+                    _q.Cast(sender);
                 }
             }
         }
 
-        #endregion
+        #endregion 
 
         #region KS
 
@@ -623,10 +628,10 @@ namespace OKTRAIO.Champions
 
         private static void GameOnDraw(EventArgs args)
         {
-            var colorQ = MainMenu._draw.GetColor("color.q");
-            var widthQ = MainMenu._draw.GetWidth("width.q");
-            var colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
+            var colorQ = MainMenu.Draw.GetColor("color.q");
+            var widthQ = MainMenu.Draw.GetWidth("width.q");
+            var colorR = MainMenu.Draw.GetColor("color.r");
+            var widthR = MainMenu.Draw.GetWidth("width.r");
 
             if (!Value.Use("draw.disable"))
             {

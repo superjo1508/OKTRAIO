@@ -61,112 +61,96 @@ namespace OKTRAIO.Champions
                 {
                     //Combo Menu Settings
                     MainMenu.ComboKeys();
-                    MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Prediction Settings", "combo.grouplabel.2", true);
-                    MainMenu._combo.AddSlider("combo.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Mana Manager:", "combo.grouplabel.3", true);
+                    MainMenu.Combo.AddSeparator();
+                    MainMenu.Combo.AddGroupLabel("Prediction Settings", "combo.grouplabel.2", true);
+                    MainMenu.Combo.AddSlider("combo.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Combo.AddSeparator();
+                    MainMenu.Combo.AddGroupLabel("Mana Manager:", "combo.grouplabel.3", true);
                     MainMenu.ComboManaManager(true, true, true, true, 10, 5, 10, 10);
 
                     //Lane Clear Menu Settings
                     MainMenu.LaneKeys(useR: false);
-                    MainMenu._lane.AddSeparator();
-                    MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.2", true);
+                    MainMenu.Lane.AddSeparator();
+                    MainMenu.Lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.2", true);
                     MainMenu.LaneManaManager(true, true, true, false, 60, 50, 40, 50);
 
                     //Jungle Clear Menu Settings
                     MainMenu.JungleKeys(useR: false);
-                    MainMenu._jungle.AddSeparator();
-                    MainMenu._jungle.AddGroupLabel("Jungleclear Preferences", "jungle.grouplabel.1", true);
-                    MainMenu._jungle.AddCheckBox("jungle.monsters.spell", "Use Abilities on Big Monster", true, true);
-                    MainMenu._jungle.AddCheckBox("jungle.minimonsters.spell", "Use Abilities on Mini Monsters", false,
+                    MainMenu.Jungle.AddSeparator();
+                    MainMenu.Jungle.AddGroupLabel("Jungleclear Preferences", "jungle.grouplabel.1", true);
+                    MainMenu.Jungle.AddCheckBox("jungle.monsters.spell", "Use Abilities on Big Monster", true, true);
+                    MainMenu.Jungle.AddCheckBox("jungle.minimonsters.spell", "Use Abilities on Mini Monsters", false,
                         true);
-                    MainMenu._jungle.AddSeparator();
-                    MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.2", true);
+                    MainMenu.Jungle.AddSeparator();
+                    MainMenu.Jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.2", true);
                     MainMenu.JungleManaManager(true, true, true, false, 60, 50, 40, 50);
 
                     //Last hit Menu Settings
                     MainMenu.LastHitKeys(false, useW: false, useR: false);
-                    MainMenu._lasthit.AddSeparator();
-                    MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.1", true);
+                    MainMenu.Lasthit.AddSeparator();
+                    MainMenu.Lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.1", true);
                     MainMenu.LasthitManaManager(false, false, true, false, 60, 50, 40, 50);
 
                     //Harrass
                     MainMenu.HarassKeys(useR: false);
-                    MainMenu._harass.AddSeparator();
-                    MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.1", true);
+                    MainMenu.Harass.AddSeparator();
+                    MainMenu.Harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.1", true);
                     MainMenu.HarassManaManager(true, true, true, false, 60, 50, 40, 50);
 
                     //Flee Menu
                     MainMenu.FleeKeys(false, useR: false);
-                    MainMenu._flee.AddSeparator();
-                    MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.1", true);
+                    MainMenu.Flee.AddSeparator();
+                    MainMenu.Flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.1", true);
                     MainMenu.FleeManaManager(false, true, true, false, 0, 20, 30, 0);
 
                     //Ks
                     MainMenu.KsKeys(false, useW: false);
-                    MainMenu._ks.AddSeparator();
-                    MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.5", true);
+                    MainMenu.Ks.AddSeparator();
+                    MainMenu.Ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.5", true);
                     MainMenu.KsManaManager(false, false, true, true, 60, 50, 10, 25);
 
                     //Misc Menu
                     MainMenu.MiscMenu();
-                    MainMenu._misc.AddCheckBox("misc.e.interrupter", "Use E for Interrupt");
-                    MainMenu._misc.AddCheckBox("misc.e.gapcloser", "Use E for Anti-GapCloser");
-                    MainMenu._misc.AddCheckBox("misc.e", "Use Auto E");
-                    MainMenu._misc.AddSeparator();
-                    MainMenu._misc.AddGroupLabel("Interrupter - AntiGapCloser settings", "misc.grouplabel.6", true);
-                    MainMenu._misc.AddSlider("misc.e.interrupter.mana", "Min. Mana to interrupt", 30, 0, 100, true);
-                    MainMenu._misc.AddSlider("misc.e.gapcloser.mana", "Min. Mana% to use R for Anti-GapCloser", 30, 0,
+                    MainMenu.Misc.AddCheckBox("misc.e.interrupter", "Use E for Interrupt");
+                    MainMenu.Misc.AddCheckBox("misc.e.gapcloser", "Use E for Anti-GapCloser");
+                    MainMenu.Misc.AddCheckBox("misc.e", "Use Auto E");
+                    MainMenu.Misc.AddSeparator();
+                    MainMenu.Misc.AddGroupLabel("Interrupter - AntiGapCloser settings", "misc.grouplabel.6", true);
+                    MainMenu.Misc.AddSlider("misc.e.interrupter.mana", "Min. Mana to interrupt", 30, 0, 100, true);
+                    MainMenu.Misc.AddSlider("misc.e.gapcloser.mana", "Min. Mana% to use R for Anti-GapCloser", 30, 0,
                         100, true);
-                    MainMenu._misc.AddSeparator();
-                    MainMenu._misc.AddGroupLabel("Auto E Settings", "misc.grouplabel.3", true);
-                    MainMenu._misc.AddCheckBox("misc.e.tower", "Use E on enemies taking tower hits", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.stun", "Use E on Stunned Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.charm", "Use E on Charmed Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.taunt", "Use E on Taunted Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.fear", "Use E on Feared Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.snare", "Use E on Snared Enemy", true, true);
-                    MainMenu._misc.AddSlider("misc.e.mana", "Use E on CC Enemy if Mana is above than {0}%", 10, 0, 100,
+                    MainMenu.Misc.AddSeparator();
+                    MainMenu.Misc.AddGroupLabel("Auto E Settings", "misc.grouplabel.3", true);
+                    MainMenu.Misc.AddCheckBox("misc.e.tower", "Use E on enemies taking tower hits", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.stun", "Use E on Stunned Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.charm", "Use E on Charmed Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.taunt", "Use E on Taunted Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.fear", "Use E on Feared Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.snare", "Use E on Snared Enemy", true, true);
+                    MainMenu.Misc.AddSlider("misc.e.mana", "Use E on CC Enemy if Mana is above than {0}%", 10, 0, 100,
                         true);
-                    MainMenu._misc.AddSeparator();
-                    MainMenu._misc.AddGroupLabel("Axe Settings", "misc.grouplabel.4", true);
-                    MainMenu._misc.AddCheckBox("misc.w.axe", "Use W if necessary", true, true);
-                    MainMenu._misc.AddCheckBox("misc.axe.tower", "Do not Catch under Tower", true, true);
-                    MainMenu._misc.AddCheckBox("misc.axe.arf", "I WANT THAT AXE!!", false, true);
-                    MainMenu._misc.AddCheckBox("misc.axe.check", "Be safe while Catching", true, true);
-                    MainMenu._misc.AddSlider("misc.axe.check.enemies", "Maximum Enemies for Catch", 2, 1, 5, true);
-                    MainMenu._misc.AddSlider("misc.axe.count", "Maximum Axes", 2, 1, 3, true);
-                    MainMenu._misc.AddSlider("misc.axe.range", "Catch Range", 800, 120, 1500, true);
-                    MainMenu._misc.AddGroupLabel("Catch Axes if:", "misc.grouplabel.5", true);
-                    MainMenu._misc.Add("misc.axe.mode", new Slider("Axe Catch Mode", 1, 1, 2)).OnValueChange +=
-                        delegate(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
-                        {
-                            switch (sender.Cast<Slider>().CurrentValue)
-                            {
-                                case 1:
-                                    sender.DisplayName = "Catch Method: Combo";
-                                    break;
-                                case 2:
-                                    sender.DisplayName = "Catch Method: Any";
-                                    break;
-                                case 3:
-                                    sender.DisplayName = "Catch Method: Orbwalking";
-                                    break;
-                            }
-                        };
-
+                    MainMenu.Misc.AddSeparator();
+                    MainMenu.Misc.AddGroupLabel("Axe Settings", "misc.grouplabel.4", true);
+                    MainMenu.Misc.AddCheckBox("misc.w.axe", "Use W if necessary", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.axe.tower", "Do not Catch under Tower", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.axe.arf", "I WANT THAT AXE!!", false, true);
+                    MainMenu.Misc.AddCheckBox("misc.axe.check", "Be safe while Catching", true, true);
+                    MainMenu.Misc.AddSlider("misc.axe.check.enemies", "Maximum Enemies for Catch", 2, 1, 5, true);
+                    MainMenu.Misc.AddSlider("misc.axe.count", "Maximum Axes", 2, 1, 3, true);
+                    MainMenu.Misc.AddSlider("misc.axe.range", "Catch Range", 800, 120, 1500, true);
+                    MainMenu.Misc.AddGroupLabel("Catch Axes if:", "misc.grouplabel.5", true);
+                    MainMenu.Misc.AddComboBox("misc.axe.mode", "Catch Method", new List<string> {"Combo","Any","Orbwalking (Under Development)"},2,true);
                     Value.AdvancedMenuItemUiDs.Add("misc.axe.mode");
-                    MainMenu._misc["misc.axe.mode"].IsVisible =
-                        MainMenu._misc["misc.advanced"].Cast<CheckBox>().CurrentValue;
+                    MainMenu.Misc["misc.axe.mode"].IsVisible =
+                        MainMenu.Misc["misc.advanced"].Cast<CheckBox>().CurrentValue;
 
                     //Need to start the Axe Manager code
 
                     //Draw Menu
                     MainMenu.DrawKeys();
-                    MainMenu._draw.AddCheckBox("draw.axe.catch", "Draw Catche Range");
-                    MainMenu._draw.AddSeparator();
-                    MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
+                    MainMenu.Draw.AddCheckBox("draw.axe.catch", "Draw Catche Range");
+                    MainMenu.Draw.AddSeparator();
+                    MainMenu.Draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
 
                     Value.Init();
                 }
@@ -190,7 +174,7 @@ namespace OKTRAIO.Champions
                 Interrupter.OnInterruptableSpell += InterrupterOnInterruptableSpell;
                 Orbwalker.OnPreAttack += OrbwalkerOnPreAttack;
                 Gapcloser.OnGapcloser += AntiGapCloser;
-                if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+                if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue)
                 {
                     Game.OnUpdate += GameOnUpdate;
                 }
@@ -198,6 +182,7 @@ namespace OKTRAIO.Champions
                 {
                     Game.OnTick += GameOnUpdate;
                 }
+                Obj_AI_Base.OnBuffGain += BuffGain;
                 Drawing.OnDraw += GameOnDraw;
                 Drawing.OnEndScene += Drawing_OnEndScene;
             }
@@ -215,7 +200,8 @@ namespace OKTRAIO.Champions
 
         #region OnCreate
 
-        private static void GameObjectOnCreate(GameObject sender, EventArgs args)
+            private static
+            void GameObjectOnCreate(GameObject sender, EventArgs args)
         {
             if (sender.Name.Contains("Draven_Base_Q_reticle_self.troy"))
             {
@@ -238,6 +224,41 @@ namespace OKTRAIO.Champions
         }
 
         #endregion
+
+        #region OnBuffGain
+
+        private void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
+        {
+            if (Value.Use("misc.e") && _e.IsReady())
+            {
+                if (sender == null || !sender.IsValidTarget(_e.Range)) return;
+                if (Player.Instance.ManaPercent >= Value.Get("misc.e.mana"))
+                {
+                    if (Value.Use("misc.e.stun") && sender.IsStunned)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.snare") && sender.IsRooted)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.charm") && sender.IsCharmed)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.taunt") && sender.IsTaunted)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.fear") && sender.IsFeared)
+                    {
+                        _e.Cast(sender);
+                    }
+                }
+            }
+        }
+
+        #endregion 
 
         #region Interrupter
 
@@ -281,7 +302,7 @@ namespace OKTRAIO.Champions
                 {
                     if (target is AIHeroClient)
                     {
-                        if (Value.Use("combo.q") && AxeCount < Value.Get("misc.axe.count"))
+                        if (Value.Use("combo.q".AddName()) && AxeCount < Value.Get("misc.axe.count"))
                         {
                             _q.Cast();
                         }
@@ -346,11 +367,6 @@ namespace OKTRAIO.Champions
                 Orbwalker.IsAutoAttacking)
                 return;
 
-            if (Value.Use("misc.e") && _e.IsReady())
-            {
-                AutoE();
-            }
-
             if (Value.Use("misc.axe.tower") && _e.IsReady())
             {
                 AutoETurret();
@@ -363,59 +379,7 @@ namespace OKTRAIO.Champions
 
         #endregion
 
-        #region AutoE
-
-        private static void AutoE()
-        {
-            var enemy =
-                EntityManager.Heroes.Enemies.FirstOrDefault(
-                    x =>
-                        x.HasBuffOfType(BuffType.Charm) || x.HasBuffOfType(BuffType.Knockup) ||
-                        x.HasBuffOfType(BuffType.Stun) || x.HasBuffOfType(BuffType.Suppression) ||
-                        x.HasBuffOfType(BuffType.Snare));
-
-            if (!_e.IsLearned || !_e.IsReady() || Orbwalker.IsAutoAttacking ||
-                EntityManager.Turrets.Enemies.Count(t => t.IsValidTarget() && t.IsAttackingPlayer) > 0)
-                return;
-
-            if (enemy == null || !enemy.IsValidTarget(_e.Range)) return;
-
-            try
-            {
-                if (Player.Instance.ManaPercent >= Value.Get("misc.e.mana"))
-                {
-                    if (Value.Use("misc.e.stun") && enemy.IsStunned)
-                    {
-                        _e.Cast(enemy);
-                    }
-                    if (Value.Use("misc.e.snare") && enemy.IsRooted)
-                    {
-                        _e.Cast(enemy);
-                    }
-                    if (Value.Use("misc.e.charm") && enemy.IsCharmed)
-                    {
-                        _e.Cast(enemy);
-                    }
-                    if (Value.Use("misc.e.taunt") && enemy.IsTaunted)
-                    {
-                        _e.Cast(enemy);
-                    }
-                    if (Value.Use("misc.e.fear") && enemy.IsFeared)
-                    {
-                        _e.Cast(enemy);
-                    }
-                }
-            }
-
-
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code AUTOE)</font>");
-            }
-        }
-
+        #region AutoE 
         private static void AutoETurret()
         {
             if (!Variables.CloseEnemies(_e.Range).Any() || !_e.IsReady()) return;
@@ -502,56 +466,63 @@ namespace OKTRAIO.Champions
 
         private static void CatchAxe()
         {
+            
             if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Flee)) return;
-            if (Value.Get("misc.axe.mode") == 1 && !Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) ||
-                Value.Get("misc.axe.mode") == 2 && Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.None ||
-                Value.Get("misc.axe.mode") == 3)
+            if (MainMenu.Misc["misc.axe.mode"].Cast<ComboBox>().CurrentValue != 1 && MainMenu.Misc["misc.axe.mode"].Cast<ComboBox>().CurrentValue == 0 && !Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
                 return;
+            
 
             var bestAxe = GetBestAxe;
 
-            if (bestAxe != null && bestAxe.Object.Position.Distance(Player.Instance.ServerPosition) > 110)
+            if (bestAxe == null || (bestAxe.Object.Position.Distance(Player.Instance.ServerPosition) < 90 && Orbwalker.IsAutoAttacking && Player.Instance.CanAttack)) return;
+            Chat.Print("AXE");
+            if (Value.Use("misc.axe.check") &&
+                bestAxe.Object.CountEnemiesInRange(300) > Value.Get("misc.axe.check.enemies")) return;
+
+            var catchTime = 1000*(Player.Instance.Distance(bestAxe.Object.Position)/Player.Instance.MoveSpeed);
+            var expireTime = bestAxe.ExpireTime - Game.Time;
+
+            if (catchTime <= expireTime && Value.Use("misc.w.axe"))
             {
-                if (Value.Use("misc.axe.check") &&
-                    bestAxe.Object.CountEnemiesInRange(300) > Value.Get("misc.axe.check.enemies")) return;
+                _w.Cast();
+            }
 
-                var catchTime = 1000*(Player.Instance.Distance(bestAxe.Object.Position)/Player.Instance.MoveSpeed);
-                var expireTime = bestAxe.ExpireTime - Game.Time;
-
-                if (catchTime >= expireTime && Value.Use("misc.w.axe"))
-                {
-                    _w.Cast();
-                }
-
-                if (Value.Use("misc.axe.tower"))
-                {
-                    if (IsUnderTurret(bestAxe.Object.Position) || !IsUnderTurret(bestAxe.Object.Position))
-                    {
-                        if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.None))
-                        {
-                            Orbwalker.OrbwalkTo(bestAxe.Object.Position);
-                        }
-
-                        else
-                        {
-                            Orbwalker.OrbwalkTo(bestAxe.Object.Position);
-                        }
-                    }
-                }
-
-                else
+            if (Value.Use("misc.axe.tower"))
+            {
+                if (IsUnderTurret(bestAxe.Object.Position) || !IsUnderTurret(bestAxe.Object.Position))
                 {
                     if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.None))
                     {
-                        Orbwalker.OrbwalkTo(bestAxe.Object.Position);
+                        if(Orbwalker.IsAutoAttacking && Player.Instance.CanAttack) return;
+                        Orbwalker.MoveTo(bestAxe.Object.Position);
                     }
 
                     else
                     {
-                        Orbwalker.OrbwalkTo(bestAxe.Object.Position);
+                        if (Orbwalker.IsAutoAttacking && Player.Instance.CanAttack) return;
+
+                        Orbwalker.MoveTo(bestAxe.Object.Position);
                     }
                 }
             }
+
+            else
+            {
+                if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.None))
+                {
+                    if (Orbwalker.IsAutoAttacking && Player.Instance.CanAttack) return;
+                    Orbwalker.MoveTo( bestAxe.Object.Position);
+                }
+
+                else
+                {
+                    if(Orbwalker.IsAutoAttacking && Player.Instance.CanAttack) return;
+
+                    Orbwalker.MoveTo( bestAxe.Object.Position);
+
+                }
+            }
+            Orbwalker.DisableMovement = false;
         }
 
         #endregion
@@ -611,6 +582,7 @@ namespace OKTRAIO.Champions
 
         #endregion
 
+
         #region Gamerelated Logic
 
         #region Combo
@@ -623,7 +595,7 @@ namespace OKTRAIO.Champions
 
             if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana"))
             {
-                if (Value.Use("combo.e") && _e.IsReady())
+                if (Value.Use("combo.e".AddName()) && _e.IsReady())
                 {
                     _e.Cast(_e.GetPrediction(target).CastPosition);
                 }
@@ -639,7 +611,7 @@ namespace OKTRAIO.Champions
 
             if (Player.Instance.ManaPercent >= Value.Get("combo.r.mana"))
             {
-                if (Value.Use("combo.r") && _r.IsReady())
+                if (Value.Use("combo.r".AddName()) && _r.IsReady())
                 {
                     _r.Cast(_r.GetPrediction(target).CastPosition);
                 }
@@ -860,14 +832,14 @@ namespace OKTRAIO.Champions
 
         private static void GameOnDraw(EventArgs args)
         {
-            var colorQ = MainMenu._draw.GetColor("color.q");
-            var widthQ = MainMenu._draw.GetWidth("width.q");
-            var colorW = MainMenu._draw.GetColor("color.w");
-            var widthW = MainMenu._draw.GetWidth("width.w");
-            var colorE = MainMenu._draw.GetColor("color.e");
-            var widthE = MainMenu._draw.GetWidth("width.e");
-            var colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
+            var colorQ = MainMenu.Draw.GetColor("color.q");
+            var widthQ = MainMenu.Draw.GetWidth("width.q");
+            var colorW = MainMenu.Draw.GetColor("color.w");
+            var widthW = MainMenu.Draw.GetWidth("width.w");
+            var colorE = MainMenu.Draw.GetColor("color.e");
+            var widthE = MainMenu.Draw.GetWidth("width.e");
+            var colorR = MainMenu.Draw.GetColor("color.r");
+            var widthR = MainMenu.Draw.GetWidth("width.r");
 
             if (!Value.Use("draw.disable"))
             {

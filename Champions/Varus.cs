@@ -45,103 +45,103 @@ namespace OKTRAIO.Champions
 
                 //combo test
                 MainMenu.ComboKeys(useW: false);
-                MainMenu._combo.AddSeparator();
-                MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
-                MainMenu._combo.AddCheckBox("combo.q.stacks", "Use Q only for stacks", false, true);
-                MainMenu._combo.AddSlider("combo.q.stacks.min", "Min. {0} stacks for Q", 3, 1, 3, true);
-                MainMenu._combo.AddCheckBox("combo.e.stacks", "Use E only for stacks", true, true);
-                MainMenu._combo.AddSlider("combo.e.stacks.min", "Min. {0} stacks for E", 3, 1, 3, true);
-                MainMenu._combo.Add("combo.r.assist",
+                MainMenu.Combo.AddSeparator();
+                MainMenu.Combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.addonmenu", true);
+                MainMenu.Combo.AddCheckBox("combo.q.stacks", "Use Q only for stacks", false, true);
+                MainMenu.Combo.AddSlider("combo.q.stacks.min", "Min. {0} stacks for Q", 3, 1, 3, true);
+                MainMenu.Combo.AddCheckBox("combo.e.stacks", "Use E only for stacks", true, true);
+                MainMenu.Combo.AddSlider("combo.e.stacks.min", "Min. {0} stacks for E", 3, 1, 3, true);
+                MainMenu.Combo.Add("combo.r.assist",
                     new KeyBind("Semi-Auto Ult", false, KeyBind.BindTypes.HoldActive, 'G'));
-                MainMenu._combo.AddCheckBox("combo.r.aoe", "Use R for AOE", true, true);
-                MainMenu._combo.AddSlider("combo.r.slider", "{0} enemies hit with R snare", 3, 1, 5, true);
+                MainMenu.Combo.AddCheckBox("combo.r.aoe", "Use R for AOE", true, true);
+                MainMenu.Combo.AddSlider("combo.r.slider", "{0} enemies hit with R snare", 3, 1, 5, true);
 
                 //harass
                 MainMenu.HarassKeys(useW: false, useR: false);
-                MainMenu._harass.AddSeparator();
-                MainMenu._harass.AddCheckBox("harass.q.stacks", "Use Q only for stacks", false, true);
-                MainMenu._harass.AddSlider("harass.q.stacks.min", "Min. {0} stacks for Q", 3, 1, 3, true);
-                MainMenu._harass.AddCheckBox("harass.e.stacks", "Use E only for stacks", false, true);
-                MainMenu._harass.AddSlider("harass.e.stacks.min", "Min. {0} stacks for E", 3, 1, 3, true);
-                MainMenu._harass.AddSeparator();
-                MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
+                MainMenu.Harass.AddSeparator();
+                MainMenu.Harass.AddCheckBox("harass.q.stacks", "Use Q only for stacks", false, true);
+                MainMenu.Harass.AddSlider("harass.q.stacks.min", "Min. {0} stacks for Q", 3, 1, 3, true);
+                MainMenu.Harass.AddCheckBox("harass.e.stacks", "Use E only for stacks", false, true);
+                MainMenu.Harass.AddSlider("harass.e.stacks.min", "Min. {0} stacks for E", 3, 1, 3, true);
+                MainMenu.Harass.AddSeparator();
+                MainMenu.Harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
                 MainMenu.HarassManaManager(true, false, true, false, 20, 0, 20, 0);
 
                 //laneclear
                 MainMenu.LaneKeys(useW: false, useR: false);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddGroupLabel("Harass Preferences", "lane.grouplabel.addonmenu", true);
-                MainMenu._lane.AddCheckBox("lane.q.harass", "Use Q", true, true);
-                MainMenu._lane.AddCheckBox("lane.e.harass", "Use E", true, true);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddCheckBox("lane.q.stacks", "Use Q only for stacks", false, true);
-                MainMenu._lane.AddSlider("lane.q.stacks.min", "Min. {0} stacks for Q", 3, 1, 3, true);
-                MainMenu._lane.AddCheckBox("lane.e.stacks", "Use E only for stacks", false, true);
-                MainMenu._lane.AddSlider("lane.e.stacks.min", "Min. {0} stacks for E", 3, 1, 3, true);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddGroupLabel("Farm Preferences", "lane.grouplabel1.addonmenu", true);
-                MainMenu._lane.AddSlider("lane.q.min", "Min. {0} minions for Q", 3, 1, 7, true);
-                MainMenu._lane.AddSlider("lane.e.min", "Min. {0} minions for E", 3, 1, 7, true);
-                MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel2.addonmenu", true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddGroupLabel("Harass Preferences", "lane.grouplabel.addonmenu", true);
+                MainMenu.Lane.AddCheckBox("lane.q.harass", "Use Q", false, true);
+                MainMenu.Lane.AddCheckBox("lane.e.harass", "Use E", false, true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddCheckBox("lane.q.stacks", "Use Q only for stacks", false, true);
+                MainMenu.Lane.AddSlider("lane.q.stacks.min", "Min. {0} stacks for Q", 3, 1, 3, true);
+                MainMenu.Lane.AddCheckBox("lane.e.stacks", "Use E only for stacks", false, true);
+                MainMenu.Lane.AddSlider("lane.e.stacks.min", "Min. {0} stacks for E", 3, 1, 3, true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddGroupLabel("Farm Preferences", "lane.grouplabel1.addonmenu", true);
+                MainMenu.Lane.AddSlider("lane.q.min", "Min. {0} minions for Q", 3, 1, 7, true);
+                MainMenu.Lane.AddSlider("lane.e.min", "Min. {0} minions for E", 3, 1, 7, true);
+                MainMenu.Lane.AddGroupLabel("Mana Manager:", "lane.grouplabel2.addonmenu", true);
                 MainMenu.LaneManaManager(true, false, true, false, 20, 0, 20, 0);
 
                 //jungleclear
                 MainMenu.JungleKeys(useW: false, useR: false);
-                MainMenu._jungle.AddSeparator();
-                MainMenu._jungle.AddSlider("jungle.q.min", "Min. {0} minions for Q", 3, 1, 4, true);
-                MainMenu._jungle.AddSlider("jungle.e.min", "Min. {0} minions for E", 3, 1, 4, true);
-                MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
+                MainMenu.Jungle.AddSeparator();
+                MainMenu.Jungle.AddSlider("jungle.q.min", "Min. {0} minions for Q", 3, 1, 4, true);
+                MainMenu.Jungle.AddSlider("jungle.e.min", "Min. {0} minions for E", 3, 1, 4, true);
+                MainMenu.Jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
                 MainMenu.JungleManaManager(true, false, true, false, 20, 0, 20, 0);
 
                 //lasthit
                 MainMenu.LastHitKeys(false, useW: false, useE: false, useR: false);
-                MainMenu._lasthit.AddCheckBox("lasthit.q.siege", "Use Q on Siege Minions");
-                MainMenu._lasthit.AddSeparator();
-                MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
+                MainMenu.Lasthit.AddCheckBox("lasthit.q.siege", "Use Q on Siege Minions");
+                MainMenu.Lasthit.AddSeparator();
+                MainMenu.Lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.addonmenu", true);
                 MainMenu.LasthitManaManager(true, false, false, false, 15, 0, 0, 0);
 
                 //flee
                 MainMenu.FleeKeys(false, useW: false, useR: false);
-                MainMenu._flee.AddSeparator();
-                MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
+                MainMenu.Flee.AddSeparator();
+                MainMenu.Flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
                 MainMenu.FleeManaManager(false, false, true, false, 0, 0, 20, 0);
 
                 //ks
                 MainMenu.KsKeys(useW: false, useR: false);
-                MainMenu._ks.AddSeparator();
-                MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
+                MainMenu.Ks.AddSeparator();
+                MainMenu.Ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
                 MainMenu.KsManaManager(true, false, true, false, 20, 0, 10, 0);
 
                 //misc
                 MainMenu.MiscMenu();
-                MainMenu._misc.AddCheckBox("misc.r.interrupt", "Use R to Interrupt");
-                MainMenu._misc.AddCheckBox("misc.e.gapcloser", "Use E for Anti-Gapcloser");
-                MainMenu._misc.AddCheckBox("misc.r.auto", "Anti Rengar + Khazix");
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddGroupLabel("Auto Q/E Settings", "misc.grouplabel.addonmenu", true);
-                MainMenu._misc.AddCheckBox("misc.q.charm", "Use Q on Charmed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.stun", "Use Q on Stunned Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.knockup", "Use Q on Knocked Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.suppression", "Use Q on Suppressed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.q.taunt", "Use Q on Taunted Enemy", true, true);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddCheckBox("misc.e.charm", "Use E on Charmed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.e.stun", "Use E on Stunned Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.e.knockup", "Use E on Knocked Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.e.snare", "Use E on Snared Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.e.suppression", "Use E on Suppressed Enemy", true, true);
-                MainMenu._misc.AddCheckBox("misc.e.taunt", "Use E on Taunted Enemy", true, true);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddGroupLabel("Prediction", "misc.grouplabel1.addonmenu", true);
-                MainMenu._misc.AddSlider("misc.q.prediction", "Hitchance Percentage for Q", 80, 0, 100, true);
-                MainMenu._misc.AddSlider("misc.e.prediction", "Hitchance Percentage for E", 80, 0, 100, true);
-                MainMenu._misc.AddSlider("misc.r.prediction", "Hitchance Percentage for R", 80, 0, 100, true);
+                MainMenu.Misc.AddCheckBox("misc.r.interrupt", "Use R to Interrupt");
+                MainMenu.Misc.AddCheckBox("misc.e.gapcloser", "Use E for Anti-Gapcloser");
+                MainMenu.Misc.AddCheckBox("misc.r.auto", "Anti Rengar + Khazix");
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddGroupLabel("Auto Q/E Settings", "misc.grouplabel.addonmenu", true);
+                MainMenu.Misc.AddCheckBox("misc.q.charm", "Use Q on Charmed Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.stun", "Use Q on Stunned Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.knockup", "Use Q on Knocked Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.suppression", "Use Q on Suppressed Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.q.taunt", "Use Q on Taunted Enemy", true, true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddCheckBox("misc.e.charm", "Use E on Charmed Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.e.stun", "Use E on Stunned Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.e.knockup", "Use E on Knocked Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.e.snare", "Use E on Snared Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.e.suppression", "Use E on Suppressed Enemy", true, true);
+                MainMenu.Misc.AddCheckBox("misc.e.taunt", "Use E on Taunted Enemy", true, true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddGroupLabel("Prediction", "misc.grouplabel1.addonmenu", true);
+                MainMenu.Misc.AddSlider("misc.q.prediction", "Hitchance Percentage for Q", 80, 0, 100, true);
+                MainMenu.Misc.AddSlider("misc.e.prediction", "Hitchance Percentage for E", 80, 0, 100, true);
+                MainMenu.Misc.AddSlider("misc.r.prediction", "Hitchance Percentage for R", 80, 0, 100, true);
 
                 //draw
                 MainMenu.DrawKeys(useW: false);
-                MainMenu._draw.AddSeparator();
-                MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
+                MainMenu.Draw.AddSeparator();
+                MainMenu.Draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
             }
 
             catch (Exception e)
@@ -154,7 +154,7 @@ namespace OKTRAIO.Champions
             try
             {
                 Value.Init();
-                if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+                if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue)
                 {
                     Game.OnUpdate += GameOnUpdate;
                 }
@@ -193,7 +193,7 @@ namespace OKTRAIO.Champions
 
             if (_q.IsReady())
             {
-                if (targetq != null && Value.Use("combo.q"))
+                if (targetq != null && Value.Use("combo.q".AddName()))
                 {
                     var qpred = _q.GetPrediction(targetq);
 
@@ -227,7 +227,7 @@ namespace OKTRAIO.Champions
 
             if (_e.IsReady())
             {
-                if (targete != null && Value.Use("combo.e"))
+                if (targete != null && Value.Use("combo.e".AddName()))
                 {
                     var epred = _e.GetPrediction(targete);
 
@@ -256,7 +256,7 @@ namespace OKTRAIO.Champions
                 {
                     var rpred = _r.GetPrediction(targetr);
 
-                    if (Value.Use("combo.r"))
+                    if (Value.Use("combo.r".AddName()))
                     {
                         if (targetr.TotalShieldHealth() <= ComboDamage(targetr) &&
                             rpred.HitChancePercent >= Value.Get("misc.r.prediction") && !Overkill(targetr))
@@ -891,12 +891,12 @@ namespace OKTRAIO.Champions
 
         private static void GameOnDraw(EventArgs args)
         {
-            var colorQ = MainMenu._draw.GetColor("color.q");
-            var widthQ = MainMenu._draw.GetWidth("width.q");
-            var colorE = MainMenu._draw.GetColor("color.e");
-            var widthE = MainMenu._draw.GetWidth("width.e");
-            var colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
+            var colorQ = MainMenu.Draw.GetColor("color.q");
+            var widthQ = MainMenu.Draw.GetWidth("width.q");
+            var colorE = MainMenu.Draw.GetColor("color.e");
+            var widthE = MainMenu.Draw.GetWidth("width.e");
+            var colorR = MainMenu.Draw.GetColor("color.r");
+            var widthR = MainMenu.Draw.GetWidth("width.r");
 
             if (!Value.Use("draw.disable"))
             {

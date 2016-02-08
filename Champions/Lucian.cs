@@ -21,12 +21,12 @@ namespace OKTRAIO.Champions
 
         private static void Draw(EventArgs args)
         {
-            var colorQ = MainMenu._draw.GetColor("color.q");
-            var widthQ = MainMenu._draw.GetWidth("width.q");
-            var colorQW = MainMenu._draw.GetColor("color.qw");
-            var widthQW = MainMenu._draw.GetWidth("width.qw");
-            var colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
+            var colorQ = MainMenu.Draw.GetColor("color.q");
+            var widthQ = MainMenu.Draw.GetWidth("width.q");
+            var colorQW = MainMenu.Draw.GetColor("color.qw");
+            var widthQW = MainMenu.Draw.GetWidth("width.qw");
+            var colorR = MainMenu.Draw.GetColor("color.r");
+            var widthR = MainMenu.Draw.GetWidth("width.r");
 
             if (!Value.Use("draw.disable"))
             {
@@ -82,57 +82,57 @@ namespace OKTRAIO.Champions
             _r = new Spell.Skillshot(SpellSlot.R, 1400, SkillShotType.Linear, 500, 2800, 110);
 
             MainMenu.ComboKeys(useR: false);
-            MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.gl.pref", true);
-            MainMenu._combo.Add("combo.mode", new Slider("Combo Mode", 0, 0, 1)).OnValueChange += ModeSlider;
+            MainMenu.Combo.AddGroupLabel("Combo Preferences", "combo.gl.pref", true);
+            MainMenu.Combo.Add("combo.mode", new Slider("Combo Mode", 0, 0, 1)).OnValueChange += ModeSlider;
             Value.AdvancedMenuItemUiDs.Add("combo.mode");
-            MainMenu._combo["combo.mode"].IsVisible = MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
-            MainMenu._combo.Add("combo.speed", new Slider("Combo Speed", 0, 0, 2)).OnValueChange += SpeedSlider;
+            MainMenu.Combo["combo.mode"].IsVisible = MainMenu.Combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
+            MainMenu.Combo.Add("combo.speed", new Slider("Combo Speed", 0, 0, 2)).OnValueChange += SpeedSlider;
             Value.AdvancedMenuItemUiDs.Add("combo.speed");
-            MainMenu._combo["combo.speed"].IsVisible = MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
-            MainMenu._combo.AddSeparator();
-            MainMenu._combo.AddCheckBox("combo.eq", "Use Extended Q if Combo Mode = Normal", true, true);
-            MainMenu._combo.AddCheckBox("combo.wcol", "Check for W collision", false, true);
-            MainMenu._combo.AddCheckBox("combo.egap", "Use E to Gapclose (Not Recommended)", false, true);
-            MainMenu._combo.AddSeparator();
-            MainMenu._combo.Add("combo.emode", new Slider("E Mode: ", 0, 0, 1)).OnValueChange += ComboEModeSlider;
+            MainMenu.Combo["combo.speed"].IsVisible = MainMenu.Combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
+            MainMenu.Combo.AddSeparator();
+            MainMenu.Combo.AddCheckBox("combo.eq", "Use Extended Q if Combo Mode = Normal", true, true);
+            MainMenu.Combo.AddCheckBox("combo.wcol", "Check for W collision", false, true);
+            MainMenu.Combo.AddCheckBox("combo.egap", "Use E to Gapclose (Not Recommended)", false, true);
+            MainMenu.Combo.AddSeparator();
+            MainMenu.Combo.Add("combo.emode", new Slider("E Mode: ", 0, 0, 1)).OnValueChange += ComboEModeSlider;
             Value.AdvancedMenuItemUiDs.Add("combo.emode");
-            MainMenu._combo["combo.emode"].Cast<Slider>().IsVisible =
-                MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
-            MainMenu._combo.Add("combo.rbind",
+            MainMenu.Combo["combo.emode"].Cast<Slider>().IsVisible =
+                MainMenu.Combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
+            MainMenu.Combo.Add("combo.rbind",
                 new KeyBind("Semi-Auto R (No Lock)", false, KeyBind.BindTypes.HoldActive, 'T'))
                 .OnValueChange += OnUltButton;
             Value.AdvancedMenuItemUiDs.Add("combo.rbind");
-            MainMenu._combo["combo.rbind"].IsVisible = MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
+            MainMenu.Combo["combo.rbind"].IsVisible = MainMenu.Combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
 
             MainMenu.HarassKeys(useR: false);
-            MainMenu._harass.AddGroupLabel("Harass Preferences", "harass.gl.pref", true);
-            MainMenu._harass.AddCheckBox("harass.eq", "Use Extended Q in Harass", true, true);
-            MainMenu._harass.AddCheckBox("harass.wcol", "Check for W collision", false, true);
-            MainMenu._harass.AddSeparator();
-            MainMenu._harass.Add("harass.emode", new Slider("E Mode: ", 0, 0, 1)).OnValueChange += HarassEModeSlider;
+            MainMenu.Harass.AddGroupLabel("Harass Preferences", "harass.gl.pref", true);
+            MainMenu.Harass.AddCheckBox("harass.eq", "Use Extended Q in Harass", true, true);
+            MainMenu.Harass.AddCheckBox("harass.wcol", "Check for W collision", false, true);
+            MainMenu.Harass.AddSeparator();
+            MainMenu.Harass.Add("harass.emode", new Slider("E Mode: ", 0, 0, 1)).OnValueChange += HarassEModeSlider;
             Value.AdvancedMenuItemUiDs.Add("harass.emode");
-            MainMenu._harass["harass.emode"].IsVisible =
-                MainMenu._harass["harass.advanced"].Cast<CheckBox>().CurrentValue;
-            MainMenu._harass.AddSlider("harass.mana", "Mana Manager:", 60, 0, 100, true);
+            MainMenu.Harass["harass.emode"].IsVisible =
+                MainMenu.Harass["harass.advanced"].Cast<CheckBox>().CurrentValue;
+            MainMenu.Harass.AddSlider("harass.mana", "Mana Manager:", 60, 0, 100, true);
 
             MainMenu.JungleKeys(useR: false);
-            MainMenu._jungle.AddSlider("jungle.mana", "Mana Manager:", 80, 0, 100, true);
+            MainMenu.Jungle.AddSlider("jungle.mana", "Mana Manager:", 80, 0, 100, true);
 
             MainMenu.LaneKeys(useR: false);
-            MainMenu._lane.AddGroupLabel("LaneClear Preferences", "lane.gl.pref", true);
-            MainMenu._lane.AddCheckBox("lane.qharass", "Q = Harass Enemies", false, true);
-            MainMenu._lane.AddSeparator();
-            MainMenu._lane.AddSlider("lane.minfarm", "Minions for Farm Q", 3, 0, 6, true);
-            MainMenu._lane.AddSlider("lane.mana", "Mana Manager:", 80, 0, 100, true);
+            MainMenu.Lane.AddGroupLabel("LaneClear Preferences", "lane.gl.pref", true);
+            MainMenu.Lane.AddCheckBox("lane.qharass", "Q = Harass Enemies", false, true);
+            MainMenu.Lane.AddSeparator();
+            MainMenu.Lane.AddSlider("lane.minfarm", "Minions for Farm Q", 3, 0, 6, true);
+            MainMenu.Lane.AddSlider("lane.mana", "Mana Manager:", 80, 0, 100, true);
 
             MainMenu.KsKeys(useW: false);
 
             MainMenu.DrawKeys(useW: false, useE: false);
-            MainMenu._draw.AddSeparator();
-            MainMenu._draw.AddLabel("W/Extended Q Settings");
-            MainMenu._draw.Add("draw.qw", new CheckBox("Draw W/Extended Q"));
-            MainMenu._draw.AddColorItem("color.qw");
-            MainMenu._draw.AddWidthItem("width.qw");
+            MainMenu.Draw.AddSeparator();
+            MainMenu.Draw.AddLabel("W/Extended Q Settings");
+            MainMenu.Draw.Add("draw.qw", new CheckBox("Draw W/Extended Q"));
+            MainMenu.Draw.AddColorItem("color.qw");
+            MainMenu.Draw.AddWidthItem("width.qw");
             MainMenu.DamageIndicator(true);
 
             MainMenu.FleeKeys(false, useW: false, useR: false);
@@ -144,7 +144,7 @@ namespace OKTRAIO.Champions
 
             DamageIndicator.DamageToUnit += GetRawDamage;
             Drawing.OnDraw += Draw;
-            if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+            if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue)
             {
                 Game.OnUpdate += Game_OnTick;
             }
@@ -170,30 +170,30 @@ namespace OKTRAIO.Champions
                 {
                     if (Value.Get("combo.mode") == 0)
                     {
-                        if (_e.IsReady() && _passive == false && Value.Use("combo.e"))
+                        if (_e.IsReady() && _passive == false && Value.Use("combo.e".AddName()))
                         {
                             ELogic();
                         }
-                        else if (_q.IsReady() && _passive == false && Value.Use("combo.q"))
+                        else if (_q.IsReady() && _passive == false && Value.Use("combo.q".AddName()))
                         {
                             QLogic();
                         }
-                        else if (_w.IsReady() && _passive == false && Value.Use("combo.w"))
+                        else if (_w.IsReady() && _passive == false && Value.Use("combo.w".AddName()))
                         {
                             WLogic();
                         }
                     }
                     else
                     {
-                        if (_q.IsReady() && _passive == false && Value.Use("combo.q"))
+                        if (_q.IsReady() && _passive == false && Value.Use("combo.q".AddName()))
                         {
                             QLogic();
                         }
-                        else if (_w.IsReady() && _passive == false && Value.Use("combo.w"))
+                        else if (_w.IsReady() && _passive == false && Value.Use("combo.w".AddName()))
                         {
                             WLogic();
                         }
-                        else if (_e.IsReady() && _passive == false && Value.Use("combo.e"))
+                        else if (_e.IsReady() && _passive == false && Value.Use("combo.e".AddName()))
                         {
                             ELogic();
                         }
@@ -391,11 +391,11 @@ namespace OKTRAIO.Champions
 
         public override void Combo()
         {
-            if (!_passive && Value.Use("combo.q") && Value.Use("combo.eq") && Value.Get("combo.mode") == 1)
+            if (!_passive && Value.Use("combo.q".AddName()) && Value.Use("combo.eq") && Value.Get("combo.mode") == 1)
             {
                 QExtendLogic(TargetSelector.GetTarget(_q1.Range, DamageType.Physical));
             }
-            if (Value.Use("combo.egap") && Value.Use("combo.e"))
+            if (Value.Use("combo.egap") && Value.Use("combo.e".AddName()))
             {
                 var chaseTarget = TargetSelector.GetTarget(Player.Instance.AttackRange + _e.Range,
                     DamageType.Physical);
@@ -630,7 +630,7 @@ namespace OKTRAIO.Champions
                         _randomizerOne = 26;
                         _randomizerTwo = 34;
                     }
-                    MainMenu._combo["combo.speed"].Cast<Slider>().DisplayName = displayName;
+                    MainMenu.Combo["combo.speed"].Cast<Slider>().DisplayName = displayName;
                 }
                 else if (id == 2)
                 {
@@ -644,7 +644,7 @@ namespace OKTRAIO.Champions
                     {
                         displayName = displayName + "To Mouse";
                     }
-                    MainMenu._combo["combo.emode"].Cast<Slider>().DisplayName = displayName;
+                    MainMenu.Combo["combo.emode"].Cast<Slider>().DisplayName = displayName;
                 }
                 else if (id == 3)
                 {
@@ -658,7 +658,7 @@ namespace OKTRAIO.Champions
                     {
                         displayName = displayName + "Normal (Q->W->E)";
                     }
-                    MainMenu._combo["combo.mode"].Cast<Slider>().DisplayName = displayName;
+                    MainMenu.Combo["combo.mode"].Cast<Slider>().DisplayName = displayName;
                 }
                 else if (id == 4)
                 {
@@ -672,7 +672,7 @@ namespace OKTRAIO.Champions
                     {
                         displayName = displayName + "To Mouse";
                     }
-                    MainMenu._harass["harass.emode"].Cast<Slider>().DisplayName = displayName;
+                    MainMenu.Harass["harass.emode"].Cast<Slider>().DisplayName = displayName;
                 }
             }
             catch (Exception e)

@@ -32,19 +32,19 @@ namespace OKTRAIO.Champions
                         #region Mode QEWR
 
                     case 0:
-                        if (_q.IsReady() && _q.IsInRange(target) && Value.Use("combo.q"))
+                        if (_q.IsReady() && _q.IsInRange(target) && Value.Use("combo.q".AddName()))
                         {
                             Core.DelayAction(() => _q.Cast(target), new Random().Next(MinQDelay, MaxQDelay));
                         }
-                        if (_e.IsReady() && _e.IsInRange(target) && Value.Use("combo.e"))
+                        if (_e.IsReady() && _e.IsInRange(target) && Value.Use("combo.e".AddName()))
                         {
                             Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
                         }
-                        if (_w.IsReady() && _w.IsInRange(target) && Value.Use("combo.w"))
+                        if (_w.IsReady() && _w.IsInRange(target) && Value.Use("combo.w".AddName()))
                         {
                             Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
                         }
-                        if (_r.IsReady() && _r.IsInRange(target) && Value.Use("combo.r"))
+                        if (_r.IsReady() && _r.IsInRange(target) && Value.Use("combo.r".AddName()))
                         {
                             Core.DelayAction(() => _r.Cast(), new Random().Next(MinRDelay, MaxRDelay));
                         }
@@ -55,19 +55,19 @@ namespace OKTRAIO.Champions
                         #region Mode EQWR
 
                     case 1:
-                        if (_e.IsReady() && _e.IsInRange(target) && Value.Use("combo.e"))
+                        if (_e.IsReady() && _e.IsInRange(target) && Value.Use("combo.e".AddName()))
                         {
                             Core.DelayAction(() => _e.Cast(target), new Random().Next(MinWDelay, MaxWDelay));
                         }
-                        if (_q.IsReady() && _q.IsInRange(target) && Value.Use("combo.q"))
+                        if (_q.IsReady() && _q.IsInRange(target) && Value.Use("combo.q".AddName()))
                         {
                             Core.DelayAction(() => _q.Cast(target), new Random().Next(MinQDelay, MaxQDelay));
                         }
-                        if (_w.IsReady() && _w.IsInRange(target) && Value.Use("combo.w"))
+                        if (_w.IsReady() && _w.IsInRange(target) && Value.Use("combo.w".AddName()))
                         {
                             Core.DelayAction(() => _w.Cast(), new Random().Next(MinEDelay, MaxEDelay));
                         }
-                        if (_r.IsReady() && _r.IsInRange(target) && Value.Use("combo.r"))
+                        if (_r.IsReady() && _r.IsInRange(target) && Value.Use("combo.r".AddName()))
                         {
                             Core.DelayAction(() => _r.Cast(), new Random().Next(MinRDelay, MaxRDelay));
                         }
@@ -451,44 +451,44 @@ namespace OKTRAIO.Champions
                 {
                     #region Menu
 
-                    var combo = MainMenu._combo;
+                    var combo = MainMenu.Combo;
                     string[] s = {"QEWR", "EQWR"};
 
                     combo.AddStringList("combo.mode", "Mode: ", s, 1);
                     MainMenu.ComboKeys();
                     MainMenu.HarassKeys();
-                    MainMenu._harass.Add("harass.autow", new CheckBox("Use Auto W"));
-                    MainMenu._harass.Add("harass.donteunderturret", new CheckBox("Dont E Under Turret"));
+                    MainMenu.Harass.Add("harass.autow", new CheckBox("Use Auto W"));
+                    MainMenu.Harass.Add("harass.donteunderturret", new CheckBox("Dont E Under Turret"));
 
                     MainMenu.FleeKeys(false, useW: false, useR: false);
-                    MainMenu._flee.Add("flee.ward", new CheckBox("Use Wardjump"));
+                    MainMenu.Flee.Add("flee.ward", new CheckBox("Use Wardjump"));
 
                     MainMenu.LaneKeys(useR: false);
-                    MainMenu._lane.Add("lane.donteunderturret", new CheckBox("Dont E Under Turret"));
+                    MainMenu.Lane.Add("lane.donteunderturret", new CheckBox("Dont E Under Turret"));
 
                     MainMenu.LastHitKeys(useR: false);
-                    MainMenu._lasthit.Add("lasthit.donteunderturret", new CheckBox("Dont E Under Turret"));
+                    MainMenu.Lasthit.Add("lasthit.donteunderturret", new CheckBox("Dont E Under Turret"));
 
                     MainMenu.KsKeys();
-                    MainMenu._ks.Add("killsteal.ignite", new CheckBox("Use Ignite"));
-                    MainMenu._ks.Add("killsteal.donteunderturret", new CheckBox("Dont E Under Turret"));
+                    MainMenu.Ks.Add("killsteal.ignite", new CheckBox("Use Ignite"));
+                    MainMenu.Ks.Add("killsteal.donteunderturret", new CheckBox("Dont E Under Turret"));
 
                     MainMenu.DamageIndicator();
                     MainMenu.DrawKeys();
-                    MainMenu._draw.AddSeparator();
+                    MainMenu.Draw.AddSeparator();
 
-                    MainMenu._draw.AddGroupLabel("Flash Settings");
-                    MainMenu._draw.Add("draw.flash", new CheckBox("Draw flash"));
-                    MainMenu._draw.AddColorItem("color.flash");
-                    MainMenu._draw.AddWidthItem("width.flash");
-                    MainMenu._draw.AddSeparator();
+                    MainMenu.Draw.AddGroupLabel("Flash Settings");
+                    MainMenu.Draw.Add("draw.flash", new CheckBox("Draw flash"));
+                    MainMenu.Draw.AddColorItem("color.flash");
+                    MainMenu.Draw.AddWidthItem("width.flash");
+                    MainMenu.Draw.AddSeparator();
 
-                    MainMenu._draw.AddGroupLabel("Ignite Settings");
-                    MainMenu._draw.Add("draw.ignite", new CheckBox("Draw ignite"));
-                    MainMenu._draw.AddColorItem("color.ignite");
-                    MainMenu._draw.AddWidthItem("width.ignite");
+                    MainMenu.Draw.AddGroupLabel("Ignite Settings");
+                    MainMenu.Draw.Add("draw.ignite", new CheckBox("Draw ignite"));
+                    MainMenu.Draw.AddColorItem("color.ignite");
+                    MainMenu.Draw.AddWidthItem("width.ignite");
 
-                    _humanizerMenu = MainMenu._menu.AddSubMenu("Humanizer Menu");
+                    _humanizerMenu = MainMenu.Menu.AddSubMenu("Humanizer Menu");
                     _humanizerMenu.AddGroupLabel("Q Settings");
                     _humanizerMenu.Add("min.q", new Slider("Min Q Delay", 0, 0, 50));
                     _humanizerMenu.Add("max.q", new Slider("Max Q Delay", 0, 0, 50));
@@ -605,7 +605,7 @@ namespace OKTRAIO.Champions
                     #region AutoW
 
                     if (_isUlting) return;
-                    if (MainMenu._harass["harass.autow"].Cast<CheckBox>().CurrentValue)
+                    if (MainMenu.Harass["harass.autow"].Cast<CheckBox>().CurrentValue)
                     {
                         var e = EntityManager.Heroes.Enemies.Where(ee => !ee.IsDead && ee.IsValid);
                         foreach (var enemy in e)
@@ -798,8 +798,8 @@ namespace OKTRAIO.Champions
                             {
                                 new Circle
                                 {
-                                    BorderWidth = MainMenu._draw.GetWidth("width.q"),
-                                    Color = MainMenu._draw.GetColor("color.q"),
+                                    BorderWidth = MainMenu.Draw.GetWidth("width.q"),
+                                    Color = MainMenu.Draw.GetColor("color.q"),
                                     Radius = _q.Range
                                 }.Draw(Player.Instance.Position);
                             }
@@ -808,8 +808,8 @@ namespace OKTRAIO.Champions
                         {
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.q"),
-                                Color = MainMenu._draw.GetColor("color.q"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.q"),
+                                Color = MainMenu.Draw.GetColor("color.q"),
                                 Radius = _q.Range
                             }.Draw(Player.Instance.Position);
                         }
@@ -835,8 +835,8 @@ namespace OKTRAIO.Champions
                             if (_w.IsReady())
                                 new Circle
                                 {
-                                    BorderWidth = MainMenu._draw.GetWidth("width.w"),
-                                    Color = MainMenu._draw.GetColor("color.w"),
+                                    BorderWidth = MainMenu.Draw.GetWidth("width.w"),
+                                    Color = MainMenu.Draw.GetColor("color.w"),
                                     Radius = _w.Range
                                 }.Draw(Player.Instance.Position);
                         }
@@ -844,8 +844,8 @@ namespace OKTRAIO.Champions
                         {
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.w"),
-                                Color = MainMenu._draw.GetColor("color.w"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.w"),
+                                Color = MainMenu.Draw.GetColor("color.w"),
                                 Radius = _w.Range
                             }.Draw(Player.Instance.Position);
                         }
@@ -871,8 +871,8 @@ namespace OKTRAIO.Champions
                             if (_e.IsReady())
                                 new Circle
                                 {
-                                    BorderWidth = MainMenu._draw.GetWidth("width.e"),
-                                    Color = MainMenu._draw.GetColor("color.e"),
+                                    BorderWidth = MainMenu.Draw.GetWidth("width.e"),
+                                    Color = MainMenu.Draw.GetColor("color.e"),
                                     Radius = _e.Range
                                 }.Draw(Player.Instance.Position);
                         }
@@ -880,8 +880,8 @@ namespace OKTRAIO.Champions
                         {
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.e"),
-                                Color = MainMenu._draw.GetColor("color.e"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.e"),
+                                Color = MainMenu.Draw.GetColor("color.e"),
                                 Radius = _e.Range
                             }.Draw(Player.Instance.Position);
                         }
@@ -907,8 +907,8 @@ namespace OKTRAIO.Champions
                             if (!_r.IsOnCooldown)
                                 new Circle
                                 {
-                                    BorderWidth = MainMenu._draw.GetWidth("width.r"),
-                                    Color = MainMenu._draw.GetColor("color.r"),
+                                    BorderWidth = MainMenu.Draw.GetWidth("width.r"),
+                                    Color = MainMenu.Draw.GetColor("color.r"),
                                     Radius = _r.Range
                                 }.Draw(Player.Instance.Position);
                         }
@@ -916,8 +916,8 @@ namespace OKTRAIO.Champions
                         {
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.r"),
-                                Color = MainMenu._draw.GetColor("color.r"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.r"),
+                                Color = MainMenu.Draw.GetColor("color.r"),
                                 Radius = _r.Range
                             }.Draw(Player.Instance.Position);
                         }
@@ -943,15 +943,15 @@ namespace OKTRAIO.Champions
                         if (Player.CanUseSpell(GetFlashSpellSlot()) == SpellState.Ready)
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.flash"),
-                                Color = MainMenu._draw.GetColor("color.flash"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.flash"),
+                                Color = MainMenu.Draw.GetColor("color.flash"),
                                 Radius = flashrange
                             }.Draw(Player.Instance.Position);
                         if (Player.CanUseSpell(GetFlashSpellSlot()) == SpellState.Cooldown)
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.flash"),
-                                Color = MainMenu._draw.GetColor("color.flash"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.flash"),
+                                Color = MainMenu.Draw.GetColor("color.flash"),
                                 Radius = flashrange
                             }.Draw(Player.Instance.Position);
                     }
@@ -974,15 +974,15 @@ namespace OKTRAIO.Champions
                         if (Player.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Ready)
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("color.flash"),
-                                Color = MainMenu._draw.GetColor("color.ignite"),
+                                BorderWidth = MainMenu.Draw.GetWidth("color.flash"),
+                                Color = MainMenu.Draw.GetColor("color.ignite"),
                                 Radius = igniterange
                             }.Draw(Player.Instance.Position);
                         if (Player.CanUseSpell(GetIgniteSpellSlot()) == SpellState.Cooldown)
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("color.flash"),
-                                Color = MainMenu._draw.GetColor("color.ignite"),
+                                BorderWidth = MainMenu.Draw.GetWidth("color.flash"),
+                                Color = MainMenu.Draw.GetColor("color.ignite"),
                                 Radius = igniterange
                             }.Draw(Player.Instance.Position);
                     }

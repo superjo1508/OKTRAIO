@@ -38,14 +38,14 @@ namespace OKTRAIO.Champions
             try
             {
                 MainMenu.ComboKeys(useR: false);
-                MainMenu._combo.AddGroupLabel("Combo Settings", "combo.settings.label", true);
-                MainMenu._combo.AddSlider("combo.q.mode", "Q mode on Combo", 1, 1, 3, true);
-                MainMenu._combo["combo.q.mode"].Cast<Slider>().OnValueChange += ComboQMode;
-                MainMenu._combo.AddCheckBox("combo.q.inside", "Lock Player position in W position", true, true);
-                MainMenu._combo.AddSlider("combo.w.enemy", "Use W only if is {0} enemies in Range", 1, 1, 5, true);
-                MainMenu._combo.AddCheckBox("combo.e.focus", "Focus E Passive target", true, true);
-                MainMenu._combo.AddSeparator();
-                MainMenu._combo.AddGroupLabel("Mana Manager", "combo.manamanager.label", true);
+                MainMenu.Combo.AddGroupLabel("Combo Settings", "combo.settings.label", true);
+                MainMenu.Combo.AddSlider("combo.q.mode", "Q mode on Combo", 1, 1, 3, true);
+                MainMenu.Combo["combo.q.mode"].Cast<Slider>().OnValueChange += ComboQMode;
+                MainMenu.Combo.AddCheckBox("combo.q.inside", "Lock Player position in W position", true, true);
+                MainMenu.Combo.AddSlider("combo.w.enemy", "Use W only if is {0} enemies in Range", 1, 1, 5, true);
+                MainMenu.Combo.AddCheckBox("combo.e.focus", "Focus E Passive target", true, true);
+                MainMenu.Combo.AddSeparator();
+                MainMenu.Combo.AddGroupLabel("Mana Manager", "combo.manamanager.label", true);
                 MainMenu.ComboManaManager(true, true, true, false, 10, 10, 10, 0);
 
                 Value.Init();
@@ -89,7 +89,7 @@ namespace OKTRAIO.Champions
             var target = TargetSelector.GetTarget(W.Range, DamageType.Physical);
             if (target == null) return;
 
-            if (Q.IsReady() && Value.Use("combo.q") && Value.Get("combo.q.mana") <= Player.Instance.ManaPercent)
+            if (Q.IsReady() && Value.Use("combo.q".AddName()) && Value.Get("combo.q.mana") <= Player.Instance.ManaPercent)
             {
                 if (qcombomode == 1)
                 {
@@ -132,7 +132,7 @@ namespace OKTRAIO.Champions
                         displayName = displayName + "Burst";
                         qcombomode = 3;
                     }
-                    MainMenu._combo["combo.speed"].Cast<Slider>().DisplayName = displayName;
+                    MainMenu.Combo["combo.speed"].Cast<Slider>().DisplayName = displayName;
                 }
             }
             catch (Exception e)

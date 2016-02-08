@@ -33,22 +33,22 @@ namespace OKTRAIO.Champions
             _e = new Spell.Targeted(SpellSlot.E, 550);
 
             MainMenu.ComboKeys(useW: false, useR: false);
-            MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.gl.pref", true);
+            MainMenu.Combo.AddGroupLabel("Combo Preferences", "combo.gl.pref", true);
 
             MainMenu.HarassKeys(useW: false, useR: false);
-            MainMenu._harass.AddGroupLabel("Harass Preferences", "harass.gl.pref", true);
+            MainMenu.Harass.AddGroupLabel("Harass Preferences", "harass.gl.pref", true);
 
             MainMenu.JungleKeys(useW: false, useR: false);
-            MainMenu._jungle.AddSlider("jungle.mana", "ManaSlider", 80, 0, 100, true);
+            MainMenu.Jungle.AddSlider("jungle.mana", "ManaSlider", 80, 0, 100, true);
 
             MainMenu.LaneKeys(useW: false, useR: false);
-            MainMenu._lane.AddGroupLabel("LaneClear Preferences", "lane.gl.pref", true);
-            MainMenu._lane.AddSlider("lane.mana", "ManaSlider", 80, 0, 100, true);
+            MainMenu.Lane.AddGroupLabel("LaneClear Preferences", "lane.gl.pref", true);
+            MainMenu.Lane.AddSlider("lane.mana", "ManaSlider", 80, 0, 100, true);
 
             MainMenu.KsKeys(useW: false, useR: false);
 
             MainMenu.DrawKeys(useW: false, useE: false, useR: false);
-            MainMenu._draw.AddSeparator();
+            MainMenu.Draw.AddSeparator();
             MainMenu.DamageIndicator(true);
 
             MainMenu.FleeKeys(useW: false, useR: false);
@@ -59,7 +59,7 @@ namespace OKTRAIO.Champions
             _randomizerTwo = 12;
             DamageIndicator.DamageToUnit += GetRawDamage;
             Drawing.OnDraw += Draw;
-            if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+            if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue)
             {
                 Game.OnUpdate += Game_OnTick;
             }
@@ -77,7 +77,7 @@ namespace OKTRAIO.Champions
 
         public override void Combo()
         {
-            if (!_e.IsReady() || !Value.Use("combo.e")) return;
+            if (!_e.IsReady() || !Value.Use("combo.e".AddName())) return;
             foreach (var enemy in Variables.CloseEnemies(_e.Range))
             {
                 CondemnLogic(enemy);
@@ -131,7 +131,7 @@ namespace OKTRAIO.Champions
         {
             if (Value.Mode(Orbwalker.ActiveModes.Combo))
             {
-                if (_q.IsReady() && Value.Use("combo.q"))
+                if (_q.IsReady() && Value.Use("combo.q".AddName()))
                 {
                     _q.Cast(OKTRGeometry.SafeDashPosRework(_q.Range, TargetSelector.GetTarget(_q.Range + Player.Instance.GetAutoAttackRange() + 50, DamageType.Physical), 119));
                 }

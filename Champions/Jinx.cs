@@ -78,7 +78,7 @@ namespace OKTRAIO.Champions
 
                     //Lane Clear Menu Settings
                     MainMenu.LaneKeys(useW: false, useE: false, useR: false);
-                    MainMenu._lane.Add("lane.mana", new Slider("Minimum {0}% mana to laneclear with Q", 80));
+                    MainMenu.Lane.Add("lane.mana", new Slider("Minimum {0}% mana to laneclear with Q", 80));
 
                     //Jungle Clear Menu Settings
                     MainMenu.JungleKeys(useE: false, useR: false);
@@ -94,10 +94,10 @@ namespace OKTRAIO.Champions
 
                     //Misc Menu
                     MainMenu.MiscMenu();
-                    MainMenu._misc.Add("misc.farmQAARange", new CheckBox("Use Q when minion out of AA range"));
-                    MainMenu._misc.Add("misc.teleportE", new CheckBox("Use E on teleport position"));
-                    MainMenu._misc.Add("misc.spellcastE", new CheckBox("Use E OnProcessSpellCast"));
-                    MainMenu._misc.Add("misc.enemyTurretR", new CheckBox("Don't use R under enemy turret"));
+                    MainMenu.Misc.Add("misc.farmQAARange", new CheckBox("Use Q when minion out of AA range"));
+                    MainMenu.Misc.Add("misc.teleportE", new CheckBox("Use E on teleport position"));
+                    MainMenu.Misc.Add("misc.spellcastE", new CheckBox("Use E OnProcessSpellCast"));
+                    MainMenu.Misc.Add("misc.enemyTurretR", new CheckBox("Don't use R under enemy turret"));
 
                     //Draw Menu
                     MainMenu.DrawKeys(false, useR: false);
@@ -156,8 +156,8 @@ namespace OKTRAIO.Champions
                     new Circle
                     {
                         Radius = _w.Range,
-                        Color = MainMenu._draw.GetColor("color.w"),
-                        BorderWidth = MainMenu._draw.GetWidth("width.w")
+                        Color = MainMenu.Draw.GetColor("color.w"),
+                        BorderWidth = MainMenu.Draw.GetWidth("width.w")
                     }.Draw(Player.Instance.Position);
                 }
             }
@@ -169,8 +169,8 @@ namespace OKTRAIO.Champions
                     new Circle
                     {
                         Radius = _e.Range,
-                        Color = MainMenu._draw.GetColor("color.e"),
-                        BorderWidth = MainMenu._draw.GetWidth("width.e")
+                        Color = MainMenu.Draw.GetColor("color.e"),
+                        BorderWidth = MainMenu.Draw.GetWidth("width.e")
                     }.Draw(Player.Instance.Position);
                 }
             }
@@ -187,7 +187,7 @@ namespace OKTRAIO.Champions
 
         public override void Combo()
         {
-            if (Value.Use("combo.q") && _q.IsReady())
+            if (Value.Use("combo.q".AddName()) && _q.IsReady())
             {
                 var qTarget = GetValidMissleTarget();
                 if (qTarget != null && !MissleActive)
@@ -210,12 +210,12 @@ namespace OKTRAIO.Champions
                 }
             }
 
-            if (Value.Use("combo.w") && Player.Instance.ManaPercent > Value.Get("combo.w.mana"))
+            if (Value.Use("combo.w".AddName()) && Player.Instance.ManaPercent > Value.Get("combo.w.mana"))
             {
                 WLogic();
             }
 
-            if (Value.Use("combo.e")
+            if (Value.Use("combo.e".AddName())
                 && _e.IsReady()
                 && EnoughMana())
             {
@@ -241,7 +241,7 @@ namespace OKTRAIO.Champions
                 }
             }
 
-            if (Value.Use("combo.r"))
+            if (Value.Use("combo.r".AddName()))
             {
                 RLogic();
             }
@@ -482,7 +482,7 @@ namespace OKTRAIO.Champions
             {
                 var distance = GetBoundingDistance(target);
 
-                if (Value.Use("combo.q")
+                if (Value.Use("combo.q".AddName())
                     && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo)
                     && NormalRange(target) > distance
                     && target.IsValidTarget())

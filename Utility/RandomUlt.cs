@@ -1,40 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using EloBuddy;
-using EloBuddy.SDK;
-using EloBuddy.SDK.Enumerations;
-using EloBuddy.SDK.Events;
-using OKTRAIO.Menu_Settings;
-using SharpDX;
+﻿using EloBuddy.SDK.Menu.Values;
+using Menu = EloBuddy.SDK.Menu.Menu;
 
 namespace OKTRAIO.Utility
 {
-    public class RandomUlt
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using EloBuddy;
+    using EloBuddy.SDK;
+    using EloBuddy.SDK.Enumerations;
+    using EloBuddy.SDK.Events;
+
+    using OKTRAIO.Menu_Settings;
+
+    using SharpDX;
+
+    public class RandomUlt : UtilityAddon
     {
-        private static readonly List<RandomUltUnit> RandomUltUnits = new List<RandomUltUnit>();
+        private readonly List<RandomUltUnit> RandomUltUnits = new List<RandomUltUnit>();
 
-        private static readonly List<RandomUltSpell> RandomUltSpells = new List<RandomUltSpell>();
+        private readonly List<RandomUltSpell> RandomUltSpells = new List<RandomUltSpell>();
 
-        private static readonly List<Champion> CompatibleChampions = new List<Champion>
+        public override UtilityInfo GetUtilityInfo()
         {
-            Champion.Ashe,
-            Champion.Draven,
-            Champion.Ezreal,
-            Champion.Jinx,
-            Champion.Gangplank,
-            Champion.Lux,
-            Champion.Ziggs
-        };
+            return new UtilityInfo(this, "RandomUlt", "randomult", "Unknown", Champion.Ashe, Champion.Draven, Champion.Ezreal, Champion.Jinx, Champion.Gangplank, Champion.Lux, Champion.Ziggs);
+        }
 
-        public static void Initialize()
+        protected override void InitializeMenu()
         {
-            if (UtilityMenu.Randomult == null)
+            Menu.AddGroupLabel("OKTR AIO - RandomUlt for " + Player.Instance.ChampionName,
+                "randomult.grouplabel.utilitymenu");
+            Menu.AddCheckBox("randomult.use", "Use RandomUlt");
+            Menu.Add("randomult.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
+            Menu.AddSeparator();
+            Menu.AddSlider("randomult.range", "Don't Ult When Enemies In Range", 1000, 0, 2000, true);
+            Menu.AddSlider("randomult.delay", "Delay Before Ulting", 600, 0, 3000, true);
+            Menu.AddSlider("randomult.hitchance", "RandomUlt Hitchance (1 - More Ults, 5 - Less Ults)", 3, 1, 5,
+                true);
+            Menu.AddLabel("Who To RandomUlt:", 25, "randomult.label", true);
+            foreach (var enemy in EntityManager.Heroes.Enemies)
             {
-                return;
+                Menu.AddCheckBox("randomult." + enemy.ChampionName, enemy.ChampionName, true, true);
             }
+        }
 
-            Game.OnUpdate += OnUpdate;
+        public override void Initialize()
+        {
             Teleport.OnTeleport += OnTeleport;
 
             foreach (var hero in EntityManager.Heroes.Enemies)
@@ -44,30 +57,19 @@ namespace OKTRAIO.Utility
 
             #region Spells
 
-            RandomUltSpells.Add(new RandomUltSpell("Ashe", SpellSlot.R, 250, 1600, 130, int.MaxValue, true,
-                DamageType.Magical));
-            RandomUltSpells.Add(new RandomUltSpell("Draven", SpellSlot.R, 400, 2000, 160, int.MaxValue, true,
-                DamageType.Physical));
-            RandomUltSpells.Add(new RandomUltSpell("Ezreal", SpellSlot.R, 1000, 2000, 160, int.MaxValue, false,
-                DamageType.Magical));
-            RandomUltSpells.Add(new RandomUltSpell("Jinx", SpellSlot.R, 600, 1700, 140, int.MaxValue, true,
-                DamageType.Physical));
+            RandomUltSpells.Add(new RandomUltSpell("Ashe", SpellSlot.R, 250, 1600, 130, int.MaxValue, true, DamageType.Magical));
+            RandomUltSpells.Add(new RandomUltSpell("Draven", SpellSlot.R, 400, 2000, 160, int.MaxValue, true, DamageType.Physical));
+            RandomUltSpells.Add(new RandomUltSpell("Ezreal", SpellSlot.R, 1000, 2000, 160, int.MaxValue, false, DamageType.Magical));
+            RandomUltSpells.Add(new RandomUltSpell("Jinx", SpellSlot.R, 600, 1700, 140, int.MaxValue, true, DamageType.Physical));
             RandomUltSpells.Add(
-                new RandomUltSpell("Gangplank", SpellSlot.R, 100, int.MaxValue, 600, int.MaxValue, false,
-                    DamageType.Magical));
-            RandomUltSpells.Add(new RandomUltSpell("Lux", SpellSlot.R, 500, int.MaxValue, 190, 3000, false,
-                DamageType.Magical));
+                new RandomUltSpell("Gangplank", SpellSlot.R, 100, int.MaxValue, 600, int.MaxValue, false, DamageType.Magical));
+            RandomUltSpells.Add(new RandomUltSpell("Lux", SpellSlot.R, 500, int.MaxValue, 190, 3000, false, DamageType.Magical));
             RandomUltSpells.Add(new RandomUltSpell("Ziggs", SpellSlot.R, 100, 1750, 525, 5000, false, DamageType.Magical));
 
             #endregion
         }
 
-        public static bool IsCompatibleChamp()
-        {
-            return CompatibleChampions.Any(x => x.Equals(Player.Instance.Hero));
-        }
-
-        public static void OnUpdate(EventArgs args)
+        protected override void Game_OnUpdate(EventArgs args)
         {
             foreach (var enemy in
                 RandomUltUnits.Where(x => x.Unit.IsHPBarRendered && !x.Unit.IsDead && x.Unit.IsValidTarget()))
@@ -95,11 +97,11 @@ namespace OKTRAIO.Utility
                         .Where(
                             enemy =>
                                 !CheckResurrect(enemy.Unit)
-                                && !(Game.Time - enemy.RecallData.Started <= Value.Get("randomult.delay"))))
+                                && (!(Game.Time - enemy.RecallData.Started <= Value.Get("randomult.delay")))))
             {
-                var dist = (enemy.RecallData.Started - enemy.LastSeen)/1000*enemy.Unit.MoveSpeed;
+                var dist = ((enemy.RecallData.Started - enemy.LastSeen) / 1000 * enemy.Unit.MoveSpeed);
                 // - enemy.Unit.MoveSpeed / 4;
-                if (dist > 2000 || (dist*2 > 1000 && !enemy.Unit.IsHPBarRendered))
+                if (dist > 2000 || (dist * 2 > 1000 && !enemy.Unit.IsHPBarRendered))
                 {
                     continue;
                 }
@@ -115,7 +117,7 @@ namespace OKTRAIO.Utility
             }
         }
 
-        private static void CastRandomUlt(RandomUltUnit target, Vector3 pos)
+        private void CastRandomUlt(RandomUltUnit target, Vector3 pos)
         {
             if (!Player.Instance.Spellbook.GetSpell(SpellSlot.R).IsReady)
             {
@@ -123,13 +125,13 @@ namespace OKTRAIO.Utility
             }
 
             if (GetRandomUltSpellDamage(RandomUltSpells.Find(x => x.Name == Player.Instance.ChampionName), target.Unit)
-                && UltTime(pos) < target.RecallData.GetRecallTime())
+                && UltTime(pos) < target.RecallData.GetRecallTime() && Value.Use("randomult.use"))
             {
                 Player.Instance.Spellbook.CastSpell(SpellSlot.R, pos);
             }
         }
 
-        private static bool CheckResurrect(AIHeroClient enemy)
+        private bool CheckResurrect(AIHeroClient enemy)
         {
             switch (enemy.ChampionName)
             {
@@ -142,12 +144,12 @@ namespace OKTRAIO.Utility
                 case "Zac":
                     ;
                     return enemy.HasBuff("ZacRebirthReady");
+
             }
-            return enemy.HasUndyingBuff() || enemy.HasBuffOfType(BuffType.SpellShield) || enemy.IsInvulnerable ||
-                   enemy.HasBuff("ChronoRevive");
+            return enemy.HasUndyingBuff() || enemy.HasBuffOfType(BuffType.SpellShield) || enemy.IsInvulnerable || enemy.HasBuff("ChronoRevive");
         }
 
-        private static float UltTime(Vector3 pos)
+        private float UltTime(Vector3 pos)
         {
             var distance = Player.Instance.Distance(pos);
             var spell = RandomUltSpells.Find(x => x.Name == Player.Instance.ChampionName);
@@ -161,13 +163,13 @@ namespace OKTRAIO.Utility
                     accelDif = 150;
                 }
                 var difference = distance - 1500;
-                return distance/((1350*1700 + accelDif*(1700 + 0.3f*accelDif) + difference*1700f)/distance)
-                       *1000 + 250;
+                return (distance / ((1350 * 1700 + accelDif * (1700 + 0.3f * accelDif) + difference * 1700f) / distance))
+                       * 1000 + 250;
             }
-            return distance/speed*1000 + delay;
+            return (distance / speed) * 1000 + delay;
         }
 
-        private static bool GetRandomUltSpellDamage(RandomUltSpell spell, Obj_AI_Base target)
+        private bool GetRandomUltSpellDamage(RandomUltSpell spell, Obj_AI_Base target)
         {
             var level = Player.Instance.Spellbook.GetSpell(spell.Slot).Level - 1;
             var damageType = spell.DamageType;
@@ -176,61 +178,61 @@ namespace OKTRAIO.Utility
             {
                 case "Ashe":
                 {
-                    damage = new float[] {250, 425, 600}[level] + 1*Player.Instance.FlatMagicDamageMod;
+                    damage = new float[] { 250, 425, 600 }[level] + 1 * Player.Instance.FlatMagicDamageMod;
                     break;
                 }
 
                 case "Draven":
                 {
-                    damage = (new float[] {175, 275, 375}[level] + 1.1f*Player.Instance.FlatPhysicalDamageMod)
-                             *2;
+                    damage = (new float[] { 175, 275, 375 }[level] + 1.1f * Player.Instance.FlatPhysicalDamageMod)
+                             * 2;
                     break;
                 }
 
                 case "Ezreal":
                 {
-                    damage = new float[] {350, 500, 650}[level] + 0.9f*Player.Instance.FlatMagicDamageMod
-                             + 1*Player.Instance.FlatPhysicalDamageMod;
+                    damage = new float[] { 350, 500, 650 }[level] + 0.9f * Player.Instance.FlatMagicDamageMod
+                             + 1 * Player.Instance.FlatPhysicalDamageMod;
                     break;
                 }
 
                 case "Gangplank":
                 {
-                    damage = (new float[] {50, 70, 90}[level] + 0.1f*Player.Instance.FlatMagicDamageMod)*5;
+                    damage = (new float[] { 50, 70, 90 }[level] + 0.1f * Player.Instance.FlatMagicDamageMod) * 5;
                     break;
                 }
 
                 case "Jinx":
                 {
-                    damage = new float[] {250, 350, 450}[level]
-                             + new float[] {25, 30, 35}[level]/100*(target.MaxHealth - target.Health)
-                             + 1*Player.Instance.FlatPhysicalDamageMod;
+                    damage = new float[] { 250, 350, 450 }[level]
+                             + new float[] { 25, 30, 35 }[level] / 100 * (target.MaxHealth - target.Health)
+                             + 1 * Player.Instance.FlatPhysicalDamageMod;
                     break;
                 }
 
                 case "Lux":
                 {
-                    damage = new float[] {300, 400, 500}[level] + 0.75f*Player.Instance.FlatMagicDamageMod;
+                    damage = new float[] { 300, 400, 500 }[level] + 0.75f * Player.Instance.FlatMagicDamageMod;
                     break;
                 }
 
                 case "Ziggs":
                 {
-                    damage = new float[] {200, 300, 400}[level] + 0.72f*Player.Instance.FlatMagicDamageMod;
+                    damage = new float[] { 200, 300, 400 }[level] + 0.72f * Player.Instance.FlatMagicDamageMod;
                     break;
                 }
             }
-            return Player.Instance.CalculateDamageOnUnit(target, damageType, damage)*0.7 > target.Health;
+            return Player.Instance.CalculateDamageOnUnit(target, damageType, damage) * 0.7 > target.Health;
         }
 
-        public static void OnTeleport(Obj_AI_Base sender, Teleport.TeleportEventArgs args)
+        public void OnTeleport(Obj_AI_Base sender, Teleport.TeleportEventArgs args)
         {
-            var recall = RandomUltUnits.Find(h => h.Unit.NetworkId == sender.NetworkId).RecallData;
-            if (!sender.IsEnemy || recall == null || args.Type != TeleportType.Recall)
+            var enemy = RandomUltUnits.Find(x => x.Unit.NetworkId == sender.NetworkId);
+            if (enemy == null || args.Type != TeleportType.Recall)
             {
                 return;
             }
-
+            var recall = enemy.RecallData;
             switch (args.Status)
             {
                 case TeleportStatus.Start:
@@ -257,18 +259,24 @@ namespace OKTRAIO.Utility
                 }
             }
         }
+
+        public RandomUlt(Menu menu, Champion? champion) : base(menu, champion)
+        {
+
+        }
     }
 
     internal class RandomUltUnit
     {
-        public float LastSeen;
+        public AIHeroClient Unit;
 
-        public Vector3 OldPos;
+        public float LastSeen;
 
         public Vector3 PredictedPos;
 
+        public Vector3 OldPos;
+
         public RandomUltRecall RecallData;
-        public AIHeroClient Unit;
 
         public RandomUltUnit(AIHeroClient unit)
         {
@@ -321,6 +329,9 @@ namespace OKTRAIO.Utility
         {
             Unit = unit;
             Status = status;
+            Started = 0;
+            Ended = 0;
+            Duration = 0;
         }
 
         public AIHeroClient Unit { get; set; }
@@ -335,7 +346,7 @@ namespace OKTRAIO.Utility
 
         public float GetRecallTime()
         {
-            return (Started + Duration - Game.Time)*1000;
+            return (Started + Duration - Game.Time) * 1000;
         }
     }
 }

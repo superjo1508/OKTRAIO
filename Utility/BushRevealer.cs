@@ -2,37 +2,50 @@
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
+using EloBuddy.SDK.Menu;
 using OKTRAIO.Menu_Settings;
 
 namespace OKTRAIO.Utility
 {
-    public static class BushRevealer
+    public class BushRevealer : UtilityAddon
     {
-        private static int lastWarded;
+        private int lastWarded;
 
-        public static ItemId[] WardIds =
+        public ItemId[] WardIds =
         {
-            Activator.WardingTotem.Id,
-            Activator.GreaterStealthTotem.Id,
-            Activator.GreaterVisionTotem.Id,
-            Activator.PinkVision.Id,
-            Activator.PinkVision.Id,
-            Activator.FarsightAlteration.Id
+            UtilityManager.Activator.WardingTotem.Id,
+            UtilityManager.Activator.GreaterStealthTotem.Id,
+            UtilityManager.Activator.GreaterVisionTotem.Id,
+            UtilityManager.Activator.PinkVision.Id,
+            UtilityManager.Activator.FarsightAlteration.Id
         };
 
-        public static InventorySlot GetWardSlot()
+        public InventorySlot GetWardSlot()
         {
             return
                 WardIds.Select(wardId => Player.Instance.InventoryItems.FirstOrDefault(a => a.Id == wardId))
                     .FirstOrDefault(slot => slot != null && slot.CanUseItem());
         }
 
-        public static void Init()
+        public override UtilityInfo GetUtilityInfo()
         {
-            Game.OnUpdate += GameOnUpdate;
+            return new UtilityInfo(this, "BushRevealer", "bushrevealer", "Unknown");
         }
 
-        private static void GameOnUpdate(EventArgs args)
+        protected override void InitializeMenu()
+        {
+            Menu.AddGroupLabel("OKTR AIO - Bush Revealer for " + Player.Instance.ChampionName,
+                "bushreveal.grouplabel.utilitymenu");
+            Menu.AddCheckBox("bushreveal.use", "Use Bush Revealer");
+            Menu.AddCheckBox("bushreveal.humanize", "Humanize the Bush Reveal");
+        }
+
+        public override void Initialize()
+        {
+            
+        }
+
+        protected override void Game_OnUpdate(EventArgs args)
         {
             if (Value.Use("bushreveal.use"))
             {
@@ -76,6 +89,10 @@ namespace OKTRAIO.Utility
                     }
                 }
             }
+        }
+
+        public BushRevealer(Menu menu) : base(menu, null)
+        {
         }
     }
 }

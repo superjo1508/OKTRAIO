@@ -58,7 +58,7 @@ namespace OKTRAIO
 
         public static bool IsSupport(GameObject ally)
         {
-            return !ally.IsMe && (Activator.Coin.IsOwned() || Activator.Edge.IsOwned() || Activator.Relic.IsOwned());
+            return !ally.IsMe && (UtilityManager.Activator.Coin.IsOwned() || UtilityManager.Activator.Edge.IsOwned() || UtilityManager.Activator.Relic.IsOwned());
         }
 
         public static float GetChampionDamage(Obj_AI_Base target)

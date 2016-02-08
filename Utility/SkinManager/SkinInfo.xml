@@ -1057,6 +1057,9 @@
     <Skin name="Debonair Jayce" index="2" />
     <Skin name="Forsaken Jayce" index="3" />
   </Model>
+  <Model name="Jhin">
+    <Skin name="Classic" index="0" />
+  </Model>
   <Model name="Jinx">
     <Skin name="Classic" index="0" />
     <Skin name="Mafia Jinx" index="1" />

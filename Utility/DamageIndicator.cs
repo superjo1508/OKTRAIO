@@ -23,28 +23,28 @@ namespace OKTRAIO.Utility
         {
             get
             {
-                var enemyDmg = MainMenu._draw.Get<CheckBox>("draw.enemyDmg");
+                var enemyDmg = MainMenu.Draw.Get<CheckBox>("draw.enemyDmg");
                 return enemyDmg == null ? false : enemyDmg.CurrentValue;
             }
         }
 
         private static Color EnemyColor
         {
-            get { return MainMenu._draw.GetColor("draw.color.enemyDmg"); }
+            get { return MainMenu.Draw.GetColor("draw.color.enemyDmg"); }
         }
 
         private static bool JungleEnabled
         {
             get
             {
-                var jungleDmg = MainMenu._draw.Get<CheckBox>("draw.jungleDmg");
+                var jungleDmg = MainMenu.Draw.Get<CheckBox>("draw.jungleDmg");
                 return jungleDmg == null ? false : jungleDmg.CurrentValue;
             }
         }
 
         private static Color JungleColor
         {
-            get { return MainMenu._draw.GetColor("draw.color.jungleDmg"); }
+            get { return MainMenu.Draw.GetColor("draw.color.jungleDmg"); }
         }
 
         public static DamageToUnitDelegate DamageToUnit

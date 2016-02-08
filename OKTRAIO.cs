@@ -1,21 +1,25 @@
-﻿using System;
+﻿namespace OKTRAIO
+{
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Media;
 using System.Net;
+
 using EloBuddy;
 using EloBuddy.Sandbox;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
+
 using OKTRAIO.Champions;
+using OKTRAIO.Database.Icons;
 using OKTRAIO.Menu_Settings;
 using OKTRAIO.Utility;
 using OKTRAIO.Utility.SkinManager;
+using OKTRAIO.Utility.Tracker;
 using Activator = System.Activator;
 
-namespace OKTRAIO
-{
     internal class Brain
     {
         public static AIOChampion Champion;
@@ -38,21 +42,23 @@ namespace OKTRAIO
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
+            MainMenu.Init();
+
+            UtilityManager.Initialize();
+            Value.Init();
             var champion = Type.GetType("OKTRAIO.Champions." + Player.Instance.ChampionName);
             if (champion != null)
             {
-                Console.Write("[MarksmanAIO] " + Player.Instance.ChampionName + " Loaded");
+                Console.WriteLine("[MarksmanAIO] " + Player.Instance.ChampionName + " Loaded");
+                IconManager.Init();
                 Champion = (AIOChampion) Activator.CreateInstance(champion);
                 Events.Init();
-                MainMenu.Init();
-                UtilityMenu.Init();
+                
+                Value.Init();
                 Champion.Init();
-                JsonSettings.Init();
-                Utility.Activator.LoadSpells();
-                Utility.Activator.Init();
-                Humanizer.Init();
-                SkinManagement.Init();
-                if (MainMenu._menu["playsound"].Cast<CheckBox>().CurrentValue)
+                //JsonSettings.Init();
+                UtilityManager.Activator.LoadSpells();
+                if (MainMenu.Menu["playsound"].Cast<CheckBox>().CurrentValue)
                 {
                     PlayWelcome();
                 }
@@ -63,21 +69,7 @@ namespace OKTRAIO
                 Chat.Print("MarksmanAIO doesn't support: " + Player.Instance.ChampionName);
             }
 
-            if (RandomUlt.IsCompatibleChamp() && champion == null)
-            {
-                UtilityMenu.Init();
-            }
-            if (BaseUlt.IsCompatibleChamp())
-            {
-                UtilityMenu.BaseUltMenu();
-                BaseUlt.Initialize();
-            }
-            if (RandomUlt.IsCompatibleChamp())
-            {
-                UtilityMenu.RandomUltMenu();
-                RandomUlt.Initialize();
-            }
-            Value.Init();
+            Humanizer.Init();
         }
 
         private static void PlayWelcome()

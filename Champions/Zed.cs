@@ -38,7 +38,6 @@ namespace OKTRAIO.Champions
 
         public override void Init()
         {
-            throw new NotImplementedException("Zed is only supported for development purposes");
             try
             {
                 try
@@ -59,24 +58,24 @@ namespace OKTRAIO.Champions
                 {
                     // combo
                     MainMenu.ComboKeys();
-                    MainMenu._combo.AddSlider("combo.mode", "Combo Mode", 2, 1, 3, true);
-                    MainMenu._combo["combo.mode"].Cast<Slider>().OnValueChange += ComboStringList;
-                    MainMenu._combo.AddSlider("combo.distant.health", "Distant Mode Health: ", 25, 0, 100, true);
-                    MainMenu._combo.AddCheckBox("combo.switch", "Switch Shadows After combo", false, true);
+                    MainMenu.Combo.AddSlider("combo.mode", "Combo Mode", 2, 1, 3, true);
+                    MainMenu.Combo["combo.mode"].Cast<Slider>().OnValueChange += ComboStringList;
+                    MainMenu.Combo.AddSlider("combo.distant.health", "Distant Mode Health: ", 25, 0, 100, true);
+                    MainMenu.Combo.AddCheckBox("combo.switch", "Switch Shadows After combo", false, true);
 
                     // draw
                     MainMenu.DamageIndicator();
                     MainMenu.DrawKeys();
-                    MainMenu._draw.AddGroupLabel("W Shadow Settings", "draw.w.settings", true);
-                    MainMenu._draw.AddCheckBox("draw.w.q", "Draw Q", true, true);
-                    MainMenu._draw.AddCheckBox("draw.w.e", "Draw E", true, true);
-                    MainMenu._draw.AddGroupLabel("R Shadow Settings", "draw.r.settings", true);
-                    MainMenu._draw.AddCheckBox("draw.r.q", "Draw Q", true, true);
-                    MainMenu._draw.AddCheckBox("draw.r.e", "Draw E", true, true);
+                    MainMenu.Draw.AddGroupLabel("W Shadow Settings", "draw.w.settings", true);
+                    MainMenu.Draw.AddCheckBox("draw.w.q", "Draw Q", true, true);
+                    MainMenu.Draw.AddCheckBox("draw.w.e", "Draw E", true, true);
+                    MainMenu.Draw.AddGroupLabel("R Shadow Settings", "draw.r.settings", true);
+                    MainMenu.Draw.AddCheckBox("draw.r.q", "Draw Q", true, true);
+                    MainMenu.Draw.AddCheckBox("draw.r.e", "Draw E", true, true);
 
                     // flee
                     MainMenu.FleeKeys(false, useE: false, useR: false);
-                    MainMenu._flee.AddSlider("flee.w.delay", "Switch Delay", 5, 0, 100, true);
+                    MainMenu.Flee.AddSlider("flee.w.delay", "Switch Delay", 5, 0, 100, true);
 
                     // lane
                     MainMenu.LaneKeys(useR: false);
@@ -84,19 +83,19 @@ namespace OKTRAIO.Champions
 
                     // ks
                     MainMenu.KsKeys(useR: false);
-                    MainMenu._ks.AddSlider("killsteal.q.hitchance", "Q Hitchance", 75, 1, 100, true);
+                    MainMenu.Ks.AddSlider("killsteal.q.hitchance", "Q Hitchance", 75, 1, 100, true);
 
                     // last hit
                     MainMenu.LastHitKeys(true, true, false, defaultE: true);
-                    MainMenu._lasthit.AddCheckBox("lasthit.notkillablebyaa",
+                    MainMenu.Lasthit.AddCheckBox("lasthit.notkillablebyaa",
                         "Only use Spells if Minion is not Killable by AA", false, true);
 
                     // harass
                     MainMenu.HarassKeys(useR: false);
-                    MainMenu._harass.AddCheckBox("harass.autoe", "Auto E", true);
-                    MainMenu._harass.AddCheckBox("harass.autoe.combodisable", "Disable When Combo", true, true);
-                    MainMenu._harass.AddCheckBox("harass.autoe.w", "Auto E for W Shadow", true, true);
-                    MainMenu._harass.AddCheckBox("harass.autoe.r", "Auto E for R Shadow", true, true);
+                    MainMenu.Harass.AddCheckBox("harass.autoe", "Auto E", true);
+                    MainMenu.Harass.AddCheckBox("harass.autoe.combodisable", "Disable When Combo", true, true);
+                    MainMenu.Harass.AddCheckBox("harass.autoe.w", "Auto E for W Shadow", true, true);
+                    MainMenu.Harass.AddCheckBox("harass.autoe.r", "Auto E for R Shadow", true, true);
                 }
                 catch (Exception e)
                 {
@@ -220,7 +219,7 @@ namespace OKTRAIO.Champions
                         {
                             displayName += "Distant";
                         }
-                        MainMenu._combo["combo.mode"].Cast<Slider>().DisplayName = displayName;
+                        MainMenu.Combo["combo.mode"].Cast<Slider>().DisplayName = displayName;
                         break;
                 }
             }
@@ -253,23 +252,23 @@ namespace OKTRAIO.Champions
                         {
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.q"),
-                                Color = MainMenu._draw.GetColor("color.q"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.q"),
+                                Color = MainMenu.Draw.GetColor("color.q"),
                                 Radius = Q.Range
                             }.Draw(Player.Instance.Position);
                             if (WShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.w.q"))
                                 new Circle
                                 {
-                                    BorderWidth = MainMenu._draw.GetWidth("width.q"),
-                                    Color = MainMenu._draw.GetColor("color.q"),
+                                    BorderWidth = MainMenu.Draw.GetWidth("width.q"),
+                                    Color = MainMenu.Draw.GetColor("color.q"),
                                     Radius = Q.Range
                                 }.Draw(WShadow.Position);
                             if (RShadow != null && WShadow != null && WShadow.IsValid && WShadow.IsVisible &&
                                 Value.Use("draw.r.q"))
                                 new Circle
                                 {
-                                    BorderWidth = MainMenu._draw.GetWidth("width.q"),
-                                    Color = MainMenu._draw.GetColor("color.q"),
+                                    BorderWidth = MainMenu.Draw.GetWidth("width.q"),
+                                    Color = MainMenu.Draw.GetColor("color.q"),
                                     Radius = Q.Range
                                 }.Draw(RShadow.Position);
                         }
@@ -278,22 +277,22 @@ namespace OKTRAIO.Champions
                     {
                         new Circle
                         {
-                            BorderWidth = MainMenu._draw.GetWidth("width.q"),
-                            Color = MainMenu._draw.GetColor("color.q"),
+                            BorderWidth = MainMenu.Draw.GetWidth("width.q"),
+                            Color = MainMenu.Draw.GetColor("color.q"),
                             Radius = Q.Range
                         }.Draw(Player.Instance.Position);
                         if (WShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.w.q"))
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.q"),
-                                Color = MainMenu._draw.GetColor("color.q"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.q"),
+                                Color = MainMenu.Draw.GetColor("color.q"),
                                 Radius = Q.Range
                             }.Draw(WShadow.Position);
                         if (RShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.r.q"))
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.q"),
-                                Color = MainMenu._draw.GetColor("color.q"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.q"),
+                                Color = MainMenu.Draw.GetColor("color.q"),
                                 Radius = Q.Range
                             }.Draw(RShadow.Position);
                     }
@@ -306,8 +305,8 @@ namespace OKTRAIO.Champions
                         {
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.w"),
-                                Color = MainMenu._draw.GetColor("color.w"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.w"),
+                                Color = MainMenu.Draw.GetColor("color.w"),
                                 Radius = W.Range
                             }.Draw(Player.Instance.Position);
                         }
@@ -316,8 +315,8 @@ namespace OKTRAIO.Champions
                     {
                         new Circle
                         {
-                            BorderWidth = MainMenu._draw.GetWidth("width.w"),
-                            Color = MainMenu._draw.GetColor("color.w"),
+                            BorderWidth = MainMenu.Draw.GetWidth("width.w"),
+                            Color = MainMenu.Draw.GetColor("color.w"),
                             Radius = W.Range
                         }.Draw(Player.Instance.Position);
                     }
@@ -330,23 +329,23 @@ namespace OKTRAIO.Champions
                         {
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.e"),
-                                Color = MainMenu._draw.GetColor("color.e"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.e"),
+                                Color = MainMenu.Draw.GetColor("color.e"),
                                 Radius = E.Range
                             }.Draw(Player.Instance.Position);
                             if (WShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.w.e"))
                                 new Circle
                                 {
-                                    BorderWidth = MainMenu._draw.GetWidth("width.e"),
-                                    Color = MainMenu._draw.GetColor("color.e"),
+                                    BorderWidth = MainMenu.Draw.GetWidth("width.e"),
+                                    Color = MainMenu.Draw.GetColor("color.e"),
                                     Radius = E.Range
                                 }.Draw(WShadow.Position);
                             if (RShadow != null && WShadow != null && WShadow.IsValid && WShadow.IsVisible &&
                                 Value.Use("draw.r.e"))
                                 new Circle
                                 {
-                                    BorderWidth = MainMenu._draw.GetWidth("width.e"),
-                                    Color = MainMenu._draw.GetColor("color.e"),
+                                    BorderWidth = MainMenu.Draw.GetWidth("width.e"),
+                                    Color = MainMenu.Draw.GetColor("color.e"),
                                     Radius = E.Range
                                 }.Draw(RShadow.Position);
                         }
@@ -355,22 +354,22 @@ namespace OKTRAIO.Champions
                     {
                         new Circle
                         {
-                            BorderWidth = MainMenu._draw.GetWidth("width.e"),
-                            Color = MainMenu._draw.GetColor("color.e"),
+                            BorderWidth = MainMenu.Draw.GetWidth("width.e"),
+                            Color = MainMenu.Draw.GetColor("color.e"),
                             Radius = E.Range
                         }.Draw(Player.Instance.Position);
                         if (WShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.w.e"))
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.e"),
-                                Color = MainMenu._draw.GetColor("color.e"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.e"),
+                                Color = MainMenu.Draw.GetColor("color.e"),
                                 Radius = E.Range
                             }.Draw(WShadow.Position);
                         if (RShadow != null && WShadow.IsValid && WShadow.IsVisible && Value.Use("draw.r.e"))
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.e"),
-                                Color = MainMenu._draw.GetColor("color.e"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.e"),
+                                Color = MainMenu.Draw.GetColor("color.e"),
                                 Radius = E.Range
                             }.Draw(RShadow.Position);
                     }
@@ -383,8 +382,8 @@ namespace OKTRAIO.Champions
                         {
                             new Circle
                             {
-                                BorderWidth = MainMenu._draw.GetWidth("width.r"),
-                                Color = MainMenu._draw.GetColor("color.r"),
+                                BorderWidth = MainMenu.Draw.GetWidth("width.r"),
+                                Color = MainMenu.Draw.GetColor("color.r"),
                                 Radius = R.Range
                             }.Draw(Player.Instance.Position);
                         }
@@ -393,8 +392,8 @@ namespace OKTRAIO.Champions
                     {
                         new Circle
                         {
-                            BorderWidth = MainMenu._draw.GetWidth("width.r"),
-                            Color = MainMenu._draw.GetColor("color.r"),
+                            BorderWidth = MainMenu.Draw.GetWidth("width.r"),
+                            Color = MainMenu.Draw.GetColor("color.r"),
                             Radius = R.Range
                         }.Draw(Player.Instance.Position);
                     }

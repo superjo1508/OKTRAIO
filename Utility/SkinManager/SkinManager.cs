@@ -4,31 +4,56 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 using EloBuddy;
+using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
+using OKTRAIO.Menu_Settings;
 
 namespace OKTRAIO.Utility.SkinManager
 {
-    internal class SkinManagement
+    public class SkinManagement : UtilityAddon
     {
-        public static XmlDocument InfoXml;
-        public static Model[] Models;
-        public static int OriginalSkinIndex;
+        public XmlDocument InfoXml;
+        internal Model[] Models;
+        public int OriginalSkinIndex;
 
-        public static string[] ModelNames;
+        public string[] ModelNames;
 
-        public static Model GetModelByIndex(int index)
+        internal Model GetModelByIndex(int index)
         {
             return Models[index];
         }
 
-        public static Model GetModelByName(string name)
+        internal Model GetModelByName(string name)
         {
             return
                 Models.FirstOrDefault(
                     model => string.Equals(model.Name, name, StringComparison.CurrentCultureIgnoreCase));
         }
 
-        public static void Init()
+        public override UtilityInfo GetUtilityInfo()
+        {
+            return new UtilityInfo(this, "SkinManager", "skinmanager", "Unknown");
+        }
+
+        protected override void InitializeMenu()
+        {
+            Menu.AddGroupLabel("OKTR AIO - Skinmanager for " + Player.Instance.ChampionName,
+                "skinmanager.grouplabel.utilitymenu");
+            Menu.AddLabel("PSA: Changing your Model might in rare cases crash the game." + Environment.NewLine +
+                                 "This does not apply to changing skin.");
+            Menu.AddSeparator();
+            Menu.Add("skinmanager.models", new Slider("Model - ", 0, 0, 0)).OnValueChange +=
+                SkinManager_OnModelSliderChange;
+            Menu.Add("skinmanager.skins", new Slider("Skin - Classic", 0, 0, 0)).OnValueChange +=
+                SkinManager_OnSkinSliderChange;
+            Menu.Add("skinmanager.resetModel", new CheckBox("Reset Model", false)).OnValueChange +=
+                SkinManager_OnResetModel;
+            Menu.Add("skinmanager.resetSkin", new CheckBox("Reset Skin", false)).OnValueChange +=
+                SkinManager_OnResetSkin;
+            Menu.AddSeparator();
+        }
+
+        public override void Initialize()
         {
             using (
                 var infoStream =
@@ -59,42 +84,42 @@ namespace OKTRAIO.Utility.SkinManager
             ModelNames = Models.Select(model => model.Name).ToArray();
 
             OriginalSkinIndex = Player.Instance.SkinId;
-            UtilityMenu.Skinmanager["skinmanager.models"].Cast<Slider>().MaxValue = Models.Length - 1;
-            UtilityMenu.Skinmanager["skinmanager.models"].Cast<Slider>().CurrentValue = Array.IndexOf(ModelNames,
+            Menu["skinmanager.models"].Cast<Slider>().MaxValue = Models.Length - 1;
+            Menu["skinmanager.models"].Cast<Slider>().CurrentValue = Array.IndexOf(ModelNames,
                 Player.Instance.ChampionName);
         }
 
-        public static void SkinManager_OnResetSkin(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
+        public void SkinManager_OnResetSkin(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
         {
-            UtilityMenu.Skinmanager["skinmanager.skins"].Cast<Slider>().CurrentValue = OriginalSkinIndex;
-            if (UtilityMenu.Skinmanager["skinmanager.resetSkin"].Cast<CheckBox>().CurrentValue)
-                UtilityMenu.Skinmanager["skinmanager.resetSkin"].Cast<CheckBox>().CurrentValue = false;
+            Menu["skinmanager.skins"].Cast<Slider>().CurrentValue = OriginalSkinIndex;
+            if (Menu["skinmanager.resetSkin"].Cast<CheckBox>().CurrentValue)
+                Menu["skinmanager.resetSkin"].Cast<CheckBox>().CurrentValue = false;
         }
 
-        public static void SkinManager_OnResetModel(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
+        public void SkinManager_OnResetModel(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
         {
-            UtilityMenu.Skinmanager["skinmanager.models"].Cast<Slider>().CurrentValue = Array.IndexOf(ModelNames,
+            Menu["skinmanager.models"].Cast<Slider>().CurrentValue = Array.IndexOf(ModelNames,
                 Player.Instance.ChampionName);
 
-            if (UtilityMenu.Skinmanager["skinmanager.resetModel"].Cast<CheckBox>().CurrentValue)
-                UtilityMenu.Skinmanager["skinmanager.resetModel"].Cast<CheckBox>().CurrentValue = false;
+            if (Menu["skinmanager.resetModel"].Cast<CheckBox>().CurrentValue)
+                Menu["skinmanager.resetModel"].Cast<CheckBox>().CurrentValue = false;
         }
 
-        public static void SkinManager_OnSkinSliderChange(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
+        public void SkinManager_OnSkinSliderChange(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
         {
-            var model = GetModelByIndex(UtilityMenu.Skinmanager["skinmanager.models"].Cast<Slider>().CurrentValue);
-            var skin = model.Skins[UtilityMenu.Skinmanager["skinmanager.skins"].Cast<Slider>().CurrentValue];
-            UtilityMenu.Skinmanager["skinmanager.skins"].Cast<Slider>().DisplayName = "Skin - " + skin.Name;
+            var model = GetModelByIndex(Menu["skinmanager.models"].Cast<Slider>().CurrentValue);
+            var skin = model.Skins[Menu["skinmanager.skins"].Cast<Slider>().CurrentValue];
+            Menu["skinmanager.skins"].Cast<Slider>().DisplayName = "Skin - " + skin.Name;
             Player.SetSkinId(skin.Index);
         }
 
-        public static void SkinManager_OnModelSliderChange(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
+        public void SkinManager_OnModelSliderChange(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
         {
-            var model = GetModelByIndex(UtilityMenu.Skinmanager["skinmanager.models"].Cast<Slider>().CurrentValue);
-            UtilityMenu.Skinmanager["skinmanager.models"].Cast<Slider>().DisplayName = "Model - " + model.Name;
+            var model = GetModelByIndex(Menu["skinmanager.models"].Cast<Slider>().CurrentValue);
+            Menu["skinmanager.models"].Cast<Slider>().DisplayName = "Model - " + model.Name;
             Player.SetModel(model.Name);
-            UtilityMenu.Skinmanager["skinmanager.skins"].Cast<Slider>().CurrentValue = 0;
-            UtilityMenu.Skinmanager["skinmanager.skins"].Cast<Slider>().MaxValue = model.Skins.Length - 1;
+            Menu["skinmanager.skins"].Cast<Slider>().CurrentValue = 0;
+            Menu["skinmanager.skins"].Cast<Slider>().MaxValue = model.Skins.Length - 1;
         }
 
         internal struct Model
@@ -124,6 +149,10 @@ namespace OKTRAIO.Utility.SkinManager
                 Name = name;
                 Index = int.Parse(index);
             }
+        }
+
+        public SkinManagement(Menu menu) : base(menu, null)
+        {
         }
     }
 }

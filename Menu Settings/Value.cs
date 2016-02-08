@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
@@ -10,35 +11,39 @@ namespace OKTRAIO.Menu_Settings
 {
     public static class Value
     {
-        public static readonly string[] MenuStrings =
-        {
-            "combo", "lane", "jungle", "lasthit", "harass", "flee", "misc",
-            "killsteal", "draw", "activator", "baseult", "randomult", "bushreveal"
-        };
-
-        public static List<string> AdvancedMenuItemUiDs = new List<string>();
-        public static List<Menu> MenuList = new List<Menu>();
-
+        public static bool AddNameToEnd { get; set; }
         public static void Init()
         {
-            if (MainMenu._combo != null) MenuList.Add(MainMenu._combo);
-            if (MainMenu._lane != null) MenuList.Add(MainMenu._lane);
-            if (MainMenu._jungle != null) MenuList.Add(MainMenu._jungle);
-            if (MainMenu._lasthit != null) MenuList.Add(MainMenu._lasthit);
-            if (MainMenu._harass != null) MenuList.Add(MainMenu._harass);
-            if (MainMenu._flee != null) MenuList.Add(MainMenu._flee);
-            if (MainMenu._misc != null) MenuList.Add(MainMenu._misc);
-            if (MainMenu._ks != null) MenuList.Add(MainMenu._ks);
-            if (MainMenu._draw != null) MenuList.Add(MainMenu._draw);
-            if (UtilityMenu.Activator != null) MenuList.Add(UtilityMenu.Activator);
-            if (UtilityMenu.Baseult != null) MenuList.Add(UtilityMenu.Baseult);
-            if (UtilityMenu.Randomult != null) MenuList.Add(UtilityMenu.Randomult);
-            if (UtilityMenu.Bushreveal != null) MenuList.Add(UtilityMenu.Bushreveal);
+            if (MainMenu.Combo != null) MenuList.Add(MainMenu.Combo);
+            if (MainMenu.Lane != null) MenuList.Add(MainMenu.Lane);
+            if (MainMenu.Jungle != null) MenuList.Add(MainMenu.Jungle);
+            if (MainMenu.Lasthit != null) MenuList.Add(MainMenu.Lasthit);
+            if (MainMenu.Harass != null) MenuList.Add(MainMenu.Harass);
+            if (MainMenu.Flee != null) MenuList.Add(MainMenu.Flee);
+            if (MainMenu.Misc != null) MenuList.Add(MainMenu.Misc);
+            if (MainMenu.Ks != null) MenuList.Add(MainMenu.Ks);
+            if (MainMenu.Draw != null) MenuList.Add(MainMenu.Draw);
+
+            //Utilities are now added as the menu is created (in UtilityAddon.Constructor())
         }
+
+        public static readonly string[] MenuStrings = { "combo", "lane", "jungle", "lasthit", "harass", "flee", "misc", "killsteal", "draw", "activator", "baseult", "randomult", "recall", "bushreveal", "tracker" };
+        public static List<string> AdvancedMenuItemUiDs = new List<string>();
+        public static List<Menu> MenuList = new List<Menu>();
 
         public static bool Use(string id)
         {
             return MenuList.Find(m => m.UniqueMenuId.Contains(MenuSubString(id)))[id].Cast<CheckBox>().CurrentValue;
+        }
+
+        public static string ComboString(string id)
+        {
+            return MenuList.Find(m => m.UniqueMenuId.Contains(MenuSubString(id)))[id].Cast<ComboBox>().SelectedText;
+        }
+
+        public static int ComboGet(string id)
+        {
+            return MenuList.Find(m => m.UniqueMenuId.Contains(MenuSubString(id)))[id].Cast<ComboBox>().CurrentValue;
         }
 
         public static string MenuSubString(string id)
@@ -55,7 +60,6 @@ namespace OKTRAIO.Menu_Settings
         {
             return MenuList.Find(m => m.UniqueMenuId.Contains(MenuSubString(id)))[id].Cast<Slider>().CurrentValue;
         }
-
         public static bool Active(string id)
         {
             return MenuList.Find(m => m.UniqueMenuId.Contains(MenuSubString(id)))[id].Cast<KeyBind>().CurrentValue;
@@ -64,6 +68,7 @@ namespace OKTRAIO.Menu_Settings
         public static void AddComboBox(this Menu menu, string uid, string displayname, IEnumerable<string> textValues, int defaultIndex = 0,
             bool advanced = false)
         {
+            uid = AddNameToEnd ? uid.AddName() : uid;
             menu.Add(uid, new ComboBox(displayname, textValues, defaultIndex));
             JsonSettings.Profile.Options.Add(new JsonSetting(uid, Setting.Combobox, menu[uid].Cast<ComboBox>().CurrentValue.ToString()));
             if (!advanced) return;
@@ -74,6 +79,7 @@ namespace OKTRAIO.Menu_Settings
         public static void AddCheckBox(this Menu menu, string uid, string displayname, bool defaultvalue = true,
             bool advanced = false)
         {
+            uid = AddNameToEnd ? uid.AddName() : uid;
             menu.Add(uid, new CheckBox(displayname, defaultvalue));
             JsonSettings.Profile.Options.Add(new JsonSetting(uid, Setting.Checkbox, menu[uid].Cast<CheckBox>().CurrentValue.ToString()));
             if (!advanced) return;
@@ -84,6 +90,7 @@ namespace OKTRAIO.Menu_Settings
         public static void AddSlider(this Menu menu, string uid, string displayName, int defaultValue = 0,
             int minValue = 0, int maxValue = 100, bool advanced = false)
         {
+            uid = AddNameToEnd ? uid.AddName() : uid;
             menu.Add(uid, new Slider(displayName, defaultValue, minValue, maxValue));
             JsonSettings.Profile.Options.Add(new JsonSetting(uid, Setting.Slider, menu[uid].Cast<Slider>().CurrentValue.ToString()));
             if (!advanced) return;
@@ -137,6 +144,11 @@ namespace OKTRAIO.Menu_Settings
             {
                 MenuList.Find(m => m.UniqueMenuId.Contains(MenuSubString(box)))[box].IsVisible = args.NewValue;
             }
+        }
+
+        public static string AddName(this string data)
+        {
+            return data + "." + Player.Instance.ChampionName;
         }
     }
 }

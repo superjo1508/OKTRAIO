@@ -3,13 +3,25 @@ Development Release
 
 #Champions:
 Ashe
+Caitlyn
 Corki
 Draven
-Kalista
+Ezreal
+Jinx
+Katarina
 Lucian
+Sivir
+Teemo
 Tristana
 Twitch
+Varus
+Zed
 
 #Utilities:
 Activator
 BaseULT
+RandomULT
+RecallTracker
+BushRevealer
+DamageIndicator
+Humanizer

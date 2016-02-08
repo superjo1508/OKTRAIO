@@ -2,17 +2,19 @@
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
+using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using OKTRAIO.Menu_Settings;
 using SharpDX;
+using MainMenu = OKTRAIO.Menu_Settings.MainMenu;
 
 namespace OKTRAIO.Utility
 {
-    public static class Activator
+    public class Activator : UtilityAddon
     {
         #region ItemLogic
 
-        public static Item
+        public Item
 
             #region AD Items
 
@@ -65,9 +67,397 @@ namespace OKTRAIO.Utility
 
         #endregion
 
+        #region Initialize
+
+        public Activator(Menu menu) : base(menu)
+        {
+            LoadSpells();
+        }
+
+        public override UtilityInfo GetUtilityInfo()
+        {
+            return new UtilityInfo(this, "Activator", "activator", "Unknown");
+        }
+
+        protected override void InitializeMenu()
+        {
+            Menu.AddGroupLabel("OKTR AIO - Activator for " + Player.Instance.ChampionName,
+                "activator.grouplabel.utilitymenu");
+            Menu.AddCheckBox("activator.heal", "Use Heal");
+            Menu.AddCheckBox("activator.barrier", "Use Barrier");
+            Menu.AddCheckBox("activator.ignite", "Use Ignite");
+            Menu.Add("activator.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange +=
+                Value.AdvancedModeChanged;
+            Menu.AddSeparator();
+            Menu.AddGroupLabel("Heal Manager:", "activator.label.utilitymenu.heal", true);
+            Menu.AddCheckBox("activator.heal.lifesave", "Use Heal for Allies", false, true);
+            Menu.AddSlider("activator.heal.hp", "Use Heal if HP are under {0}", 15, 0, 100, true);
+            Menu.AddSeparator();
+            Menu.AddGroupLabel("Barrier Manager:", "activator.label.utilitymenu.barrier", true);
+            Menu.AddSlider("activator.barrier.hp", "Use Heal if HP are under {0}", 15, 0, 100, true);
+            Menu.AddSeparator();
+            Menu.AddGroupLabel("Ignite Manager:", "activator.label.utilitymenu.ignite", true);
+            Menu.AddCheckBox("activator.ignite.progressive", "Use Ignite for Progressive Damage", false, true);
+            Menu.AddCheckBox("activator.ignite.burst", "Use Ignite for Burst Damage", false, true);
+            Menu.AddCheckBox("activator.ignite.killsteal", "Use Ignite for Killsteal", true, true);
+            Menu.AddSeparator();
+            if (Botrk.IsOwned())
+            {
+                Menu.AddCheckBox("activator.botrk", "Use BOTRK");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Blade of The Ruined King Manager:",
+                    "activator.label.utilitymenu.botrk", true);
+                Menu.AddCheckBox("activator.botrk.combo", "Use BOTRK (COMBO Mode)", true, true);
+                Menu.AddCheckBox("activator.botrk.ks", "Use BOTRK (KS Mode)", false, true);
+                Menu.AddCheckBox("activator.botrk.lifesave", "Use BOTRK (LifeSave)", false, true);
+                Menu.AddSlider("activator.botrk.hp", "Use BOTRK (LifeSave) if HP are under {0}", 20, 0,
+                    100, true);
+                Menu.AddSeparator();
+            }
+            if (Cutlass.IsOwned())
+            {
+                Menu.AddCheckBox("activator.bilgewater", "Use BC");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Bilgewater Cutlass Manager:",
+                    "activator.label.utilitymenu.bilgewater", true);
+                Menu.AddCheckBox("activator.bilgewater.combo", "Use BC (COMBO Mode)", true, true);
+                Menu.AddCheckBox("activator.bilgewater.ks", "Use BC (KS Mode)", false, true);
+                Menu.AddSeparator();
+            }
+
+            if (Youmuus.IsOwned())
+            {
+                Menu.AddCheckBox("activator.youmus", "Use Youmus");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Youmus Manager:", "activator.label.utilitymenu.youmus", true);
+                Menu.AddCheckBox("activator.youmusspellonly", "Use Youmus only on spell cast", false,
+                    true);
+                Menu.AddSeparator();
+            }
+
+            if (Hunter.IsOwned() || Refillable.IsOwned() || Potion.IsOwned() || Biscuit.IsOwned() ||
+                Corrupting.IsOwned())
+            {
+                Menu.AddCheckBox("activator.potions", "Use Potions");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Potions Manager:", "activator.label.utilitymenu.potions", true);
+                Menu.AddSlider("activator.potions.hp", "Use POTIONS if HP are under {0}", 20, 0, 100,
+                    true);
+                Menu.AddSlider("activator.potions.mana", "Use POTIONS if mana is under {0}", 20, 0, 100,
+                    true);
+                Menu.AddSeparator();
+            }
+
+            if (Mercurial.IsOwned() || Qss.IsOwned())
+            {
+                Menu.AddCheckBox("activator.qss", "Use QSS - Mercurial");
+                Menu.AddCheckBox("activator.qss.ulti", "Prevent ultimates");
+                Menu.AddCheckBox("activator.qss.bonus", "Use on bonus");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Anti Cloud-Control Manager:", "activator.label.utilitymenu.qss",
+                    true);
+                Menu.AddCheckBox("activator.qss.cc.1", "Use it on Airborne", true, true);
+                Menu.AddCheckBox("activator.qss.cc.2", "Use it on Blind", true, true);
+                Menu.AddCheckBox("activator.qss.cc.3", "Use it on Disarm", true, true);
+                Menu.AddCheckBox("activator.qss.cc.4", "Use it on Forced Action", true, true);
+                Menu.AddCheckBox("activator.qss.cc.5", "Use it on Root", true, true);
+                Menu.AddCheckBox("activator.qss.cc.6", "Use it on Silence", true, true);
+                Menu.AddCheckBox("activator.qss.cc.7", "Use it on Slow", true, true);
+                Menu.AddCheckBox("activator.qss.cc.8", "Use it on Stasis", true, true);
+                Menu.AddCheckBox("activator.qss.cc.9", "Use it on Stun", true, true);
+                Menu.AddCheckBox("activator.qss.cc.10", "Use it on Suppression", true, true);
+                Menu.AddSeparator();
+
+                if (Value.Use("activator.qss.ulti"))
+                {
+                    Menu.AddGroupLabel("Anti Ultimate Manager:",
+                        "activator.label.utilitymenu.qss.antiulti", true);
+
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Fiora"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.1", "Prevent Fiora Ultimate", true, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Fizz"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.2", "Prevent Fizz Ultimate", true, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Lissandra"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.4", "Prevent Lissandra Ultimate", true,
+                            true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Mordekaiser"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.5", "Prevent Mordekaiser Ultimate", true,
+                            true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Thresh"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.7", "Prevent Thresh Q", true, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Vladimir"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.8", "Prevent Vladimir", true, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Zed"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.9", "Prevent Zed Ultimate", true, true);
+                    }
+                }
+
+                Menu.AddSeparator();
+
+                if (Value.Use("activator.qss.bonus"))
+                {
+                    Menu.AddGroupLabel("Anti Cloud-Control Bonus Manager:",
+                        "activator.label.utilitymenu.qss.bonus", true);
+
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Vayne"))
+                    {
+                        Menu.AddCheckBox("activator.qss.bonus.1", "Prevent Vayne Stacks", false, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Darius"))
+                    {
+                        Menu.AddCheckBox("activator.qss.bonus.2", "Prevent Darius BloodStacks", false,
+                            true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Kalista"))
+                    {
+                        Menu.AddCheckBox("activator.qss.bonus.3", "Prevent Kalista EStacks", false,
+                            true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Tristana"))
+                    {
+                        Menu.AddCheckBox("activator.qss.bonus.4", "Prevent Tristana EStacks", false,
+                            true);
+                    }
+                }
+
+                Menu.AddSlider("activator.qss.prevent.enemies",
+                    "Prevent to use QSS if there are less then {0} enemies", 3, 0, 5, true);
+                Menu.AddSlider("activator.qss.hp", "Use QSS if HP are under {0}", 20, 0, 100, true);
+                Menu.AddSeparator();
+            }
+
+            Obj_AI_Base.OnProcessSpellCast += OnProcessSpellCast;
+            Shop.OnBuyItem += Shop_OnBuyItem;
+            Obj_AI_Base.OnBuffGain += BuffGain;
+        }
+        public override void Initialize()
+        {
+            
+        }
+
+        private void Shop_OnBuyItem(AIHeroClient sender, ShopActionEventArgs args)
+        {
+            if (args.Id == (int) Botrk.Id && Menu["activator.botrk"] == null)
+            {
+                Menu.AddCheckBox("activator.botrk", "Use BOTRK");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Blade of The Ruined King Manager:",
+                    "activator.label.utilitymenu.botrk", true);
+                Menu.AddCheckBox("activator.botrk.combo", "Use BOTRK (COMBO Mode)", true, true);
+                Menu.AddCheckBox("activator.botrk.ks", "Use BOTRK (KS Mode)", false, true);
+                Menu.AddCheckBox("activator.botrk.lifesave", "Use BOTRK (LifeSave)", false, true);
+                Menu.AddSlider("activator.botrk.hp", "Use BOTRK (LifeSave) if HP are under {0}", 20, 0,
+                    100, true);
+                Menu.AddSeparator();
+            }
+            if (args.Id == (int) Cutlass.Id && Menu["activator.bilgewater"] == null)
+            {
+                Menu.AddCheckBox("activator.bilgewater", "Use BC");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Bilgewater Cutlass Manager:",
+                    "activator.label.utilitymenu.bilgewater", true);
+                Menu.AddCheckBox("activator.bilgewater.combo", "Use BC (COMBO Mode)", true, true);
+                Menu.AddCheckBox("activator.bilgewater.ks", "Use BC (KS Mode)", false, true);
+                Menu.AddSeparator();
+            }
+
+            if (args.Id == (int) Youmuus.Id && Menu["activator.youmus"] == null)
+            {
+                Menu.AddCheckBox("activator.youmus", "Use Youmus");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Youmus Manager:", "activator.label.utilitymenu.youmus", true);
+                Menu.AddCheckBox("activator.youmusspellonly", "Use Youmus only on spell cast", false,
+                    true);
+                Menu.AddSeparator();
+            }
+
+            if (args.Id == (int) Zhonya.Id && Menu["activator.zhonya"] == null)
+            {
+                Menu.AddCheckBox("activator.zhonya", "Use Zhonya - WIP");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Zhonya Manager:", "activator.label.utilitymenu.zhonya", true);
+                Menu.AddCheckBox("activator.zhonya.prevent", "Prevent to use Zhonya", true, true);
+                Menu.AddSlider("activator.zhonya.prevent.enemies",
+                    "Prevent to use Zhonya if there are more then {0} enemies", 3, 0, 5, true);
+                Menu.AddSlider("activator.zhonya.hp", "Use Zhonys if HP are under {0}", 20, 0, 100,
+                    true);
+                Menu.AddSeparator();
+            }
+
+            if (args.Id == (int) Seraph.Id && Menu["activator.seraph"] == null)
+            {
+                Menu.AddCheckBox("activator.seraph", "Use Seraph - WIP");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Seraph Manager:", "activator.label.utilitymenu.zhonya", true);
+                Menu.AddCheckBox("activator.seraph.prevent", "Prevent to use Seraph", true, true);
+                Menu.AddSlider("activator.seraph.prevent.enemies",
+                    "Prevent to use Seraph if there are more then {0} enemies", 3, 0, 5, true);
+                Menu.AddSlider("activator.seraph.hp", "Use Seraph if HP are under {0}", 20, 0, 100,
+                    true);
+                Menu.AddSeparator();
+            }
+
+            if ((args.Id == (int) Mercurial.Id || args.Id == (int) Qss.Id) &&
+                Menu["activator.qss"] == null)
+            {
+                Menu.AddCheckBox("activator.qss", "Use QSS - Mercurial");
+                Menu.AddCheckBox("activator.qss.ulti", "Prevent ultimates");
+                Menu.AddCheckBox("activator.qss.bonus", "Use on bonus");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Anti Cloud-Control Manager:", "activator.label.utilitymenu.qss",
+                    true);
+                Menu.AddCheckBox("activator.qss.cc.1", "Use it on Airborne", true, true);
+                Menu.AddCheckBox("activator.qss.cc.2", "Use it on Blind", true, true);
+                Menu.AddCheckBox("activator.qss.cc.3", "Use it on Disarm", true, true);
+                Menu.AddCheckBox("activator.qss.cc.4", "Use it on Forced Action", true, true);
+                Menu.AddCheckBox("activator.qss.cc.5", "Use it on Root", true, true);
+                Menu.AddCheckBox("activator.qss.cc.6", "Use it on Silence", true, true);
+                Menu.AddCheckBox("activator.qss.cc.7", "Use it on Slow", true, true);
+                Menu.AddCheckBox("activator.qss.cc.8", "Use it on Stasis", true, true);
+                Menu.AddCheckBox("activator.qss.cc.9", "Use it on Stun", true, true);
+                Menu.AddCheckBox("activator.qss.cc.10", "Use it on Suppression", true, true);
+                Menu.AddSeparator();
+
+                if (Value.Use("activator.qss.ulti"))
+                {
+                    Menu.AddGroupLabel("Anti Ultimate Manager:",
+                        "activator.label.utilitymenu.qss.antiulti", true);
+
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Fiora"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.1", "Prevent Fiora Ultimate", true, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Fizz"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.2", "Prevent Fizz Ultimate", true, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Lissandra"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.4", "Prevent Lissandra Ultimate", true,
+                            true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Mordekaiser"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.5", "Prevent Mordekaiser Ultimate", true,
+                            true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Thresh"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.7", "Prevent Thresh Q", true, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Vladimir"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.8", "Prevent Vladimir", true, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Zed"))
+                    {
+                        Menu.AddCheckBox("activator.qss.ulti.9", "Prevent Zed Ultimate", true, true);
+                    }
+                }
+
+                Menu.AddSeparator();
+
+                if (Value.Use("activator.qss.bonus"))
+                {
+                    Menu.AddGroupLabel("Anti Cloud-Control Bonus Manager:",
+                        "activator.label.utilitymenu.qss.bonus", true);
+
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Vayne"))
+                    {
+                        Menu.AddCheckBox("activator.qss.bonus.1", "Prevent Vayne Stacks", false, true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Darius"))
+                    {
+                        Menu.AddCheckBox("activator.qss.bonus.2", "Prevent Darius BloodStacks", false,
+                            true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Kalista"))
+                    {
+                        Menu.AddCheckBox("activator.qss.bonus.3", "Prevent Kalista EStacks", false,
+                            true);
+                    }
+                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Tristana"))
+                    {
+                        Menu.AddCheckBox("activator.qss.bonus.4", "Prevent Tristana EStacks", false,
+                            true);
+                    }
+                }
+
+                Menu.AddSlider("activator.qss.prevent.enemies",
+                    "Prevent to use QSS if there are less then {0} enemies", 3, 0, 5, true);
+                Menu.AddSlider("activator.qss.hp", "Use QSS if HP are under {0}", 20, 0, 100, true);
+                Menu.AddSeparator();
+            }
+
+            if ((args.Id == (int) Hunter.Id || args.Id == (int) Refillable.Id || args.Id == (int) Potion.Id ||
+                 args.Id == (int) Biscuit.Id || args.Id == (int) Corrupting.Id) &&
+                Menu["activator.potions"] == null)
+            {
+                Menu.AddCheckBox("activator.potions", "Use Potions");
+                Menu.AddSeparator();
+                Menu.AddGroupLabel("Potions Manager:", "activator.label.utilitymenu.potions", true);
+                Menu.AddSlider("activator.potions.hp", "Use POTIONS if HP are under {0}", 20, 0, 100,
+                    true);
+                Menu.AddSlider("activator.potions.mana", "Use POTIONS if mana is under {0}", 20, 0, 100,
+                    true);
+                Menu.AddSeparator();
+            }
+        }
+
+        #endregion
+
+        #region Game related Events
+
+        private void OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (sender.IsMe && Youmuus.IsOwned() && Value.Use("activator.youmusspellonly"))
+            {
+                if (((Player.Instance.ChampionName == "Lucian" ||
+                      Player.Instance.ChampionName == "Twitch" ||
+                      Player.Instance.ChampionName == "Zed" ||
+                      Player.Instance.ChampionName == "Varus") && args.Slot == SpellSlot.R) ||
+                    (Player.Instance.ChampionName == "Ashe" && args.Slot == SpellSlot.Q))
+
+                {
+                    Youmuus.Cast();
+                }
+            }
+        }
+
+        protected override void Game_OnUpdate(EventArgs args)
+        {
+            if(!MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue) return;
+            OffensiveItems();
+            DefensiveItems();
+            PlayerSpells();
+        }
+
+        protected override void Game_OnTick(EventArgs args)
+        {
+            if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue) return;
+            OffensiveItems();
+            DefensiveItems();
+            PlayerSpells();
+        }
+
+        #endregion
+
         #region Offensive Items
 
-        private static void OffensiveItems()
+        private void OffensiveItems()
         {
             if (Botrk.IsReady() && Value.Use("activator.botrk"))
             {
@@ -75,7 +465,7 @@ namespace OKTRAIO.Utility
                 if (t.IsValidTarget())
                 {
                     if (Value.Use("activator.botrk.ks") &&
-                        Player.Instance.CalculateDamageOnUnit(t, DamageType.Physical, t.MaxHealth*(float) 0.1) >
+                        Player.Instance.CalculateDamageOnUnit(t, DamageType.Physical, t.MaxHealth * (float)0.1) >
                         t.Health)
                         Botrk.Cast(t);
                     if (Value.Use("activator.botrk.lifesave") &&
@@ -115,371 +505,16 @@ namespace OKTRAIO.Utility
 
         #endregion
 
-        #region Initialize
-
-        public static void Init()
-        {
-            if (Botrk.IsOwned())
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.botrk", "Use BOTRK");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Blade of The Ruined King Manager:",
-                    "activator.label.utilitymenu.botrk", true);
-                UtilityMenu.Activator.AddCheckBox("activator.botrk.combo", "Use BOTRK (COMBO Mode)", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.botrk.ks", "Use BOTRK (KS Mode)", false, true);
-                UtilityMenu.Activator.AddCheckBox("activator.botrk.lifesave", "Use BOTRK (LifeSave)", false, true);
-                UtilityMenu.Activator.AddSlider("activator.botrk.hp", "Use BOTRK (LifeSave) if HP are under {0}", 20, 0,
-                    100, true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-            if (Cutlass.IsOwned())
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.bilgewater", "Use BC");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Bilgewater Cutlass Manager:",
-                    "activator.label.utilitymenu.bilgewater", true);
-                UtilityMenu.Activator.AddCheckBox("activator.bilgewater.combo", "Use BC (COMBO Mode)", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.bilgewater.ks", "Use BC (KS Mode)", false, true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-
-            if (Youmuus.IsOwned())
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.youmus", "Use Youmus");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Youmus Manager:", "activator.label.utilitymenu.youmus", true);
-                UtilityMenu.Activator.AddCheckBox("activator.youmusspellonly", "Use Youmus only on spell cast", false,
-                    true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-
-            if (Hunter.IsOwned() || Refillable.IsOwned() || Potion.IsOwned() || Biscuit.IsOwned() ||
-                Corrupting.IsOwned())
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.potions", "Use Potions");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Potions Manager:", "activator.label.utilitymenu.potions", true);
-                UtilityMenu.Activator.AddSlider("activator.potions.hp", "Use POTIONS if HP are under {0}", 20, 0, 100,
-                    true);
-                UtilityMenu.Activator.AddSlider("activator.potions.mana", "Use POTIONS if mana is under {0}", 20, 0, 100,
-                    true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-
-            if (Mercurial.IsOwned() || Qss.IsOwned())
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.qss", "Use QSS - Mercurial");
-                UtilityMenu.Activator.AddCheckBox("activator.qss.ulti", "Prevent ultimates");
-                UtilityMenu.Activator.AddCheckBox("activator.qss.bonus", "Use on bonus");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Anti Cloud-Control Manager:", "activator.label.utilitymenu.qss",
-                    true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.1", "Use it on Airborne", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.2", "Use it on Blind", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.3", "Use it on Disarm", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.4", "Use it on Forced Action", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.5", "Use it on Root", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.6", "Use it on Silence", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.7", "Use it on Slow", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.8", "Use it on Stasis", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.9", "Use it on Stun", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.10", "Use it on Suppression", true, true);
-                UtilityMenu.Activator.AddSeparator();
-
-                if (Value.Use("activator.qss.ulti"))
-                {
-                    UtilityMenu.Activator.AddGroupLabel("Anti Ultimate Manager:",
-                        "activator.label.utilitymenu.qss.antiulti", true);
-
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Fiora"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.1", "Prevent Fiora Ultimate", true, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Fizz"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.2", "Prevent Fizz Ultimate", true, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Lissandra"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.4", "Prevent Lissandra Ultimate", true,
-                            true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Mordekaiser"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.5", "Prevent Mordekaiser Ultimate", true,
-                            true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Thresh"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.7", "Prevent Thresh Q", true, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Vladimir"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.8", "Prevent Vladimir", true, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Zed"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.9", "Prevent Zed Ultimate", true, true);
-                    }
-                }
-
-                UtilityMenu.Activator.AddSeparator();
-
-                if (Value.Use("activator.qss.bonus"))
-                {
-                    UtilityMenu.Activator.AddGroupLabel("Anti Cloud-Control Bonus Manager:",
-                        "activator.label.utilitymenu.qss.bonus", true);
-
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Vayne"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.bonus.1", "Prevent Vayne Stacks", false, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Darius"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.bonus.2", "Prevent Darius BloodStacks", false,
-                            true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Kalista"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.bonus.3", "Prevent Kalista EStacks", false,
-                            true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Tristana"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.bonus.4", "Prevent Tristana EStacks", false,
-                            true);
-                    }
-                }
-
-                UtilityMenu.Activator.AddSlider("activator.qss.prevent.enemies",
-                    "Prevent to use QSS if there are less then {0} enemies", 3, 0, 5, true);
-                UtilityMenu.Activator.AddSlider("activator.qss.hp", "Use QSS if HP are under {0}", 20, 0, 100, true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-
-            if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
-            {
-                Game.OnUpdate += GameOnUpdate;
-            }
-            else
-            {
-                Game.OnTick += GameOnUpdate;
-            }
-
-            Obj_AI_Base.OnProcessSpellCast += OnProcessSpellCast;
-            Shop.OnBuyItem += Shop_OnBuyItem;
-            Obj_AI_Base.OnBuffGain += BuffGain;
-        }
-
-        private static void Shop_OnBuyItem(AIHeroClient sender, ShopActionEventArgs args)
-        {
-            if (args.Id == (int) Botrk.Id && UtilityMenu.Activator["activator.botrk"] == null)
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.botrk", "Use BOTRK");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Blade of The Ruined King Manager:",
-                    "activator.label.utilitymenu.botrk", true);
-                UtilityMenu.Activator.AddCheckBox("activator.botrk.combo", "Use BOTRK (COMBO Mode)", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.botrk.ks", "Use BOTRK (KS Mode)", false, true);
-                UtilityMenu.Activator.AddCheckBox("activator.botrk.lifesave", "Use BOTRK (LifeSave)", false, true);
-                UtilityMenu.Activator.AddSlider("activator.botrk.hp", "Use BOTRK (LifeSave) if HP are under {0}", 20, 0,
-                    100, true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-            if (args.Id == (int) Cutlass.Id && UtilityMenu.Activator["activator.bilgewater"] == null)
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.bilgewater", "Use BC");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Bilgewater Cutlass Manager:",
-                    "activator.label.utilitymenu.bilgewater", true);
-                UtilityMenu.Activator.AddCheckBox("activator.bilgewater.combo", "Use BC (COMBO Mode)", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.bilgewater.ks", "Use BC (KS Mode)", false, true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-
-            if (args.Id == (int) Youmuus.Id && UtilityMenu.Activator["activator.youmus"] == null)
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.youmus", "Use Youmus");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Youmus Manager:", "activator.label.utilitymenu.youmus", true);
-                UtilityMenu.Activator.AddCheckBox("activator.youmusspellonly", "Use Youmus only on spell cast", false,
-                    true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-
-            if (args.Id == (int) Zhonya.Id && UtilityMenu.Activator["activator.zhonya"] == null)
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.zhonya", "Use Zhonya - WIP");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Zhonya Manager:", "activator.label.utilitymenu.zhonya", true);
-                UtilityMenu.Activator.AddCheckBox("activator.zhonya.prevent", "Prevent to use Zhonya", true, true);
-                UtilityMenu.Activator.AddSlider("activator.zhonya.prevent.enemies",
-                    "Prevent to use Zhonya if there are more then {0} enemies", 3, 0, 5, true);
-                UtilityMenu.Activator.AddSlider("activator.zhonya.hp", "Use Zhonys if HP are under {0}", 20, 0, 100,
-                    true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-
-            if (args.Id == (int) Seraph.Id && UtilityMenu.Activator["activator.seraph"] == null)
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.seraph", "Use Seraph - WIP");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Seraph Manager:", "activator.label.utilitymenu.zhonya", true);
-                UtilityMenu.Activator.AddCheckBox("activator.seraph.prevent", "Prevent to use Seraph", true, true);
-                UtilityMenu.Activator.AddSlider("activator.seraph.prevent.enemies",
-                    "Prevent to use Seraph if there are more then {0} enemies", 3, 0, 5, true);
-                UtilityMenu.Activator.AddSlider("activator.seraph.hp", "Use Seraph if HP are under {0}", 20, 0, 100,
-                    true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-
-            if ((args.Id == (int) Mercurial.Id || args.Id == (int) Qss.Id) &&
-                UtilityMenu.Activator["activator.qss"] == null)
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.qss", "Use QSS - Mercurial");
-                UtilityMenu.Activator.AddCheckBox("activator.qss.ulti", "Prevent ultimates");
-                UtilityMenu.Activator.AddCheckBox("activator.qss.bonus", "Use on bonus");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Anti Cloud-Control Manager:", "activator.label.utilitymenu.qss",
-                    true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.1", "Use it on Airborne", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.2", "Use it on Blind", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.3", "Use it on Disarm", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.4", "Use it on Forced Action", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.5", "Use it on Root", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.6", "Use it on Silence", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.7", "Use it on Slow", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.8", "Use it on Stasis", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.9", "Use it on Stun", true, true);
-                UtilityMenu.Activator.AddCheckBox("activator.qss.cc.10", "Use it on Suppression", true, true);
-                UtilityMenu.Activator.AddSeparator();
-
-                if (Value.Use("activator.qss.ulti"))
-                {
-                    UtilityMenu.Activator.AddGroupLabel("Anti Ultimate Manager:",
-                        "activator.label.utilitymenu.qss.antiulti", true);
-
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Fiora"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.1", "Prevent Fiora Ultimate", true, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Fizz"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.2", "Prevent Fizz Ultimate", true, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Lissandra"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.4", "Prevent Lissandra Ultimate", true,
-                            true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Mordekaiser"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.5", "Prevent Mordekaiser Ultimate", true,
-                            true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Thresh"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.7", "Prevent Thresh Q", true, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Vladimir"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.8", "Prevent Vladimir", true, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Zed"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.ulti.9", "Prevent Zed Ultimate", true, true);
-                    }
-                }
-
-                UtilityMenu.Activator.AddSeparator();
-
-                if (Value.Use("activator.qss.bonus"))
-                {
-                    UtilityMenu.Activator.AddGroupLabel("Anti Cloud-Control Bonus Manager:",
-                        "activator.label.utilitymenu.qss.bonus", true);
-
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Vayne"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.bonus.1", "Prevent Vayne Stacks", false, true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Darius"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.bonus.2", "Prevent Darius BloodStacks", false,
-                            true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Kalista"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.bonus.3", "Prevent Kalista EStacks", false,
-                            true);
-                    }
-                    if (EntityManager.Heroes.Enemies.Any(a => a.ChampionName == "Tristana"))
-                    {
-                        UtilityMenu.Activator.AddCheckBox("activator.qss.bonus.4", "Prevent Tristana EStacks", false,
-                            true);
-                    }
-                }
-
-                UtilityMenu.Activator.AddSlider("activator.qss.prevent.enemies",
-                    "Prevent to use QSS if there are less then {0} enemies", 3, 0, 5, true);
-                UtilityMenu.Activator.AddSlider("activator.qss.hp", "Use QSS if HP are under {0}", 20, 0, 100, true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-
-            if ((args.Id == (int) Hunter.Id || args.Id == (int) Refillable.Id || args.Id == (int) Potion.Id ||
-                 args.Id == (int) Biscuit.Id || args.Id == (int) Corrupting.Id) &&
-                UtilityMenu.Activator["activator.potions"] == null)
-            {
-                UtilityMenu.Activator.AddCheckBox("activator.potions", "Use Potions");
-                UtilityMenu.Activator.AddSeparator();
-                UtilityMenu.Activator.AddGroupLabel("Potions Manager:", "activator.label.utilitymenu.potions", true);
-                UtilityMenu.Activator.AddSlider("activator.potions.hp", "Use POTIONS if HP are under {0}", 20, 0, 100,
-                    true);
-                UtilityMenu.Activator.AddSlider("activator.potions.mana", "Use POTIONS if mana is under {0}", 20, 0, 100,
-                    true);
-                UtilityMenu.Activator.AddSeparator();
-            }
-        }
-
-        #endregion
-
-        #region Gamerelated Events
-
-        private static void OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
-        {
-            if (sender.IsMe && Youmuus.IsOwned() && Value.Use("activator.youmusspellonly"))
-            {
-                if (((Player.Instance.ChampionName == "Lucian" ||
-                      Player.Instance.ChampionName == "Twitch" ||
-                      Player.Instance.ChampionName == "Zed" ||
-                      Player.Instance.ChampionName == "Varus") && args.Slot == SpellSlot.R) ||
-                    (Player.Instance.ChampionName == "Ashe" && args.Slot == SpellSlot.Q))
-
-                {
-                    Youmuus.Cast();
-                }
-            }
-        }
-
-        private static void GameOnUpdate(EventArgs args)
-        {
-            OffensiveItems();
-            DefensiveItems();
-            PlayerSpells();
-        }
-
-        #endregion
-
         #region Defensive Items
 
-        private static void DefensiveItems()
+        private void DefensiveItems()
         {
             Potions();
         }
 
-        private static void Potions()
+        private void Potions()
         {
-            if (Player.Instance.IsInFountain() || Player.Instance.IsRecalling() ||
-                Player.Instance.IsUsingPotion() ||
+            if (IsInFountain(Player.Instance) || Player.Instance.IsRecalling() ||                 IsUsingPotion(Player.Instance) ||
                 (!Hunter.IsOwned() && !Refillable.IsOwned() && !Potion.IsOwned() && !Biscuit.IsOwned() &&
                  !Corrupting.IsOwned()) || !Value.Use("activator.potions"))
                 return;
@@ -520,7 +555,7 @@ namespace OKTRAIO.Utility
             }
         }
 
-        private static void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
+        private void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
             if (!sender.IsMe) return;
 
@@ -641,7 +676,7 @@ namespace OKTRAIO.Utility
             }
         }
 
-        private static void AutoRemove()
+        private void AutoRemove()
         {
             if (Game.MapId == GameMapId.SummonersRift)
             {
@@ -674,12 +709,11 @@ namespace OKTRAIO.Utility
 
         #region Spells
 
-        public static
-            Spell.Targeted Ignite, Smite, Exhaust;
+        public Spell.Targeted Ignite, Smite, Exhaust;
 
-        public static Spell.Active Heal, Barrier;
+        public Spell.Active Heal, Barrier;
 
-        public static void LoadSpells()
+        public void LoadSpells()
         {
             if (ObjectManager.Player.Spellbook.GetSpell(SpellSlot.Summoner1).Name.Contains("exhaust"))
                 Exhaust = new Spell.Targeted(SpellSlot.Summoner1, 650);
@@ -703,13 +737,13 @@ namespace OKTRAIO.Utility
                 Heal = new Spell.Active(SpellSlot.Summoner2);
         }
 
-        private static void PlayerSpells()
+        private void PlayerSpells()
         {
             var target = TargetSelector.GetTarget(1000, DamageType.Mixed);
 
             var spell = Player.Instance.Spellbook;
 
-            if (Player.Instance.IsInFountain() || Player.Instance.IsRecalling() || target == null) return;
+            if (IsInFountain(Player.Instance) || Player.Instance.IsRecalling() || target == null) return;
 
             if (Barrier != null)
             {
@@ -794,8 +828,7 @@ namespace OKTRAIO.Utility
 
         #region Util
 
-        public static
-            bool IsInFountain(this AIHeroClient hero)
+        public bool IsInFountain(AIHeroClient hero)
         {
             float fountainRange = 562500; //750 * 750
             var vec3 = hero.Team == GameObjectTeam.Order
@@ -809,7 +842,7 @@ namespace OKTRAIO.Utility
             return hero.IsVisible && hero.Distance(vec3, true) < fountainRange;
         }
 
-        public static bool IsUsingPotion(this AIHeroClient hero)
+        public bool IsUsingPotion(AIHeroClient hero)
         {
             return hero.HasBuff("RegenerationPotion") || hero.HasBuff("ItemMiniRegenPotion") ||
                    hero.HasBuff("ItemCrystalFlask") || hero.HasBuff("ItemCrystalFlaskJungle") ||
@@ -817,5 +850,6 @@ namespace OKTRAIO.Utility
         }
 
         #endregion
+
     }
 }

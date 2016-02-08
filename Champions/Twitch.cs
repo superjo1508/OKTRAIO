@@ -47,71 +47,72 @@ namespace OKTRAIO.Champions
 
                 //combo
                 MainMenu.ComboKeys();
-                MainMenu._combo.AddSeparator();
-                MainMenu._combo.AddSlider("combo.q.close", "Use Q when {0} enemies are close", 2, 1, 5, true);
-                MainMenu._combo.AddSeparator();
-                MainMenu._combo.AddSlider("combo.r.aoe", "Use R when {0} enemies can be hit", 2, 1, 5, true);
-                MainMenu._combo.AddSeparator();
-                MainMenu._combo.AddCheckBox("combo.mana.management", "Smart Mana Management", true, true);
-                MainMenu._combo.AddGroupLabel("Prediction", "combo.grouplabel.addonmenu", true);
-                MainMenu._combo.AddSlider("combo.w.prediction", "Hitchance Percentage for W", 80, 0, 100, true);
+                MainMenu.Combo.AddSeparator();
+                MainMenu.Combo.AddSlider("combo.q.close", "Use Q when {0} enemies are close", 2, 1, 5, true);
+                MainMenu.Combo.AddSeparator();
+                MainMenu.Combo.AddSlider("combo.r.aoe", "Use R when {0} enemies can be hit", 2, 1, 5, true);
+                MainMenu.Combo.AddSeparator();
+                MainMenu.Combo.AddCheckBox("combo.mana.management", "Smart Mana Management", true, true);
+                MainMenu.Combo.AddGroupLabel("Prediction", "combo.grouplabel.addonmenu", true);
+                MainMenu.Combo.AddSlider("combo.w.prediction", "Hitchance Percentage for W", 80, 0, 100, true);
 
                 //flee
                 MainMenu.FleeKeys(useE: false, useR: false);
-                MainMenu._flee.AddSeparator();
-                MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
+                MainMenu.Flee.AddSeparator();
+                MainMenu.Flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.addonmenu", true);
                 MainMenu.FleeManaManager(true, true, false, false, 20, 40, 0, 0);
 
 
                 //laneclear
                 MainMenu.LaneKeys(false, useR: false);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddCheckBox("lane.execute", "Use E on Siege Minions", true, true);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddSlider("lane.w.min", "Min. {0} minions for W", 3, 1, 7, true);
-                MainMenu._lane.AddSlider("lane.e.min", "Min. {0} minions for E", 3, 1, 7, true);
-                MainMenu._lane.AddSeparator();
-                MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddCheckBox("lane.execute", "Use E on Siege Minions", true, true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddSlider("lane.w.min", "Min. {0} minions for W", 3, 1, 7, true);
+                MainMenu.Lane.AddSlider("lane.e.min", "Min. {0} minions for E", 3, 1, 7, true);
+                MainMenu.Lane.AddSeparator();
+                MainMenu.Lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.addonmenu", true);
                 MainMenu.LaneManaManager(false, true, true, false, 0, 40, 15, 0);
 
                 //jungleclear
                 MainMenu.JungleKeys(false, useE: false, useR: false, junglesteal: true);
-                MainMenu._jungle.AddSeparator();
-                MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
+                MainMenu.Jungle.AddSeparator();
+                MainMenu.Jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.addonmenu", true);
                 MainMenu.JungleManaManager(false, true, true, false, 0, 40, 15, 0);
 
 
                 //harass
                 MainMenu.HarassKeys(false, useE: false, useR: false);
-                MainMenu._harass.AddSeparator();
-                MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
+                MainMenu.Harass.AddSeparator();
+                MainMenu.Harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.addonmenu", true);
                 MainMenu.HarassManaManager(false, true, false, false, 0, 30, 0, 0);
 
                 //ks
                 MainMenu.KsKeys(false, useW: false);
-                MainMenu._ks.AddSeparator();
-                MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
+                MainMenu.Ks.AddSeparator();
+                MainMenu.Ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.addonmenu", true);
                 MainMenu.KsManaManager(false, false, true, true, 0, 0, 5, 30);
 
                 //misc
                 MainMenu.MiscMenu();
-                MainMenu._misc.Add("misc.recall", new KeyBind("Stealh Recall", false, KeyBind.BindTypes.HoldActive, 'B'));
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddGroupLabel("Auto E Settings", "misc.grouplabel.addonmenu", true);
-                MainMenu._misc.AddCheckBox("misc.e.range", "E if target is going out of range", true, true);
-                MainMenu._misc.AddSlider("misc.e.range.stacks", "Min {0} stacks on enemy", 6, 1, 6, true);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddCheckBox("misc.e.time", "E if full stacks and timer is below 1 second", true, true);
-                MainMenu._misc.AddSeparator();
-                MainMenu._misc.AddCheckBox("misc.e.death", "Use E before death", true, true);
-                MainMenu._misc.AddSlider("misc.e.health", "Use E below {0}% Health", 10, 0, 100, true);
-                MainMenu._misc.AddSlider("misc.e.stacks", "Min {0} stacks on enemy", 6, 1, 6, true);
+                MainMenu.Misc.Add("misc.recall", new KeyBind("Stealh Recall", false, KeyBind.BindTypes.HoldActive, 'B'));
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddGroupLabel("Auto E Settings", "misc.grouplabel.addonmenu", true);
+                MainMenu.Misc.AddCheckBox("misc.e.range", "E if target is going out of range", false, true);
+                MainMenu.Misc.AddSlider("misc.e.range.stacks", "Min {0} stacks on enemy", 6, 1, 6, true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddCheckBox("misc.e.time", "E if full stacks and timer is below 1 second", false, true);
+                MainMenu.Misc.AddSeparator();
+                MainMenu.Misc.AddCheckBox("misc.e.death", "Use E before death", false, true);
+                MainMenu.Misc.AddSlider("misc.e.health", "Use E below {0}% Health", 10, 0, 100, true);
+                MainMenu.Misc.AddSlider("misc.e.stacks", "Min {0} stacks on enemy", 6, 1, 6, true);
 
 
                 //draw
                 MainMenu.DrawKeys(false);
-                MainMenu._draw.AddSeparator();
-                MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw E Damage", true, true);
+                MainMenu.DamageIndicator(true);
+                MainMenu.Draw.AddSeparator();
+                MainMenu.Draw.AddCheckBox("draw.hp.bar", "Draw E Damage", true, true);
             }
 
             catch (Exception e)
@@ -147,12 +148,9 @@ namespace OKTRAIO.Champions
         {
             var target = TargetSelector.GetTarget(_e.Range, DamageType.Physical);
 
-            if (target == null)
-            {
-                return;
-            }
+            if (target == null) return;
 
-            if (Value.Use("combo.q") && _q.IsReady() && !Ulting && Player.Instance.Mana > _qmana + _rmana)
+            if (Value.Use("combo.q".AddName()) && _q.IsReady() && !Ulting && Player.Instance.Mana > _qmana + _rmana)
             {
                 if (Player.Instance.CountEnemiesInRange(900) >= Value.Get("combo.q.close"))
                 {
@@ -160,15 +158,12 @@ namespace OKTRAIO.Champions
                 }
             }
 
-            if (Value.Use("combo.w") && _w.IsReady() && Player.Instance.Mana > _wmana + _rmana)
+            if (Value.Use("combo.w".AddName()) && _w.IsReady() && Player.Instance.Mana > _wmana + _rmana)
             {
-                var targetw = TargetSelector.GetTarget(_w.Range, DamageType.Physical);
-
-                if (targetw != null &&
-                    (!Stealthed && _w.IsInRange(targetw) && EStacks(target) < 5 ||
-                     !Stealthed && !Player.Instance.IsInAutoAttackRange(targetw) && _w.IsInRange(targetw)))
+                if ((!Stealthed && _w.IsInRange(target) && EStacks(target) < 5 ||
+                     !Stealthed && !Player.Instance.IsInAutoAttackRange(target) && _w.IsInRange(target)))
                 {
-                    var wpred = _w.GetPrediction(targetw);
+                    var wpred = _w.GetPrediction(target);
 
                     if (wpred.HitChancePercent >= Value.Get("combo.w.prediction"))
                     {
@@ -182,16 +177,18 @@ namespace OKTRAIO.Champions
                     _w.Cast(target);
                 }
             }
-
-            if (Value.Use("combo.e") && _e.IsReady() && Player.Instance.Mana > _emana + _rmana)
+            if (!Value.Use("killsteal.e"))
             {
-                if (EStacks(target) == 6 && _e.IsInRange(target))
+                if (Value.Use("combo.e".AddName()) && _e.IsReady() && Player.Instance.Mana > _emana + _rmana)
                 {
-                    _e.Cast();
+                    if (EStacks(target) == 6 && _e.IsInRange(target))
+                    {
+                        _e.Cast();
+                    }
                 }
             }
 
-            if (Value.Use("combo.r") && _r.IsReady())
+            if (Value.Use("combo.r".AddName()) && _r.IsReady())
             {
                 var targetr2 = TargetSelector.GetTarget(_r2.Range, DamageType.Physical);
 
@@ -702,12 +699,12 @@ namespace OKTRAIO.Champions
 
         private static void GameOnDraw(EventArgs args)
         {
-            var colorW = MainMenu._draw.GetColor("color.w");
-            var widthW = MainMenu._draw.GetWidth("width.w");
-            var colorE = MainMenu._draw.GetColor("color.e");
-            var widthE = MainMenu._draw.GetWidth("width.e");
-            var colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
+            var colorW = MainMenu.Draw.GetColor("color.w");
+            var widthW = MainMenu.Draw.GetWidth("width.w");
+            var colorE = MainMenu.Draw.GetColor("color.e");
+            var widthE = MainMenu.Draw.GetWidth("width.e");
+            var colorR = MainMenu.Draw.GetColor("color.r");
+            var widthR = MainMenu.Draw.GetWidth("width.r");
 
 
             if (!Value.Use("draw.disable"))

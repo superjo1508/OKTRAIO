@@ -36,132 +36,132 @@ namespace OKTRAIO.Champions
                 {
                     //Combo Menu Settings
                     MainMenu.ComboKeys(useR: false);
-                    MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.1", true);
-                    MainMenu._combo.AddCheckBox("combo.melee", "Use abilities also in melee range", false, true);
-                    MainMenu._combo.AddCheckBox("combo.force.target", "Force target with Passive ", true, true);
-                    MainMenu._combo.AddCheckBox("combo.e.gapcloser", "Use E for Reach the target", false, true);
-                    MainMenu._combo.AddSlider("combo.e.range",
+                    MainMenu.Combo.AddSeparator();
+                    MainMenu.Combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.1", true);
+                    MainMenu.Combo.AddCheckBox("combo.melee", "Use abilities also in melee range", false, true);
+                    MainMenu.Combo.AddCheckBox("combo.force.target", "Force target with Passive ", true, true);
+                    MainMenu.Combo.AddCheckBox("combo.e.gapcloser", "Use E for Reach the target", false, true);
+                    MainMenu.Combo.AddSlider("combo.e.range",
                         "Don't Use E if in Range from Target there are more than {0} enemies", 1, 1, 5, true);
-                    MainMenu._combo.Add("combo.e.q.bind",
+                    MainMenu.Combo.Add("combo.e.q.bind",
                         new KeyBind("Use E + Q Spells", false, KeyBind.BindTypes.HoldActive, 'Z'))
                         .OnValueChange += OnEqButton;
                     Value.AdvancedMenuItemUiDs.Add("combo.e.q.bind");
-                    MainMenu._combo["combo.e.q.bind"].IsVisible =
-                        MainMenu._combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
-                    MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Prediction Settings", "combo.grouplabel.2", true);
-                    MainMenu._combo.AddSlider("combo.q.prediction", "Use Q if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._combo.AddSlider("combo.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._combo.AddSlider("combo.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Mana Manager:", "combo.grouplabel.3", true);
+                    MainMenu.Combo["combo.e.q.bind"].IsVisible =
+                        MainMenu.Combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
+                    MainMenu.Combo.AddSeparator();
+                    MainMenu.Combo.AddGroupLabel("Prediction Settings", "combo.grouplabel.2", true);
+                    MainMenu.Combo.AddSlider("combo.q.prediction", "Use Q if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Combo.AddSlider("combo.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Combo.AddSlider("combo.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Combo.AddSeparator();
+                    MainMenu.Combo.AddGroupLabel("Mana Manager:", "combo.grouplabel.3", true);
                     MainMenu.ComboManaManager(true, true, true, true, 60, 50, 40, 20);
 
                     //Lane Clear Menu Settings
                     MainMenu.LaneKeys(useW: false, useE: false, useR: false);
-                    MainMenu._lane.AddSeparator();
-                    MainMenu._lane.AddGroupLabel("LaneClear Preferences", "lane.grouplabel.1", true);
-                    MainMenu._lane.AddSlider("lane.farm", "Use Q if minions are more then {0} ", 3, 0, 6, true);
-                    MainMenu._lane.AddSeparator();
-                    MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.2", true);
+                    MainMenu.Lane.AddSeparator();
+                    MainMenu.Lane.AddGroupLabel("LaneClear Preferences", "lane.grouplabel.1", true);
+                    MainMenu.Lane.AddSlider("lane.farm", "Use Q if minions are more then {0} ", 3, 0, 6, true);
+                    MainMenu.Lane.AddSeparator();
+                    MainMenu.Lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.2", true);
                     MainMenu.LaneManaManager(true, false, false, false, 60, 0, 0, 0);
 
                     //Jungle Clear Menu Settings
                     MainMenu.JungleKeys(useW: false, useR: false);
-                    MainMenu._jungle.AddSeparator();
-                    MainMenu._jungle.AddGroupLabel("Jungleclear Preferences", "jungle.grouplabel.addonmenu", true);
-                    MainMenu._jungle.AddCheckBox("jungle.monsters.spell", "Use Abilities on Big Monster", true, true);
-                    MainMenu._jungle.AddCheckBox("jungle.minimonsters.spell", "Use Abilities on Mini Monsters", false,
+                    MainMenu.Jungle.AddSeparator();
+                    MainMenu.Jungle.AddGroupLabel("Jungleclear Preferences", "jungle.grouplabel.addonmenu", true);
+                    MainMenu.Jungle.AddCheckBox("jungle.monsters.spell", "Use Abilities on Big Monster", true, true);
+                    MainMenu.Jungle.AddCheckBox("jungle.minimonsters.spell", "Use Abilities on Mini Monsters", false,
                         true);
-                    MainMenu._jungle.AddSeparator();
-                    MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.1", true);
+                    MainMenu.Jungle.AddSeparator();
+                    MainMenu.Jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.1", true);
                     MainMenu.JungleManaManager(true, false, false, false, 60, 0, 0, 0);
 
                     //Last hit Menu Settings
                     MainMenu.LastHitKeys(useW: false, useR: false);
-                    MainMenu._lasthit.AddSeparator();
-                    MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.1", true);
+                    MainMenu.Lasthit.AddSeparator();
+                    MainMenu.Lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.1", true);
                     MainMenu.LasthitManaManager(true, false, true, false, 40, 0, 60, 0);
 
                     //Harras
                     MainMenu.HarassKeys(useR: false);
-                    MainMenu._harass.AddSeparator();
-                    MainMenu._harass.AddGroupLabel("Harass Preferences:", "harass.grouplabel.1", true);
-                    MainMenu._harass.AddCheckBox("harass.auto", "Use AutoHarass", false, true);
-                    MainMenu._harass.AddSlider("harass.traps", "Limit traps to", 2, 1, 5, true);
-                    MainMenu._harass.AddCheckBox("harass.force.target", "Force target with Passsive", true, true);
-                    MainMenu._harass.AddSeparator();
-                    MainMenu._harass.AddGroupLabel("Prediction Settings", "harass.grouplabel.2", true);
-                    MainMenu._harass.AddSlider("harass.q.prediction", "Use Q if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._harass.AddSlider("harass.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._harass.AddSlider("harass.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._harass.AddSeparator();
-                    MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.3", true);
+                    MainMenu.Harass.AddSeparator();
+                    MainMenu.Harass.AddGroupLabel("Harass Preferences:", "harass.grouplabel.1", true);
+                    MainMenu.Harass.AddCheckBox("harass.auto", "Use AutoHarass", false, true);
+                    MainMenu.Harass.AddSlider("harass.traps", "Limit traps to", 2, 1, 5, true);
+                    MainMenu.Harass.AddCheckBox("harass.force.target", "Force target with Passsive", true, true);
+                    MainMenu.Harass.AddSeparator();
+                    MainMenu.Harass.AddGroupLabel("Prediction Settings", "harass.grouplabel.2", true);
+                    MainMenu.Harass.AddSlider("harass.q.prediction", "Use Q if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Harass.AddSlider("harass.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Harass.AddSlider("harass.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Harass.AddSeparator();
+                    MainMenu.Harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.3", true);
                     MainMenu.HarassManaManager(true, true, true, false, 50, 50, 50, 0);
 
                     //Flee Menu
                     MainMenu.FleeKeys(false, useR: false);
-                    MainMenu._flee.AddSeparator();
-                    MainMenu._flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.1", true);
+                    MainMenu.Flee.AddSeparator();
+                    MainMenu.Flee.AddGroupLabel("Mana Manager:", "flee.grouplabel.1", true);
                     MainMenu.FleeManaManager(false, true, true, false, 0, 10, 20, 0);
 
                     //Ks
                     MainMenu.KsKeys();
-                    MainMenu._ks.AddSeparator();
-                    MainMenu._ks.AddGroupLabel("KillSteal Preferences: ", "killsteal.groulabel.1", true);
-                    MainMenu._ks.AddCheckBox("killsteal.spells.flee", "Prevent to killsteal with spells if fleeing",
+                    MainMenu.Ks.AddSeparator();
+                    MainMenu.Ks.AddGroupLabel("KillSteal Preferences: ", "killsteal.groulabel.1", true);
+                    MainMenu.Ks.AddCheckBox("killsteal.spells.flee", "Prevent to killsteal with spells if fleeing",
                         false, true);
-                    MainMenu._ks.AddSlider("killsteal.r.enemies",
+                    MainMenu.Ks.AddSlider("killsteal.r.enemies",
                         "Prevent to killsteal with R if there are more then {0} enemies", 3, 0, 5, true);
-                    MainMenu._ks.AddSlider("killsteal.r.safe", "Use R only if the target leaves {0} range", 1500, 800,
+                    MainMenu.Ks.AddSlider("killsteal.r.safe", "Use R only if the target leaves {0} range", 1500, 800,
                         3000, true);
-                    MainMenu._ks.AddSeparator();
-                    MainMenu._ks.AddGroupLabel("Prediction Settings", "killsteal.grouplabel.2", true);
-                    MainMenu._ks.AddSlider("killsteal.q.prediction", "Use Q if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._ks.AddSlider("killsteal.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._ks.AddSlider("killsteal.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.3", true);
+                    MainMenu.Ks.AddSeparator();
+                    MainMenu.Ks.AddGroupLabel("Prediction Settings", "killsteal.grouplabel.2", true);
+                    MainMenu.Ks.AddSlider("killsteal.q.prediction", "Use Q if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Ks.AddSlider("killsteal.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Ks.AddSlider("killsteal.e.prediction", "Use E if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.3", true);
                     MainMenu.KsManaManager(true, true, true, false, 10, 10, 20, 0);
 
                     //Misc Menu
                     MainMenu.MiscMenu();
-                    MainMenu._misc.AddCheckBox("misc.q", "Use Auto Q");
-                    MainMenu._misc.AddCheckBox("misc.w", "Use Auto W");
-                    MainMenu._misc.AddCheckBox("misc.e", "Use Auto E", false);
-                    MainMenu._misc.AddCheckBox("misc.w.gapcloser", "Use Auto W on Gapcloser", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.gapcloser", "Use Auto E on Gapcloser", true, true);
-                    MainMenu._misc.AddSeparator();
-                    MainMenu._misc.AddGroupLabel("Auto Spell Settings", "misc.grouplabel.1", true);
-                    MainMenu._misc.AddCheckBox("misc.q.stun", "Use Q on Stunned Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.w.stun", "Use W on Stunned Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.stun", "Use E on Stunned Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.q.charm", "Use Q on Charmed Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.w.charm", "Use W on Charmed Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.charm", "Use E on Charmed Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.q.taunt", "Use Q on Taunted Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.w.taunt", "Use W on Taunted Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.taunt", "Use E on Taunted Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.q.fear", "Use Q on Feared Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.w.fear", "Use W on Feared Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.fear", "Use E on Feared Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.w.snare", "Use W on Snared Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.snare", "Use E on Snared Enemy", true, true);
-                    MainMenu._misc.AddSlider("misc.traps", "Limit traps to", 2, 1, 5, true);
-                    MainMenu._misc.AddSeparator();
-                    MainMenu._misc.AddGroupLabel("Mana Manager:", "misc.grouplabel.2", true);
-                    MainMenu._misc.AddSlider("misc.q.mana", "Use Q on CC Enemy if Mana is above than {0}%", 30, 0, 100,
+                    MainMenu.Misc.AddCheckBox("misc.q", "Use Auto Q");
+                    MainMenu.Misc.AddCheckBox("misc.w", "Use Auto W");
+                    MainMenu.Misc.AddCheckBox("misc.e", "Use Auto E", false);
+                    MainMenu.Misc.AddCheckBox("misc.w.gapcloser", "Use Auto W on Gapcloser", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.gapcloser", "Use Auto E on Gapcloser", true, true);
+                    MainMenu.Misc.AddSeparator();
+                    MainMenu.Misc.AddGroupLabel("Auto Spell Settings", "misc.grouplabel.1", true);
+                    MainMenu.Misc.AddCheckBox("misc.q.stun", "Use Q on Stunned Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.w.stun", "Use W on Stunned Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.stun", "Use E on Stunned Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.q.charm", "Use Q on Charmed Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.w.charm", "Use W on Charmed Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.charm", "Use E on Charmed Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.q.taunt", "Use Q on Taunted Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.w.taunt", "Use W on Taunted Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.taunt", "Use E on Taunted Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.q.fear", "Use Q on Feared Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.w.fear", "Use W on Feared Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.fear", "Use E on Feared Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.w.snare", "Use W on Snared Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.snare", "Use E on Snared Enemy", true, true);
+                    MainMenu.Misc.AddSlider("misc.traps", "Limit traps to", 2, 1, 5, true);
+                    MainMenu.Misc.AddSeparator();
+                    MainMenu.Misc.AddGroupLabel("Mana Manager:", "misc.grouplabel.2", true);
+                    MainMenu.Misc.AddSlider("misc.q.mana", "Use Q on CC Enemy if Mana is above than {0}%", 30, 0, 100,
                         true);
-                    MainMenu._misc.AddSlider("misc.w.mana", "Use W on CC Enemy if Mana is above than {0}%", 30, 0, 100,
+                    MainMenu.Misc.AddSlider("misc.w.mana", "Use W on CC Enemy if Mana is above than {0}%", 30, 0, 100,
                         true);
-                    MainMenu._misc.AddSlider("misc.e.mana", "Use E on CC Enemy if Mana is above than {0}%", 30, 0, 100,
+                    MainMenu.Misc.AddSlider("misc.e.mana", "Use E on CC Enemy if Mana is above than {0}%", 30, 0, 100,
                         true);
 
                     //Draw Menu
                     MainMenu.DrawKeys();
-                    MainMenu._draw.AddSeparator();
-                    MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
+                    MainMenu.Draw.AddSeparator();
+                    MainMenu.Draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
 
                     Value.Init();
                 }
@@ -181,7 +181,7 @@ namespace OKTRAIO.Champions
 
             try
             {
-                if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+                if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue)
                 {
                     Game.OnUpdate += GameOnUpdate;
                 }
@@ -218,7 +218,7 @@ namespace OKTRAIO.Champions
 
             if (Value.Use("combo.melee"))
             {
-                if (Value.Use("combo.q"))
+                if (Value.Use("combo.q".AddName()))
                 {
                     if (Player.Instance.ManaPercent >= Value.Get("combo.q.mana"))
                     {
@@ -229,7 +229,7 @@ namespace OKTRAIO.Champions
                     }
                 }
 
-                if (Value.Use("combo.w"))
+                if (Value.Use("combo.w".AddName()))
                 {
                     if (Player.Instance.ManaPercent >= Value.Get("combo.w.mana"))
                     {
@@ -240,7 +240,7 @@ namespace OKTRAIO.Champions
                         }
                     }
                 }
-                if (Value.Use("combo.e"))
+                if (Value.Use("combo.e".AddName()))
                 {
                     if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana") &&
                         target.CountEnemiesInRange(600) <= Value.Get("combo.e.range"))
@@ -265,7 +265,7 @@ namespace OKTRAIO.Champions
 
             else if (Player.Instance.Distance(target) >= 400)
             {
-                if (Value.Use("combo.q"))
+                if (Value.Use("combo.q".AddName()))
                 {
                     if (Player.Instance.ManaPercent >= Value.Get("combo.q.mana"))
                     {
@@ -276,7 +276,7 @@ namespace OKTRAIO.Champions
                     }
                 }
 
-                if (Value.Use("combo.w"))
+                if (Value.Use("combo.w".AddName()))
                 {
                     if (Player.Instance.ManaPercent >= Value.Get("combo.w.mana"))
                     {
@@ -287,7 +287,7 @@ namespace OKTRAIO.Champions
                         }
                     }
                 }
-                if (Value.Use("combo.e"))
+                if (Value.Use("combo.e".AddName()))
                 {
                     if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana") &&
                         target.CountEnemiesInRange(600) <= Value.Get("combo.e.range"))
@@ -583,7 +583,6 @@ namespace OKTRAIO.Champions
         public static void GameOnUpdate(EventArgs args)
         {
             RaiseRLevel();
-            AutoSpells();
             KillSteal();
             AutoHarass();
         }
@@ -644,117 +643,6 @@ namespace OKTRAIO.Champions
                         }
                     }
                 }
-            }
-        }
-
-        #endregion
-
-        #region AutoSpells   
-
-        private static void AutoSpells()
-        {
-            var enemy =
-                EntityManager.Heroes.Enemies.FirstOrDefault(
-                    x =>
-                        x.HasBuffOfType(BuffType.Charm) || x.HasBuffOfType(BuffType.Knockup) ||
-                        x.HasBuffOfType(BuffType.Stun) || x.HasBuffOfType(BuffType.Suppression) ||
-                        x.HasBuffOfType(BuffType.Snare));
-
-            if (Orbwalker.IsAutoAttacking ||
-                EntityManager.Turrets.Enemies.Count(t => t.IsValidTarget(_q.Range) && t.IsAttackingPlayer) > 0)
-                return;
-
-            try
-            {
-                if (enemy == null || enemy.IsValidTarget(_q.Range)) return;
-
-                if (Value.Use("misc.q"))
-                {
-                    if (Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
-                    {
-                        if (Value.Use("misc.q.stun") && enemy.IsStunned)
-                        {
-                            _q.Cast(enemy);
-                        }
-                        if (Value.Use("misc.q.snare") && enemy.IsRooted)
-                        {
-                            _q.Cast(enemy);
-                        }
-                        if (Value.Use("misc.q.charm") && enemy.IsCharmed)
-                        {
-                            _q.Cast(enemy);
-                        }
-                        if (Value.Use("misc.q.taunt") && enemy.IsTaunted)
-                        {
-                            _q.Cast(enemy);
-                        }
-                        if (Value.Use("misc.q.fear") && enemy.IsFeared)
-                        {
-                            _q.Cast(enemy);
-                        }
-                    }
-                }
-
-                if (Value.Use("misc.w") && _w.Handle.Ammo >= Value.Get("misc.traps"))
-                {
-                    if (Value.Get("misc.w.mana") >= Player.Instance.ManaPercent)
-                    {
-                        if (Value.Use("misc.w.stun") && enemy.IsStunned)
-                        {
-                            _w.Cast(enemy);
-                        }
-                        if (Value.Use("misc.w.snare") && enemy.IsRooted)
-                        {
-                            _w.Cast(enemy);
-                        }
-                        if (Value.Use("misc.w.charm") && enemy.IsCharmed)
-                        {
-                            _w.Cast(enemy);
-                        }
-                        if (Value.Use("misc.w.taunt") && enemy.IsTaunted)
-                        {
-                            _w.Cast(enemy);
-                        }
-                        if (Value.Use("misc.w.fear") && enemy.IsFeared)
-                        {
-                            _w.Cast(enemy);
-                        }
-                    }
-                }
-
-                if (Value.Use("misc.e"))
-                {
-                    if (Value.Get("misc.e.mana") >= Player.Instance.ManaPercent)
-                    {
-                        if (Value.Use("misc.e.stun") && enemy.IsStunned)
-                        {
-                            _e.Cast(enemy);
-                        }
-                        if (Value.Use("misc.e.snare") && enemy.IsRooted)
-                        {
-                            _e.Cast(enemy);
-                        }
-                        if (Value.Use("misc.e.charm") && enemy.IsCharmed)
-                        {
-                            _e.Cast(enemy);
-                        }
-                        if (Value.Use("misc.e.taunt") && enemy.IsTaunted)
-                        {
-                            _e.Cast(enemy);
-                        }
-                        if (Value.Use("misc.e.fear") && enemy.IsFeared)
-                        {
-                            _e.Cast(enemy);
-                        }
-                    }
-                }
-            }
-
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code AUTOQ)</font>");
             }
         }
 
@@ -866,14 +754,96 @@ namespace OKTRAIO.Champions
 
         public static void OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
+            if (sender.IsMe && !sender.IsInAutoAttackRange(Player.Instance)) return;
+
             if (Value.Use("harass.force.target") || Value.Use("combo.force.target"))
             {
-                if (!sender.IsMe &&
-                    args.Buff.DisplayName == "caitlynyordletrapsight" ||
+                if (args.Buff.DisplayName == "caitlynyordletrapsight" ||
                     args.Buff.DisplayName == "CaitlynEntrapmentMissile" ||
                     args.Buff.DisplayName == "caitlynyordletrapinternal")
                 {
                     Orbwalker.ForcedTarget = sender;
+                }
+            }
+
+            if (Value.Use("misc.q"))
+            {
+                if (Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
+                {
+                    if (Value.Use("misc.q.stun") && sender.IsStunned)
+                    {
+                        _q.Cast(sender);
+                    }
+                    if (Value.Use("misc.q.snare") && sender.IsRooted)
+                    {
+                        _q.Cast(sender);
+                    }
+                    if (Value.Use("misc.q.charm") && sender.IsCharmed)
+                    {
+                        _q.Cast(sender);
+                    }
+                    if (Value.Use("misc.q.taunt") && sender.IsTaunted)
+                    {
+                        _q.Cast(sender);
+                    }
+                    if (Value.Use("misc.q.fear") && sender.IsFeared)
+                    {
+                        _q.Cast(sender);
+                    }
+                }
+            }
+
+            if (Value.Use("misc.w") && _w.Handle.Ammo >= Value.Get("misc.traps"))
+            {
+                if (Value.Get("misc.w.mana") >= Player.Instance.ManaPercent)
+                {
+                    if (Value.Use("misc.w.stun") && sender.IsStunned)
+                    {
+                        _w.Cast(sender);
+                    }
+                    if (Value.Use("misc.w.snare") && sender.IsRooted)
+                    {
+                        _w.Cast(sender);
+                    }
+                    if (Value.Use("misc.w.charm") && sender.IsCharmed)
+                    {
+                        _w.Cast(sender);
+                    }
+                    if (Value.Use("misc.w.taunt") && sender.IsTaunted)
+                    {
+                        _w.Cast(sender);
+                    }
+                    if (Value.Use("misc.w.fear") && sender.IsFeared)
+                    {
+                        _w.Cast(sender);
+                    }
+                }
+            }
+
+            if (Value.Use("misc.e"))
+            {
+                if (Value.Get("misc.e.mana") >= Player.Instance.ManaPercent)
+                {
+                    if (Value.Use("misc.e.stun") && sender.IsStunned)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.snare") && sender.IsRooted)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.charm") && sender.IsCharmed)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.taunt") && sender.IsTaunted)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.fear") && sender.IsFeared)
+                    {
+                        _e.Cast(sender);
+                    }
                 }
             }
         }
@@ -938,14 +908,14 @@ namespace OKTRAIO.Champions
 
         private static void GameOnDraw(EventArgs args)
         {
-            var colorQ = MainMenu._draw.GetColor("color.q");
-            var widthQ = MainMenu._draw.GetWidth("width.q");
-            var colorW = MainMenu._draw.GetColor("color.w");
-            var widthW = MainMenu._draw.GetWidth("width.w");
-            var colorE = MainMenu._draw.GetColor("color.e");
-            var widthE = MainMenu._draw.GetWidth("width.e");
-            var colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
+            var colorQ = MainMenu.Draw.GetColor("color.q");
+            var widthQ = MainMenu.Draw.GetWidth("width.q");
+            var colorW = MainMenu.Draw.GetColor("color.w");
+            var widthW = MainMenu.Draw.GetWidth("width.w");
+            var colorE = MainMenu.Draw.GetColor("color.e");
+            var widthE = MainMenu.Draw.GetWidth("width.e");
+            var colorR = MainMenu.Draw.GetColor("color.r");
+            var widthR = MainMenu.Draw.GetWidth("width.r");
 
             if (!Value.Use("draw.disable"))
             {

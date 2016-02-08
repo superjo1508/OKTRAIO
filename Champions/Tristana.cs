@@ -14,6 +14,51 @@ namespace OKTRAIO.Champions
 {
     internal class Tristana : AIOChampion
     {
+        #region Drawings
+
+        private static void GameOnDraw(EventArgs args)
+        {
+            var colorW = MainMenu.Draw.GetColor("color.w");
+            var widthW = MainMenu.Draw.GetWidth("width.w");
+            var colorE = MainMenu.Draw.GetColor("color.e");
+            var widthE = MainMenu.Draw.GetWidth("width.e");
+            var colorR = MainMenu.Draw.GetColor("color.r");
+            var widthR = MainMenu.Draw.GetWidth("width.r");
+
+            if (!Value.Use("draw.disable"))
+            {
+                if (Value.Use("draw.w") && ((Value.Use("draw.ready") && _w.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorW,
+                        Radius = _w.Range,
+                        BorderWidth = widthW
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.e") && ((Value.Use("draw.ready") && _e.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorE,
+                        Radius = _e.Range,
+                        BorderWidth = widthE
+                    }.Draw(Player.Instance.Position);
+                }
+                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
+                {
+                    new Circle
+                    {
+                        Color = colorR,
+                        Radius = _q.Range,
+                        BorderWidth = widthR
+                    }.Draw(Player.Instance.Position);
+                }
+            }
+        }
+
+        #endregion
+
         #region Initialize and Declare
 
         private static Spell.Active _q;
@@ -35,93 +80,92 @@ namespace OKTRAIO.Champions
                 {
                     //Combo Menu Settings
                     MainMenu.ComboKeys(defaultW: false);
-                    MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.1", true);
-                    MainMenu._combo.AddCheckBox("combo.e.forced", "Force target with E ", true, true);
-                    MainMenu._combo.AddCheckBox("combo.e.r", "Use E + R Finisher", true, true);
-                    MainMenu._combo.AddCheckBox("combo.r.tower", "Use R to throw the enemy under ally tower", true, true);
-                    MainMenu._combo.AddSlider("combo.w.range",
+                    MainMenu.Combo.AddSeparator();
+                    MainMenu.Combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.1", true);
+                    MainMenu.Combo.AddCheckBox("combo.e.forced", "Force target with E ", true, true);
+                    MainMenu.Combo.AddCheckBox("combo.e.r", "Use E + R Finisher", true, true);
+                    MainMenu.Combo.AddCheckBox("combo.r.tower", "Use R to throw the enemy under ally tower", true, true);
+                    MainMenu.Combo.AddSlider("combo.w.range",
                         "Don't Use W if in Range from Target there are more than {0} enemies", 1, 1, 5, true);
-                    MainMenu._combo.AddSlider("combo.w.e", "Max enemies for Jump", 1, 1, 5, true);
-                    MainMenu._combo.AddSlider("combo.e.r.damages", "E + R Overkill", 60, 1, 500, true);
-                    MainMenu._combo.AddSlider("combo.r.damage", "R Overkill", 50, 1, 500, true);
-                    MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Prediction Settings", "combo.grouplabel.2", true);
-                    MainMenu._combo.AddSlider("combo.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
-                    MainMenu._combo.AddSeparator();
-                    MainMenu._combo.AddGroupLabel("Mana Manager:", "combo.grouplabel.3", true);
+                    MainMenu.Combo.AddSlider("combo.w.e", "Max enemies for Jump", 1, 1, 5, true);
+                    MainMenu.Combo.AddSlider("combo.e.r.damages", "E + R Overkill", 60, 1, 500, true);
+                    MainMenu.Combo.AddSlider("combo.r.damage", "R Overkill", 50, 1, 500, true);
+                    MainMenu.Combo.AddSeparator();
+                    MainMenu.Combo.AddGroupLabel("Prediction Settings", "combo.grouplabel.2", true);
+                    MainMenu.Combo.AddSlider("combo.w.prediction", "Use W if Hitchance > {0}%", 80, 0, 100, true);
+                    MainMenu.Combo.AddSeparator();
+                    MainMenu.Combo.AddGroupLabel("Mana Manager:", "combo.grouplabel.3", true);
                     MainMenu.ComboManaManager(true, true, true, true, 60, 50, 40, 50);
 
                     //Lane Clear Menu Settings
                     MainMenu.LaneKeys(defaultW: false);
-                    MainMenu._lane.AddSeparator();
-                    MainMenu._lane.AddGroupLabel("Laneclear Preferences", "lane.grouplabel.1", true);
-                    MainMenu._lane.AddCheckBox("lane.e.forced", "Force minion with E ", true, true);
-                    MainMenu._lane.AddCheckBox("lane.save.tower", "Save E for use on Tower", true, true);
-                    MainMenu._lane.AddSeparator();
-                    MainMenu._lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.2", true);
+                    MainMenu.Lane.AddSeparator();
+                    MainMenu.Lane.AddGroupLabel("Laneclear Preferences", "lane.grouplabel.1", true);
+                    MainMenu.Lane.AddCheckBox("lane.e.forced", "Force minion with E ", true, true);
+                    MainMenu.Lane.AddCheckBox("lane.save.tower", "Save E for use on Tower", true, true);
+                    MainMenu.Lane.AddSeparator();
+                    MainMenu.Lane.AddGroupLabel("Mana Manager:", "lane.grouplabel.2", true);
                     MainMenu.LaneManaManager(true, true, true, false, 60, 50, 40, 50);
 
                     //Jungle Clear Menu Settings
                     MainMenu.JungleKeys(defaultW: false);
-                    MainMenu._jungle.AddSeparator();
-                    MainMenu._jungle.AddGroupLabel("Jungleclear Preferences", "jungle.grouplabel.1", true);
-                    MainMenu._jungle.AddCheckBox("jungle.monsters.spell", "Use Abilities on Big Monster", true, true);
-                    MainMenu._jungle.AddCheckBox("jungle.minimonsters.spell", "Use Abilities on Mini Monsters", false,
+                    MainMenu.Jungle.AddSeparator();
+                    MainMenu.Jungle.AddGroupLabel("Jungleclear Preferences", "jungle.grouplabel.1", true);
+                    MainMenu.Jungle.AddCheckBox("jungle.monsters.spell", "Use Abilities on Big Monster", true, true);
+                    MainMenu.Jungle.AddCheckBox("jungle.minimonsters.spell", "Use Abilities on Mini Monsters", false,
                         true);
-                    MainMenu._jungle.AddSeparator();
-                    MainMenu._jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.2", true);
+                    MainMenu.Jungle.AddSeparator();
+                    MainMenu.Jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.2", true);
                     MainMenu.JungleManaManager(true, true, true, false, 60, 50, 40, 50);
 
                     //Last hit Menu Settings
                     MainMenu.LastHitKeys(defaultW: false, defaultR: false);
-                    MainMenu._lasthit.AddSeparator();
-                    MainMenu._lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.1", true);
+                    MainMenu.Lasthit.AddSeparator();
+                    MainMenu.Lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.1", true);
                     MainMenu.LasthitManaManager(false, true, false, false, 60, 50, 40, 50);
 
                     //Harras
                     MainMenu.HarassKeys(defaultW: false);
-                    MainMenu._harass.AddSeparator();
-                    MainMenu._harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.1", true);
+                    MainMenu.Harass.AddSeparator();
+                    MainMenu.Harass.AddGroupLabel("Mana Manager:", "harass.grouplabel.1", true);
                     MainMenu.HarassManaManager(true, true, true, false, 60, 50, 40, 50);
 
                     //Flee Menu
                     MainMenu.FleeKeys();
-                    MainMenu._flee.AddSeparator();
-                    MainMenu._flee.AddGroupLabel("HP Manager", "flee.grouplabel.1", true);
-                    MainMenu._flee.AddSlider("flee.r.hp", "Use R when you HP are less than {0}%", 20, 0, 100, true);
+                    MainMenu.Flee.AddSeparator();
+                    MainMenu.Flee.AddGroupLabel("HP Manager", "flee.grouplabel.1", true);
+                    MainMenu.Flee.AddSlider("flee.r.hp", "Use R when you HP are less than {0}%", 20, 0, 100, true);
 
                     //Ks
                     MainMenu.KsKeys(defaultW: false);
-                    MainMenu._ks.AddSeparator();
-                    MainMenu._ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.5", true);
+                    MainMenu.Ks.AddSeparator();
+                    MainMenu.Ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.5", true);
                     MainMenu.KsManaManager(false, true, true, true, 60, 50, 40, 50);
 
                     //Misc Menu
                     MainMenu.MiscMenu();
-                    MainMenu._misc.AddCheckBox("misc.w.gapcloser", "Use W for Anti-GapCloser", false);
-                    MainMenu._misc.AddCheckBox("misc.r.interrupter", "Use R for Interrupt");
-                    MainMenu._misc.AddCheckBox("misc.r.gapcloser", "Use R for Anti-GapCloser");
-                    MainMenu._misc.AddCheckBox("misc.e", "Use Auto E");
-                    MainMenu._misc.AddSeparator();
-                    MainMenu._misc.AddGroupLabel("Interrupter - AntiGapCloser settings", "misc.grouplabel.6", true);
-                    MainMenu._misc.AddSlider("misc.r.interrupter.mana", "Min. Mana to interrupt", 30, 0, 100, true);
-                    MainMenu._misc.AddSlider("misc.r.gapcloser.mana", "Min. Mana% to use R for Anti-GapCloser", 30, 0,
+                    MainMenu.Misc.AddCheckBox("misc.w.gapcloser", "Use W for Anti-GapCloser", false);
+                    MainMenu.Misc.AddCheckBox("misc.r.interrupter", "Use R for Interrupt");
+                    MainMenu.Misc.AddCheckBox("misc.r.gapcloser", "Use R for Anti-GapCloser");
+                    MainMenu.Misc.AddCheckBox("misc.e", "Use Auto E");
+                    MainMenu.Misc.AddSeparator();
+                    MainMenu.Misc.AddGroupLabel("Interrupter - AntiGapCloser settings", "misc.grouplabel.6", true);
+                    MainMenu.Misc.AddSlider("misc.r.interrupter.mana", "Min. Mana to interrupt", 30, 0, 100, true);
+                    MainMenu.Misc.AddSlider("misc.r.gapcloser.mana", "Min. Mana% to use R for Anti-GapCloser", 30, 0,
                         100, true);
-                    MainMenu._misc.AddGroupLabel("Auto E Settings", "misc.grouplabel.3", true);
-                    MainMenu._misc.AddCheckBox("misc.e.stun", "Use E on Stunned Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.charm", "Use E on Charmed Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.taunt", "Use E on Taunted Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.fear", "Use E on Feared Enemy", true, true);
-                    MainMenu._misc.AddCheckBox("misc.e.snare", "Use E on Snared Enemy", true, true);
-                    MainMenu._misc.AddSlider("misc.e.mana", "Use E on CC Enemy if Mana is above than {0}%", 10, 0, 100,
+                    MainMenu.Misc.AddGroupLabel("Auto E Settings", "misc.grouplabel.3", true);
+                    MainMenu.Misc.AddCheckBox("misc.e.stun", "Use E on Stunned Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.charm", "Use E on Charmed Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.taunt", "Use E on Taunted Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.fear", "Use E on Feared Enemy", true, true);
+                    MainMenu.Misc.AddCheckBox("misc.e.snare", "Use E on Snared Enemy", true, true);
+                    MainMenu.Misc.AddSlider("misc.e.mana", "Use E on CC Enemy if Mana is above than {0}%", 10, 0, 100,
                         true);
 
                     //Draw Menu
                     MainMenu.DrawKeys();
-                    MainMenu._draw.AddSeparator();
-                    //iRaxe is op as fack, koka is just a troll fappa
-                    MainMenu._draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
+                    MainMenu.Draw.AddSeparator();
+                    MainMenu.Draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
                     Value.Init();
                 }
                 catch (Exception e)
@@ -145,7 +189,7 @@ namespace OKTRAIO.Champions
                 Gapcloser.OnGapcloser += AntiGapCloser;
                 GameObject.OnCreate += GameObject_OnCreate;
 
-                if (MainMenu._menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+                if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue)
                 {
                     Game.OnUpdate += GameOnUpdate;
                 }
@@ -153,6 +197,9 @@ namespace OKTRAIO.Champions
                 {
                     Game.OnTick += GameOnUpdate;
                 }
+
+                Orbwalker.OnPreAttack += OnPreAttack;
+                Obj_AI_Base.OnBuffGain += BuffGain;
 
                 Drawing.OnDraw += GameOnDraw;
                 Drawing.OnEndScene += Drawing_OnEndScene;
@@ -175,30 +222,15 @@ namespace OKTRAIO.Champions
         {
             var target = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
 
-            var forcedtarget = EntityManager.Heroes.Enemies.Find
-                (a => a.IsValidTarget(_e.Range) && a.HasBuff("tristanaecharge"));
-
             var targetBoom =
                 EntityManager.Heroes.Enemies.FirstOrDefault(
                     a => a.HasBuff("tristanaecharge") && a.Distance(Player.Instance) < Player.Instance.AttackRange);
-
-            if (Value.Use("combo.e.forced"))
-            {
-                if (forcedtarget != null)
-                {
-                    Orbwalker.ForcedTarget = forcedtarget;
-                }
-                else
-                {
-                    Orbwalker.ForcedTarget = null;
-                }
-            }
 
             if (target == null || target.IsZombie) return;
 
             if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana"))
             {
-                if (_e.IsReady() && target.IsValidTarget(_e.Range) && Value.Use("combo.e"))
+                if (_e.IsReady() && target.IsValidTarget(_e.Range) && Value.Use("combo.e".AddName()))
                 {
                     _e.Cast(target);
                 }
@@ -206,7 +238,7 @@ namespace OKTRAIO.Champions
 
             if (Player.Instance.ManaPercent >= Value.Get("combo.q.mana"))
             {
-                if (_q.IsReady() && target.IsValidTarget(_q.Range) && Value.Use("combo.q"))
+                if (_q.IsReady() && target.IsValidTarget(_q.Range) && Value.Use("combo.q".AddName()))
                 {
                     _q.Cast();
                 }
@@ -214,7 +246,8 @@ namespace OKTRAIO.Champions
 
             if (Player.Instance.ManaPercent >= Value.Get("combo.w.mana"))
             {
-                if (_w.IsReady() && target.IsValidTarget(_w.Range) && Value.Use("combo.w") && !target.IsInvulnerable &&
+                if (_w.IsReady() && target.IsValidTarget(_w.Range) && Value.Use("combo.w".AddName()) &&
+                    !target.IsInvulnerable &&
                     target.Position.CountEnemiesInRange(800) <= Value.Get("combo.w.e"))
                 {
                     if (_w.GetPrediction(target).HitChancePercent >= Value.Get("combo.w.prediction"))
@@ -242,7 +275,7 @@ namespace OKTRAIO.Champions
 
             if (Player.Instance.ManaPercent >= Value.Get("combo.r.mana"))
             {
-                if (_r.IsReady() && Value.Use("combo.r"))
+                if (_r.IsReady() && Value.Use("combo.r".AddName()))
                 {
                     if (_r.IsReady() && target.IsValidTarget(_r.Range) && !target.IsInvulnerable &&
                         target.Health + target.AttackShield + Value.Get("combo.r.damage") <
@@ -610,11 +643,6 @@ namespace OKTRAIO.Champions
                 || Player.Instance.IsStunned || Player.Instance.IsRooted || Player.Instance.IsCharmed ||
                 Orbwalker.IsAutoAttacking) return;
 
-            if (Value.Use("misc.e") && _q.IsReady())
-            {
-                AutoE();
-            }
-
             if (Value.Use("killsteal.w") && _w.IsReady() ||
                 Value.Use("killsteal.e") && _e.IsReady() ||
                 Value.Use("killsteal.r") && _r.IsReady())
@@ -625,9 +653,47 @@ namespace OKTRAIO.Champions
 
         #endregion
 
-        #region ComboDamage
+        #region OnBuffGain
 
-        private static float ComboDamage(Obj_AI_Base enemy)
+        private void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
+        {
+            if (Value.Use("misc.e") && _e.IsReady())
+            {
+                if (sender == null || !sender.HasBuff("tristanaecharge")) return;
+
+                if (Player.Instance.ManaPercent >= Value.Get("misc.e.mana"))
+                {
+                    if (Value.Use("misc.e.stun") && sender.IsStunned)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.snare") && sender.IsRooted)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.charm") && sender.IsCharmed)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.taunt") && sender.IsTaunted)
+                    {
+                        _e.Cast(sender);
+                    }
+                    if (Value.Use("misc.e.fear") && sender.IsFeared)
+                    {
+                        _e.Cast(sender);
+                    }
+                }
+            }
+        }
+
+
+        #endregion
+
+                #region ComboDamage
+
+            private static
+            float ComboDamage(Obj_AI_Base enemy)
         {
             var damage = Player.Instance.GetAutoAttackDamage(enemy);
 
@@ -744,104 +810,23 @@ namespace OKTRAIO.Champions
 
         #endregion
 
-        #region AutoE
+        #region OnPreAttack
 
-        private static void AutoE()
+        private void OnPreAttack(AttackableUnit target, Orbwalker.PreAttackArgs args)
         {
-            var enemy =
-                EntityManager.Heroes.Enemies.FirstOrDefault(
-                    x =>
-                        x.HasBuffOfType(BuffType.Charm) || x.HasBuffOfType(BuffType.Knockup) ||
-                        x.HasBuffOfType(BuffType.Stun) || x.HasBuffOfType(BuffType.Suppression) ||
-                        x.HasBuffOfType(BuffType.Snare));
-
-            if (!_e.IsLearned || !_e.IsReady() || Orbwalker.IsAutoAttacking ||
-                EntityManager.Turrets.Enemies.Count(t => t.IsValidTarget() && t.IsAttackingPlayer) > 0)
-                return;
-
-            if (enemy == null || !enemy.HasBuff("tristanaecharge")) return;
-
-            try
+            if (Value.Mode(Orbwalker.ActiveModes.Combo))
             {
-                if (Player.Instance.ManaPercent >= Value.Get("misc.e.mana"))
+                if (Value.Use("combo.e.forced"))
                 {
-                    if (Value.Use("misc.e.stun") && enemy.IsStunned)
-                    {
-                        _e.Cast(enemy);
-                    }
-                    if (Value.Use("misc.e.snare") && enemy.IsRooted)
-                    {
-                        _e.Cast(enemy);
-                    }
-                    if (Value.Use("misc.e.charm") && enemy.IsCharmed)
-                    {
-                        _e.Cast(enemy);
-                    }
-                    if (Value.Use("misc.e.taunt") && enemy.IsTaunted)
-                    {
-                        _e.Cast(enemy);
-                    }
-                    if (Value.Use("misc.e.fear") && enemy.IsFeared)
-                    {
-                        _e.Cast(enemy);
-                    }
-                }
-            }
+                    var forcedtarget = Variables.CloseEnemies(_q.Range).Find
+                        (a => a.HasBuff("tristanaecharge"));
 
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code AUTOE)</font>");
+                    Player.IssueOrder(GameObjectOrder.AttackUnit, forcedtarget, true);
+                }
             }
         }
 
         #endregion
-
-        #endregion
-
-        #region Drawings
-
-        private static void GameOnDraw(EventArgs args)
-        {
-            var colorW = MainMenu._draw.GetColor("color.w");
-            var widthW = MainMenu._draw.GetWidth("width.w");
-            var colorE = MainMenu._draw.GetColor("color.e");
-            var widthE = MainMenu._draw.GetWidth("width.e");
-            var colorR = MainMenu._draw.GetColor("color.r");
-            var widthR = MainMenu._draw.GetWidth("width.r");
-
-            if (!Value.Use("draw.disable"))
-            {
-                if (Value.Use("draw.w") && ((Value.Use("draw.ready") && _w.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorW,
-                        Radius = _w.Range,
-                        BorderWidth = widthW
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.e") && ((Value.Use("draw.ready") && _e.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorE,
-                        Radius = _e.Range,
-                        BorderWidth = widthE
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorR,
-                        Radius = _q.Range,
-                        BorderWidth = widthR
-                    }.Draw(Player.Instance.Position);
-                }
-            }
-        }
 
         #endregion
     }

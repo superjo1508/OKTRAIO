@@ -36,7 +36,7 @@ namespace OKTRAIO
                         .Select(
                             champ =>
                                 Prediction.Position.PredictUnitPosition(champ,
-                                    (int) Player.Instance.Distance(champ)/spell.Speed + spell.CastDelay))
+                                    (int)Player.Instance.Distance(champ) / spell.Speed + spell.CastDelay))
                         .ToList();
                 return GetOptimizedCircleLocation(champs, spell.Width, spell.Range);
             }
@@ -47,7 +47,7 @@ namespace OKTRAIO
                         .Select(
                             champ =>
                                 Prediction.Position.PredictUnitPosition(champ,
-                                    (int) Player.Instance.Distance(champ)/spell.Speed + spell.CastDelay)).ToList();
+                                    (int)Player.Instance.Distance(champ) / spell.Speed + spell.CastDelay)).ToList();
 
                 return GetOptimizedCircleLocation(champs, spell.Width, spell.Range);
             }
@@ -71,7 +71,7 @@ namespace OKTRAIO
             var targetsHit = 0;
             var startPos = Player.Instance.ServerPosition.To2D();
 
-            spellRange = spellRange*spellRange;
+            spellRange = spellRange * spellRange;
 
             if (targetPositions.Count == 0)
             {
@@ -101,7 +101,7 @@ namespace OKTRAIO
                 {
                     if (pos.Distance(startPos, true) <= spellRange)
                     {
-                        var count = targetPositions.Count(pos2 => pos.Distance(pos2, true) <= spellWidth*spellWidth);
+                        var count = targetPositions.Count(pos2 => pos.Distance(pos2, true) <= spellWidth * spellWidth);
 
                         if (count >= targetsHit)
                         {
@@ -136,7 +136,7 @@ namespace OKTRAIO
         public static Vector2 Rotatoes(Vector2 point1, Vector2 point2, double angle)
         {
             var direction = (point2 - point1).Normalized();
-            return point1 + point1.Distance(point2)*direction.Rotated(Geometry.DegreeToRadian(angle));
+            return point1 + point1.Distance(point2) * direction.Rotated(Geometry.DegreeToRadian(angle));
         }
 
         /// <summary>
@@ -152,13 +152,13 @@ namespace OKTRAIO
             int positionAmount = 0, float distance = 0)
         {
             if (distance == 0) distance = rotateAround.Distance(rotateTowards);
-            if (positionAmount == 0) positionAmount = degrees/10;
+            if (positionAmount == 0) positionAmount = degrees / 10;
             var direction = (rotateTowards - rotateAround).Normalized().To2D();
             var posList = new List<Vector3>();
-            var step = degrees/positionAmount;
-            for (var i = -degrees/2; i <= degrees/2; i += step)
+            var step = degrees / positionAmount;
+            for (var i = -degrees / 2; i <= degrees / 2; i += step)
             {
-                var rotatedPosition = rotateAround.To2D() + distance*direction.Rotated(Geometry.DegreeToRadian(i));
+                var rotatedPosition = rotateAround.To2D() + distance * direction.Rotated(Geometry.DegreeToRadian(i));
                 posList.Add(rotatedPosition.To3D());
             }
             return posList;
@@ -172,7 +172,7 @@ namespace OKTRAIO
         internal static float GetSafeScoreTM(Vector3 pos)
         {
             var score = 0f;
-            foreach (var enemy in Variables.CloseEnemies(Player.Instance.GetAutoAttackRange()))
+            foreach (var enemy in Variables.CloseEnemies(Player.Instance.GetAutoAttackRange(), pos))
             {
                 var enemySafeScore = 0f;
 
@@ -211,17 +211,17 @@ namespace OKTRAIO
                         {
                             var spellDmg = enemy.GetSpellDamage(Player.Instance, spell);
                             var isCC = CCDataBase.IsCC(enemy.Spellbook.GetSpell(spell).Name);
-                            if ((spellDmg > Player.Instance.MaxHealth*0.05 || isCC)
+                            if ((spellDmg > Player.Instance.MaxHealth * 0.05 || isCC)
                                 && enemy.Distance(pos) < enemy.Spellbook.GetSpell(spell).SData.CastRange)
                             {
-                                if (spellDmg > Player.Instance.MaxHealth*0.05)
+                                if (spellDmg > Player.Instance.MaxHealth * 0.05)
                                 {
-                                    spellSafeScore += (Player.Instance.MaxHealth - spellDmg)/Player.Instance.MaxHealth*
+                                    spellSafeScore += (Player.Instance.MaxHealth - spellDmg) / Player.Instance.MaxHealth *
                                                       100;
                                 }
                                 if (isCC)
                                 {
-                                    spellSafeScore += Variables.CloseEnemies(1000, pos).Count*20;
+                                    spellSafeScore += Variables.CloseEnemies(1000, pos).Count * 20;
                                 }
                             }
                         }
@@ -233,13 +233,17 @@ namespace OKTRAIO
                 {
                     if (pos.Distance(enemy) < enemy.GetAutoAttackRange())
                         enemySafeScore += 80;
-                    enemySafeScore += enemy.Distance(Player.Instance)/20;
+                    enemySafeScore += enemy.Distance(Player.Instance) / 20;
                 }
                 if (enemy.IsMelee)
                 {
                     if (pos.Distance(enemy) < enemy.GetAutoAttackRange())
                         enemySafeScore += 1000;
-                    enemySafeScore += enemy.Distance(Player.Instance)/5;
+                    enemySafeScore += enemy.Distance(Player.Instance) / 5;
+                }
+                if (enemy.TotalShieldMaxHealth() < Player.Instance.GetAutoAttackDamage(enemy, true))
+                {
+                    enemySafeScore = 0;
                 }
                 score += enemySafeScore;
             }
@@ -262,11 +266,11 @@ namespace OKTRAIO
                     .Where(
                         pos =>
                             Prediction.Position.PredictUnitPosition(target,
-                                (int) (dashDuration + Player.Instance.AttackDelay*1000)).Distance(pos) <
+                                (int)(dashDuration + Player.Instance.AttackDelay * 1000)).Distance(pos) <
                             Player.Instance.GetAutoAttackRange(target) - 72)
                     .Select(pos => new DashPos(pos))
                     .ToList();
-            if (!Positions.Any(pos => pos.SafeScoreTM < 120))
+            if (!Positions.Any(pos => pos.SafeScoreTM < 150))
             {
                 Positions =
                     RotatedPositions(Player.Instance.ServerPosition, Game.CursorPos, 360, 50, range)
@@ -289,7 +293,7 @@ namespace OKTRAIO
                 .Select(
                     e =>
                         new Geometry.Polygon.Circle(e.ServerPosition,
-                            (e.IsMelee ? e.AttackRange*1.5f : e.AttackRange) +
+                            (e.IsMelee ? e.AttackRange * 1.5f : e.AttackRange) +
                             e.BoundingRadius + 20))
                 .ToList()).SelectMany(path => path, (path, point) => new Vector2(point.X, point.Y))
                 .Where(point => !point.ToNavMeshCell().CollFlags.HasFlag(CollisionFlags.Wall))
@@ -360,7 +364,7 @@ namespace OKTRAIO
                     }
                 }
 
-                g_MinMaxCorners = new[] {ul, ur, lr, ll}; // For debugging.
+                g_MinMaxCorners = new[] { ul, ur, lr, ll }; // For debugging.
             }
 
             // Find a box that fits inside the MinMax quadrilateral.
@@ -424,7 +428,7 @@ namespace OKTRAIO
 
                 // Find the remaining point with the smallest Y value.
                 // if (there's a tie, take the one with the smaller X value.
-                Vector2[] best_pt = {points[0]};
+                Vector2[] best_pt = { points[0] };
                 foreach (
                     var pt in
                         points.Where(pt => (pt.Y < best_pt[0].Y) || ((pt.Y == best_pt[0].Y) && (pt.X < best_pt[0].X)))
@@ -434,7 +438,7 @@ namespace OKTRAIO
                 }
 
                 // Move this point to the convex hull.
-                var hull = new List<Vector2> {best_pt[0]};
+                var hull = new List<Vector2> { best_pt[0] };
                 points.Remove(best_pt[0]);
 
                 // Start wrapping up the other points.
@@ -495,11 +499,11 @@ namespace OKTRAIO
                 if (ax + ay == 0)
                 {
                     // if (the two points are the same, return 360.
-                    t = 360f/9f;
+                    t = 360f / 9f;
                 }
                 else
                 {
-                    t = dy/(ax + ay);
+                    t = dy / (ax + ay);
                 }
                 if (dx < 0)
                 {
@@ -509,7 +513,7 @@ namespace OKTRAIO
                 {
                     t = 4 + t;
                 }
-                return t*90;
+                return t * 90;
             }
 
             public static void FindMinimalBoundingCircle(List<Vector2> points, out Vector2 center, out float radius)
@@ -527,10 +531,10 @@ namespace OKTRAIO
                     for (var j = i + 1; j < hull.Count; j++)
                     {
                         // Find the circle through these two points.
-                        var test_center = new Vector2((hull[i].X + hull[j].X)/2f, (hull[i].Y + hull[j].Y)/2f);
+                        var test_center = new Vector2((hull[i].X + hull[j].X) / 2f, (hull[i].Y + hull[j].Y) / 2f);
                         var dx = test_center.X - hull[i].X;
                         var dy = test_center.Y - hull[i].Y;
-                        var test_radius2 = dx*dx + dy*dy;
+                        var test_radius2 = dx * dx + dy * dy;
 
                         // See if this circle would be an improvement.
                         if (test_radius2 < best_radius2)
@@ -580,7 +584,7 @@ namespace OKTRAIO
                 }
                 else
                 {
-                    radius = (float) Math.Sqrt(best_radius2);
+                    radius = (float)Math.Sqrt(best_radius2);
                 }
             }
 
@@ -592,33 +596,33 @@ namespace OKTRAIO
                 int skip3)
             {
                 return (from point in points.Where((t, i) => (i != skip1) && (i != skip2) && (i != skip3))
-                    let dx = center.X - point.X
-                    let dy = center.Y - point.Y
-                    select dx*dx + dy*dy).All(test_radius2 => !(test_radius2 > radius2));
+                        let dx = center.X - point.X
+                        let dy = center.Y - point.Y
+                        select dx * dx + dy * dy).All(test_radius2 => !(test_radius2 > radius2));
             }
 
             private static void FindCircle(Vector2 a, Vector2 b, Vector2 c, out Vector2 center, out float radius2)
             {
                 // Get the perpendicular bisector of (x1, y1) and (x2, y2).
-                var x1 = (b.X + a.X)/2;
-                var y1 = (b.Y + a.Y)/2;
+                var x1 = (b.X + a.X) / 2;
+                var y1 = (b.Y + a.Y) / 2;
                 var dy1 = b.X - a.X;
                 var dx1 = -(b.Y - a.Y);
 
                 // Get the perpendicular bisector of (x2, y2) and (x3, y3).
-                var x2 = (c.X + b.X)/2;
-                var y2 = (c.Y + b.Y)/2;
+                var x2 = (c.X + b.X) / 2;
+                var y2 = (c.Y + b.Y) / 2;
                 var dy2 = c.X - b.X;
                 var dx2 = -(c.Y - b.Y);
 
                 // See where the lines intersect.
-                var cx = (y1*dx1*dx2 + x2*dx1*dy2 - x1*dy1*dx2 - y2*dx1*dx2)/(dx1*dy2 - dy1*dx2);
-                var cy = (cx - x1)*dy1/dx1 + y1;
+                var cx = (y1 * dx1 * dx2 + x2 * dx1 * dy2 - x1 * dy1 * dx2 - y2 * dx1 * dx2) / (dx1 * dy2 - dy1 * dx2);
+                var cy = (cx - x1) * dy1 / dx1 + y1;
                 center = new Vector2(cx, cy);
 
                 var dx = cx - a.X;
                 var dy = cy - a.Y;
-                radius2 = dx*dx + dy*dy;
+                radius2 = dx * dx + dy * dy;
             }
 
             public struct MecCircle
