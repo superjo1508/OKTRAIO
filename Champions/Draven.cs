@@ -231,8 +231,8 @@ namespace OKTRAIO.Champions
         {
             if (Value.Use("misc.e") && _e.IsReady())
             {
-                if (sender == null || !sender.IsValidTarget(_e.Range)) return;
-                if (Player.Instance.ManaPercent >= Value.Get("misc.e.mana"))
+                if (sender.IsMe) return;
+                if (Player.Instance.IsInRange(sender, _e.Range) && Player.Instance.ManaPercent >= Value.Get("misc.e.mana"))
                 {
                     if (Value.Use("misc.e.stun") && sender.IsStunned)
                     {
@@ -581,7 +581,6 @@ namespace OKTRAIO.Champions
         #endregion
 
         #endregion
-
 
         #region Gamerelated Logic
 

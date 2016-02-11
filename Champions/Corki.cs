@@ -544,10 +544,11 @@ namespace OKTRAIO.Champions
 
         private void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
+            if (sender.IsMe) return;
+
             if (Value.Use("misc.q") && _q.IsReady())
             {
-                if (sender == null || sender.IsValidTarget(_q.Range)) return;
-                if (Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
+                if (Player.Instance.IsInRange(sender, _q.Range) && Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
                 {
                     if (Value.Use("misc.q.stun") && sender.IsStunned)
                     {
@@ -573,7 +574,7 @@ namespace OKTRAIO.Champions
             }
             if (Value.Use("misc.r") && _r.IsReady())
             {
-                if (Value.Get("misc.r.mana") >= Player.Instance.ManaPercent)
+                if (Player.Instance.IsInRange(sender, _r.Range) && Value.Get("misc.r.mana") >= Player.Instance.ManaPercent)
                 {
                     if (Value.Use("misc.r.stun") && sender.IsStunned)
                     {

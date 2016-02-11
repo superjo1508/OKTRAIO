@@ -43,7 +43,7 @@ namespace OKTRAIO.Utility
         private bool CheckSupported(Champion champion)
         {
             var ui = GetUtilityInfo();
-            return ui.SupportsAllChampions || ui.RequiredChampions.Any(c => c == champion);
+            return ui.RequiredChampions.Any(c => c == champion);
         }
 
         /// <summary>
@@ -124,7 +124,6 @@ namespace OKTRAIO.Utility
         /// <param name="requiredChampions">An array of supported champions, if every champion is supported pass "null" or no value</param>
         public UtilityInfo(UtilityAddon owner, string name, string uid, string author, params Champion[] requiredChampions)
         {
-            Console.WriteLine(name + ": " + requiredChampions == null);
             Uid = uid;
             Owner = owner;
             Name = name;

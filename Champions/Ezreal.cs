@@ -132,6 +132,7 @@ namespace OKTRAIO.Champions
                 MainMenu.Lane.AddSeparator();
                 MainMenu.Lane.AddGroupLabel("Q Settings", "lane.advanced.qsettingslabel", true);
                 MainMenu.Lane.AddCheckBox("lane.q.aa", "Use Q only when can't AA", true, true);
+                MainMenu.Lane.AddCheckBox("lane.q.lasthit", "Use Q as LastHit also in this mode", false, true);
                 MainMenu.Lane.AddSeparator();
                 MainMenu.Lane.AddGroupLabel("Mana Manager:", "harass.advanced.manamanagerlabel", true);
                 MainMenu.LaneManaManager(true, true, false, false, 65, 0, 0, 0);
@@ -362,7 +363,6 @@ namespace OKTRAIO.Champions
 
         public override void Laneclear()
         {
-            //only q when cant aa
             var source =
                 EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy,
                     Player.Instance.ServerPosition,
@@ -372,7 +372,15 @@ namespace OKTRAIO.Champions
 
             if (_q.IsReady() && Value.Use("lane.q"))
             {
-                if (Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
+                if (Value.Use("lane.q.lasthit") && _q.IsReady())
+                {
+                    if (Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana") &&
+                        source.TotalShieldHealth() <= Player.Instance.GetSpellDamage(source, SpellSlot.Q))
+                    {
+                        _q.Cast(source);
+                    }
+                }
+                else if (Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
                 {
                     if (Value.Use("lane.q.aa"))
                     {
@@ -864,9 +872,9 @@ namespace OKTRAIO.Champions
         {
             if (Value.Use("misc.q") && _q.IsReady())
             {
-                if (sender == null || sender.IsValidTarget(_q.Range)) return;
+                if (sender.IsMe) return;
 
-                if (Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
+                if (Player.Instance.IsInRange(sender, _q.Range) && Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
                 {
                     if (Value.Use("misc.q.stun") && sender.IsStunned)
                     {
@@ -892,7 +900,7 @@ namespace OKTRAIO.Champions
             }
             if (Value.Use("misc.w") && _w.IsReady())
             {
-                if (Value.Get("misc.w.mana") >= Player.Instance.ManaPercent)
+                if (Player.Instance.IsInRange(sender, _w.Range) && Value.Get("misc.w.mana") >= Player.Instance.ManaPercent)
                 {
                     if (Value.Use("misc.w.stun") && sender.IsStunned)
                     {

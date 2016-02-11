@@ -21,25 +21,15 @@ namespace OKTRAIO.Utility.Tracker
     public class Tracker : UtilityAddon
     {
         public Dictionary<AIHeroClient, SpellAvaliblity> HeroSpellAvaliblitys { get; set; }
-        private Dictionary<AIHeroClient, SpellSprites> HeroSpellSprites { get; set; }
-        private Sprite TrackerHud { get; set; } 
-        private class SpellSprites
-        {
-            public readonly Dictionary<SpellSlot, Sprite> CooldownSprites;
-            public readonly Dictionary<SpellSlot, Sprite> AvailableSprites;
-            
+        private Dictionary<AIHeroClient, Dictionary<SpellSlot, Sprite>> HeroSpellSprites { get; set; }
 
-            public SpellSprites()
-            {
-                CooldownSprites = new Dictionary<SpellSlot, Sprite>();
-                AvailableSprites = new Dictionary<SpellSlot, Sprite>();
-            }
-            public void AddSpell(SpellSlot slot, Sprite onCooldown, Sprite available)
-            {
-                CooldownSprites[slot] = onCooldown;
-                AvailableSprites[slot] = available;
-            }
-        }
+        private static Vector2 _lineTrackerOffset = new Vector2(3, 10);
+        private static float _spellTrackerWidth = 112 / 4f;
+        private static Color _availableLineColor = Color.Green;
+        private static Color _notAvailableLineColor = Color.Red;
+        private static Color _notLearnedeLineColor = Color.OrangeRed;
+
+        private Sprite TrackerHud { get; set; } 
 
         public Tracker(Menu menu) : base(menu)
         {
@@ -59,15 +49,19 @@ namespace OKTRAIO.Utility.Tracker
             Menu.AddLabel("Please note that the tracker is still not complete but is working.");
             Menu.AddCheckBox("tracker.show.spells.summoner", "Show Summoner Spells");
             Menu.AddCheckBox("tracker.show.spells.normal", "Show Normal Spells");
+            Menu.AddCheckBox("tracker.show.player.me", "Track Me");
             Menu.AddCheckBox("tracker.show.player.allies", "Track Allies");
             Menu.AddCheckBox("tracker.show.player.enemies", "Track Enemies");
-            Menu.AddLabel("Compact mode, turns the tracker into a slim lined bar under the players health.\n Can be useful as it will show cooldowns. ");
-            Menu.AddCheckBox("tracker.visual.compact", "Compact Mode (Not Implemented)", false);
             Menu.Add("tracker.reload", new CheckBox("Reload Tracker", false)).OnValueChange += Reload;
+
             Menu.AddSeparator();
             Menu.Add("tracker.advanced", new CheckBox("Show Advanced Menu", false)).OnValueChange += Value.AdvancedModeChanged;
+            Menu.AddCheckBox("tracker.show.onlyhpbarrendered", "Only show Tracker on visible Enemies", false, true);
+            Menu.AddLabel("This is currently buggy as the core does not fully support this option");
+
             Menu.AddSlider("tracker.visual.offset.x", "X Offset", 1, -100, 100, true);
-            Menu.AddSlider("tracker.visual.offset.y", "Y Offset", 20, -100, 100, true);
+            Menu.AddSlider("tracker.visual.offset.y", "Y Offset", 19, -100, 100, true);
+            
         }
 
         public override void Initialize()
@@ -78,24 +72,24 @@ namespace OKTRAIO.Utility.Tracker
                 return;
             }
             HeroSpellAvaliblitys = new Dictionary<AIHeroClient, SpellAvaliblity>(EntityManager.Heroes.AllHeroes.Count);
-            HeroSpellSprites = new Dictionary<AIHeroClient, SpellSprites>();
-            TrackerHud = new Sprite(TextureLoader.BitmapToTexture(Resources.SpellLayout));
+            HeroSpellSprites = new Dictionary<AIHeroClient, Dictionary<SpellSlot, Sprite>>();
+            TrackerHud = new Sprite(TextureLoader.BitmapToTexture(Resources.SpellLayout2));
+            IconManager.IconGenerator.Padding = 0;
             using (new TimeMeasure("Tracker Sprite Generation"))
             {
                 foreach (var hero in EntityManager.Heroes.AllHeroes)
                 {
                     var spellAvaliblity = new SpellAvaliblity(hero);
                     HeroSpellAvaliblitys[hero] = spellAvaliblity;
-                    //var spellSprites = new SpellSprites();
-                    //foreach (SpellSlot slot in SpellAvaliblity.TrackedSpellSlots)
-                    //{
-                    //    var spell = spellAvaliblity.GetSpell(slot);
-                    //    spellSprites.AddSpell(slot,
-                    //        IconManager.GetSpellSprite(spell, IconGenerator.IconType.Square, Value.Get("tracker.visual.size"), Color.Red, Value.Get("tracker.visual.border.width")),
-                    //        IconManager.GetSpellSprite(spell, IconGenerator.IconType.Square, Value.Get("tracker.visual.size"), Color.Green, Value.Get("tracker.visual.border.width")));
-
-                    //}
-                    //HeroSpellSprites[hero] = spellSprites;
+                    var spriteDictonary = new Dictionary<SpellSlot, Sprite>();
+                    foreach (SpellSlot slot in SpellAvaliblity.TrackedSpellSlots)
+                    {
+                        
+                        if (slot != SpellSlot.Summoner1 && slot != SpellSlot.Summoner2) continue;
+                        var spell = spellAvaliblity.GetSpell(slot);
+                        spriteDictonary[slot] = IconManager.GetSpellSprite(spell, IconGenerator.IconType.Square, 8, Color.Empty, 1);
+                    }
+                    HeroSpellSprites[hero] = spriteDictonary;
                 }
             }
         }
@@ -110,6 +104,31 @@ namespace OKTRAIO.Utility.Tracker
             }
 
         }
+
+        private Vector2 GetDrawPos(AIHeroClient hero)
+        {
+            return new Vector2(hero.HPBarPosition.X + Value.Get("tracker.visual.offset.x"), hero.HPBarPosition.Y + Value.Get("tracker.visual.offset.y"));
+        }
+
+        private Vector2 GetChampionOffset(Vector2 value, Champion champion)
+        {
+            switch (champion)
+            {
+                case Champion.Darius:
+                    return OffsetVector(value, -4, 0);
+                
+                default:
+                    return value;
+            }
+        }
+        private Vector2 OffsetVector(Vector2 value, Vector2 offset)
+        {
+            return OffsetVector(value, offset.X, offset.Y);
+        }
+        private Vector2 OffsetVector(Vector2 value, float xoffset, float yoffset)
+        {
+            return new Vector2(value.X + xoffset, value.Y + yoffset);
+        }
         protected override void Drawing_OnEndScene(EventArgs args)
         {
 
@@ -119,21 +138,43 @@ namespace OKTRAIO.Utility.Tracker
             if(Shop.IsOpen) return;
             foreach (var avaliblity in HeroSpellAvaliblitys)
             {
-                if(!avaliblity.Key.IsHPBarRendered) return;
-                if ((!avaliblity.Key.IsEnemy || !Value.Use("tracker.show.player.enemies")) && (!avaliblity.Key.IsAlly || !Value.Use("tracker.show.player.allies"))) continue; // || avaliblity.Key.IsMe) continue;
-                var drawPos = new Vector2(avaliblity.Key.HPBarPosition.X + avaliblity.Key.HPBarXOffset + Value.Get("tracker.visual.offset.x"), avaliblity.Key.HPBarPosition.Y + avaliblity.Key.HPBarYOffset + Value.Get("tracker.visual.offset.y"));
+                var hero = avaliblity.Key;
+                if(hero.IsDead || hero.IsNoRender) return;
+                if (Value.Use("tracker.show.onlyhpbarrendered") && !hero.IsHPBarRendered) return;
+                if(hero.IsMe && !Value.Use("tracker.show.player.me")) return;
+                if ((!hero.IsEnemy || !Value.Use("tracker.show.player.enemies")) && (!hero.IsAlly || !Value.Use("tracker.show.player.allies"))) continue; // || hero.IsMe) continue;
+
+                var drawPos = hero.IsMe ? OffsetVector(GetDrawPos(avaliblity.Key), 0, -8) : GetDrawPos(avaliblity.Key);
+                drawPos = GetChampionOffset(drawPos, hero.Hero);
                 var spells = avaliblity.Value;
-                var lineWidth = 112 /4;
-                var startPos = new Vector2(drawPos.X + 3, drawPos.Y + 10);
+                var startPos = OffsetVector(drawPos,  _lineTrackerOffset);
+                var endPos = OffsetVector(drawPos, _lineTrackerOffset.X + _spellTrackerWidth * 4, _lineTrackerOffset.Y);
+                Line.DrawLine(Color.Black, 4, startPos, endPos);
                 for (int slotIndex = 0; slotIndex < SpellAvaliblity.TrackedSpellSlots.Length; slotIndex++)
                 {
                     var slot = SpellAvaliblity.TrackedSpellSlots[slotIndex];
-                    if (slot == SpellSlot.Summoner1 || slot == SpellSlot.Summoner2) continue;
-                    Line.DrawLine(spells.IsAvailable(slot) ? Color.Green : Color.Red, 4, new Vector2(startPos.X + lineWidth * slotIndex, startPos.Y),
-                        new Vector2(startPos.X + lineWidth * slotIndex + lineWidth * spells.CoolDownPercent(slot), startPos.Y));
+                    if (slot == SpellSlot.Summoner1 || slot == SpellSlot.Summoner2)
+                    {
+                        HeroSpellSprites[avaliblity.Key][slot].Draw(slot == SpellSlot.Summoner1 ? endPos : OffsetVector(endPos, 8, 0));
+
+                        if(!spells.IsAvailable(slot)) Line.DrawLine(Color.FromArgb(180, Color.Black), 8, OffsetVector(endPos, slot == SpellSlot.Summoner1 ? 0 : 8, 2), OffsetVector(endPos, slot == SpellSlot.Summoner1 ? 8 : 16, 2));
+                    }
+                    else
+                    {
+                        var color = _availableLineColor;
+                        if (!spells.IsLearned(slot))
+                            color = _notLearnedeLineColor;
+                        if (!spells.IsAvailable(slot))
+                            color = _notAvailableLineColor;
+
+                        Line.DrawLine(color, 4, OffsetVector(startPos, _spellTrackerWidth * slotIndex, 0),
+                            OffsetVector(startPos, _spellTrackerWidth * slotIndex + _spellTrackerWidth * spells.CoolDownPercent(slot), 0));
+                    }
 
                 }
+                
                 TrackerHud.Draw(drawPos);
+                if (hero.IsMe && (hero.Hero != Champion.Jhin)) Line.DrawLine(Color.FromArgb(74, 73, 74), 6, OffsetVector(startPos, 21, -6), OffsetVector(endPos, 15, -6));
             }
 
         }

@@ -160,8 +160,8 @@ namespace OKTRAIO.Champions
 
             if (Value.Use("combo.w".AddName()) && _w.IsReady() && Player.Instance.Mana > _wmana + _rmana)
             {
-                if ((!Stealthed && _w.IsInRange(target) && EStacks(target) < 5 ||
-                     !Stealthed && !Player.Instance.IsInAutoAttackRange(target) && _w.IsInRange(target)))
+                if (!Stealthed && _w.IsInRange(target) && EStacks(target) < 5 ||
+                    !Stealthed && !Player.Instance.IsInAutoAttackRange(target) && _w.IsInRange(target))
                 {
                     var wpred = _w.GetPrediction(target);
 
@@ -305,7 +305,22 @@ namespace OKTRAIO.Champions
             {
                 if (monster != null)
                 {
-                    _w.Cast(monster);
+                    var plsnobug =
+                        EntityManager.MinionsAndMonsters.GetJungleMonsters()
+                            .FirstOrDefault(
+                                a =>
+                                    a.IsValidTarget(_w.Range) &&
+                                    (a.BaseSkinName == "SRU_Drake" || a.BaseSkinName == "SRU_Baron") &&
+                                    EStacksMinion(a) < 5);
+
+                    if (Player.Instance.IsFacing(plsnobug))
+                    {
+                        _w.Cast(plsnobug);
+                    }
+                    else
+                    {
+                        _w.Cast(monster);
+                    }
                 }
             }
         }

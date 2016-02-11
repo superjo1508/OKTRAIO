@@ -496,7 +496,7 @@ namespace OKTRAIO.Champions
         }
 
         #endregion
-
+        
         #region OnSpellCast
 
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -528,8 +528,9 @@ namespace OKTRAIO.Champions
 
         private static void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
-            if (sender.IsMe && !_w.IsInRange(sender)) return;
-            if (Value.Use("misc.w") && Player.Instance.ManaPercent >= Value.Get("misc.w.mana"))
+            if (sender.IsMe) return;
+
+            if (Player.Instance.IsInRange(sender, _w.Range) && Value.Use("misc.w") && Player.Instance.ManaPercent >= Value.Get("misc.w.mana"))
             {
                 if (Value.Use("misc.w.charm") && sender.IsCharmed)
                 {

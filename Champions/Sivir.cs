@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
@@ -135,7 +136,7 @@ namespace OKTRAIO.Champions
                 MainMenu.Misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
                 MainMenu.Misc.AddSeparator();
                 MainMenu.Misc.AddGroupLabel("Prediction", "combo.grouplabel2.addonmenu", true);
-                MainMenu.Misc.AddSlider("misc.Q.prediction", "Hitchance Percentage for Q", 80, 0, 100, true);
+                MainMenu.Misc.AddSlider("misc.q.prediction", "Hitchance Percentage for Q", 80, 0, 100, true);
                 MainMenu.Misc.AddSeparator();
                 MainMenu.Misc.AddGroupLabel("Mana Manager:", "misc.grouplabel.addonmenu.1", true);
                 MainMenu.Misc.AddSlider("misc.q.mana", "Use Q on CC Enemy if Mana is above than {0}%", 30, 0, 100,
@@ -191,12 +192,10 @@ namespace OKTRAIO.Champions
             var targetq = TargetSelector.GetTarget(_q.Range, DamageType.Physical);
             var targetr = EntityManager.Heroes.Enemies.Where(a => a.IsValidTarget(1400));
             var ally = EntityManager.Heroes.Allies.Where(a => a.IsValidTarget(_r.Range - 50));
-            if (targetq == null)
-            {
-                return;
-            }
 
-            if (_q.IsReady() && Value.Use("combo.q".AddName()) && Player.Instance.Mana >= _qmana + _rmana)
+            if (targetq == null) return;
+
+            if (_q.IsReady() && Value.Use("combo.q".AddName()))
             {
                 var qpred = _q.GetPrediction(targetq);
                 if (qpred.HitChancePercent >= Value.Get("misc.q.prediction"))
@@ -541,9 +540,9 @@ namespace OKTRAIO.Champions
 
         private void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
-            if (sender == null || sender.IsValidTarget(_q.Range)) return;
+            if (sender.IsMe) return;
 
-            if (Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
+            if (Player.Instance.IsInRange(sender, _q.Range) && Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
             {
                 if (Value.Use("misc.q.stun") && sender.IsStunned)
                 {

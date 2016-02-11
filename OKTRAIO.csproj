@@ -1168,6 +1168,7 @@
     <None Include="Resources\IconGenerator\Armordillo_RecklessCharge.png" />
     <None Include="Resources\SpellLayout.png" />
     <None Include="Resources\IconaSummoners.png" />
+    <None Include="Resources\SpellLayout2.png" />
     <Content Include="TextFile1.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

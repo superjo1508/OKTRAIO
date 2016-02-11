@@ -330,6 +330,28 @@ namespace OKTRAIO.Utility.Tracker
                     return Summoner1;
                 case SpellSlot.Summoner2:
                     return Summoner2;
+                default:
+                    return false;
+            }
+
+        }
+
+        public bool IsLearned(SpellSlot slot)
+        {
+            switch (slot)
+            {
+                case SpellSlot.Q:
+                    return QLearned;
+                case SpellSlot.W:
+                    return WLearned;
+                case SpellSlot.E:
+                    return ELearned;
+                case SpellSlot.R:
+                    return RLearned;
+                case SpellSlot.Summoner1:
+                    return Summoner1;
+                case SpellSlot.Summoner2:
+                    return Summoner2;
                 default: return false;
             }
         }
