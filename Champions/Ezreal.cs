@@ -14,1025 +14,638 @@ namespace OKTRAIO.Champions
 {
     internal class Ezreal : AIOChampion
     {
-        #region Drawings
+        private Menu Config = Program.Config;
+        public static Orbwalking.Orbwalker Orbwalker = Program.Orbwalker;
+        public Spell Q, W, E, R;
+        public float QMANA = 0, WMANA = 0, EMANA = 0, RMANA = 0;
+        public Obj_AI_Hero Player { get { return ObjectManager.Player; } }
+        Vector3 CursorPosition = Vector3.Zero;
 
-        private static void GameOnDraw(EventArgs args)
+        public double lag = 0;
+        public double WCastTime = 0;
+        public double QCastTime = 0;
+        public float DragonDmg = 0;
+        public double DragonTime = 0;
+        public bool Esmart = false;
+        public double OverKill = 0;
+        public double OverFarm = 0;
+        public double diag = 0;
+        public double diagF = 0;
+        public int Muramana = 3042;
+        public int Tear = 3070;
+        public int Manamune = 3004;
+
+        public string MsgDebug = "wait";
+        public double NotTime = 0;
+
+        public static Core.OKTWdash Dash;
+
+        public void LoadOKTW()
         {
-            var colorW = MainMenu.Draw.GetColor("color.w");
-            var widthW = MainMenu.Draw.GetWidth("width.w");
-            var colorE = MainMenu.Draw.GetColor("color.e");
-            var widthE = MainMenu.Draw.GetWidth("width.e");
-            var colorR = MainMenu.Draw.GetColor("color.r");
-            var widthR = MainMenu.Draw.GetWidth("width.r");
+            Q = new Spell(SpellSlot.Q, 1150);
+            W = new Spell(SpellSlot.W, 950);
+            E = new Spell(SpellSlot.E, 475);
+            R = new Spell(SpellSlot.R, 3000f);
+            
+            Q.SetSkillshot(0.25f, 60f, 2000f, true, SkillshotType.SkillshotLine);
+            W.SetSkillshot(0.25f, 80f, 1600f, false, SkillshotType.SkillshotLine);
+            R.SetSkillshot(1.1f, 160f, 2000f, false, SkillshotType.SkillshotLine);
 
-            if (!Value.Use("draw.disable"))
+            Config.SubMenu(Player.ChampionName).SubMenu("Draw").AddItem(new MenuItem("noti", "Show notification", true).SetValue(false));
+            Config.SubMenu(Player.ChampionName).SubMenu("Draw").AddItem(new MenuItem("onlyRdy", "Draw only ready spells", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("Draw").AddItem(new MenuItem("qRange", "Q range", true).SetValue(false));
+            Config.SubMenu(Player.ChampionName).SubMenu("Draw").AddItem(new MenuItem("wRange", "W range", true).SetValue(false));
+            Config.SubMenu(Player.ChampionName).SubMenu("Draw").AddItem(new MenuItem("eRange", "E range", true).SetValue(false));
+            Config.SubMenu(Player.ChampionName).SubMenu("Draw").AddItem(new MenuItem("rRange", "R range", true).SetValue(false));
+
+            Config.SubMenu(Player.ChampionName).SubMenu("Items").AddItem(new MenuItem("mura", "Auto Muramana", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("Items").AddItem(new MenuItem("stack", "Stack Tear if full mana", true).SetValue(false));
+
+            Config.SubMenu(Player.ChampionName).SubMenu("W Config").AddItem(new MenuItem("autoW", "Auto W", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("W Config").AddItem(new MenuItem("wPush", "W ally (push tower)", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("W Config").AddItem(new MenuItem("harrasW", "Harass W", true).SetValue(true));
+
+            Config.SubMenu(Player.ChampionName).SubMenu("E Config").AddItem(new MenuItem("smartE", "SmartCast E key", true).SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press))); //32 == space
+            Config.SubMenu(Player.ChampionName).SubMenu("E Config").AddItem(new MenuItem("smartEW", "SmartCast E + W key", true).SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press))); //32 == space
+            Config.SubMenu(Player.ChampionName).SubMenu("E Config").AddItem(new MenuItem("autoE", "Auto E", true).SetValue(true));
+            Dash = new Core.OKTWdash(E);
+
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").AddItem(new MenuItem("autoR", "Auto R", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").AddItem(new MenuItem("Rcc", "R cc", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").AddItem(new MenuItem("Raoe", "R aoe 3 enemy", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").SubMenu("R Jungle stealer").AddItem(new MenuItem("Rjungle", "R Jungle stealer", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").SubMenu("R Jungle stealer").AddItem(new MenuItem("Rdragon", "Dragon", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").SubMenu("R Jungle stealer").AddItem(new MenuItem("Rbaron", "Baron", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").SubMenu("R Jungle stealer").AddItem(new MenuItem("Rred", "Red", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").SubMenu("R Jungle stealer").AddItem(new MenuItem("Rblue", "Blue", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").SubMenu("R Jungle stealer").AddItem(new MenuItem("Rally", "Ally stealer", true).SetValue(false));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").AddItem(new MenuItem("useR", "Semi-manual cast R key", true).SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press))); //32 == space
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").AddItem(new MenuItem("Rturrent", "Don't R under turret", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").AddItem(new MenuItem("MaxRangeR", "Max R range", true).SetValue(new Slider(3000, 5000, 0)));
+            Config.SubMenu(Player.ChampionName).SubMenu("R Config").AddItem(new MenuItem("MinRangeR", "Min R range", true).SetValue(new Slider(900, 5000, 0)));
+
+            Config.SubMenu(Player.ChampionName).SubMenu("Farm").AddItem(new MenuItem("farmQ", "Farm Q", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("Farm").AddItem(new MenuItem("LC", "LaneClear", true).SetValue(true));
+            Config.SubMenu(Player.ChampionName).SubMenu("Farm").AddItem(new MenuItem("Mana", "LaneClear Mana", true).SetValue(new Slider(50, 100, 0)));
+            Config.SubMenu(Player.ChampionName).SubMenu("Farm").AddItem(new MenuItem("LCP", "FAST LaneClear", true).SetValue(true));
+
+            foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
+                Config.SubMenu(Player.ChampionName).SubMenu("Harass").AddItem(new MenuItem("haras" + enemy.ChampionName, enemy.ChampionName).SetValue(true));
+
+            Config.SubMenu(Player.ChampionName).AddItem(new MenuItem("debug", "Debug", true).SetValue(false));
+
+            Config.SubMenu(Player.ChampionName).AddItem(new MenuItem("apEz", "AP Ezreal", true).SetValue(false));
+
+            Game.OnUpdate += Game_OnUpdate;
+            Drawing.OnDraw += Drawing_OnDraw;
+            Orbwalking.AfterAttack += afterAttack;
+        }
+
+        private void afterAttack(AttackableUnit unit, AttackableUnit target)
+        {
+            if (!unit.IsMe)
+                return;
+
+            if (W.IsReady() && Config.Item("wPush", true).GetValue<bool>() && target.IsValid<Obj_AI_Turret>() && Player.Mana > RMANA + EMANA + QMANA + WMANA + WMANA + RMANA)
             {
-                if (Value.Use("draw.w") && ((Value.Use("draw.ready") && _w.IsReady()) || !Value.Use("draw.ready")))
+                foreach (var ally in Program.Allies)
                 {
-                    new Circle
-                    {
-                        Color = colorW,
-                        Radius = _w.Range,
-                        BorderWidth = widthW
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.e") && ((Value.Use("draw.ready") && _e.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorE,
-                        Radius = _e.Range,
-                        BorderWidth = widthE
-                    }.Draw(Player.Instance.Position);
-                }
-                if (Value.Use("draw.r") && ((Value.Use("draw.ready") && _r.IsReady()) || !Value.Use("draw.ready")))
-                {
-                    new Circle
-                    {
-                        Color = colorR,
-                        Radius = _q.Range,
-                        BorderWidth = widthR
-                    }.Draw(Player.Instance.Position);
+                    if (!ally.IsMe && ally.IsAlly && ally.Distance(Player.Position) < 600)
+                        W.Cast(ally);
                 }
             }
         }
 
-        #endregion
-
-        #region Initialize and Declare
-
-        //Spells
-        private static Spell.Skillshot _q, _w, _r;
-        private static Spell.Targeted _e;
-        private int _minionId;
-        private static readonly Vector2 Offset = new Vector2(1, 0);
-
-        public override void Init()
+        private void Game_OnUpdate(EventArgs args)
         {
-            //Spells
-
-            _q = new Spell.Skillshot(SpellSlot.Q, 1150, SkillShotType.Linear, 250, 2000, (int) 60f);
-            _w = new Spell.Skillshot(SpellSlot.W, 1000, SkillShotType.Linear, 250, 1600, (int) 80f)
+            if (Program.LagFree(0))
             {
-                AllowedCollisionCount = int.MaxValue
-            };
-            _e = new Spell.Targeted(SpellSlot.E, 475);
-            _r = new Spell.Skillshot(SpellSlot.R, 3000, SkillShotType.Linear, 1000, 2000, (int) 160f);
-
-
-            try
-            {
-                //Menu Init
-                //Combo
-                MainMenu.ComboKeys(useR: false, defaultE: false);
-                MainMenu.Combo.AddSeparator();
-                MainMenu.Combo.AddGroupLabel("Combo Preferences", "combo.grouplabel.mode", true);
-                MainMenu.Combo.Add("combo.mode", new Slider("Combo Mode", 0, 0, 1)).OnValueChange += ModeSlider;
-                Value.AdvancedMenuItemUiDs.Add("combo.mode");
-                MainMenu.Combo["combo.mode"].IsVisible =
-                    MainMenu.Combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
-                MainMenu.Combo.Add("combo.emode", new Slider("E Mode: ", 0, 0, 2)).OnValueChange += ComboEModeSlider;
-                Value.AdvancedMenuItemUiDs.Add("combo.emode");
-                MainMenu.Combo["combo.emode"].Cast<Slider>().IsVisible =
-                    MainMenu.Combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
-                MainMenu.Combo.Add("combo.rbind",
-                    new KeyBind("Semi-Auto R (No Lock)", false, KeyBind.BindTypes.HoldActive, 'T'))
-                    .OnValueChange += OnUltButton;
-                Value.AdvancedMenuItemUiDs.Add("combo.rbind");
-                MainMenu.Combo["combo.rbind"].IsVisible =
-                    MainMenu.Combo["combo.advanced"].Cast<CheckBox>().CurrentValue;
-                MainMenu.Combo.AddSeparator();
-                MainMenu.Combo.AddGroupLabel("Prediction Settings", "combo.advanced.predctionlabel", true);
-                MainMenu.Combo.AddSlider("combo.q.pred", "Use Q if HitChance is above than {0}%", 45, 0, 100, true);
-                MainMenu.Combo.AddSlider("combo.w.pred", "Use W if HitChance is above than {0}%", 30, 0, 100, true);
-                MainMenu.Combo.AddSlider("combo.r.pred", "Use R if HitChance is above than {0}%", 70, 0, 100, true);
-                MainMenu.Combo.AddSeparator();
-                MainMenu.Combo.AddGroupLabel("Mana Manager:", "combo.advanced.manamanagerlabel", true);
-                MainMenu.ComboManaManager(true, true, true, true, 10, 10, 10, 10);
-
-                //Harass
-                MainMenu.HarassKeys(useR: false, defaultE: false);
-                MainMenu.Harass.AddSeparator();
-                MainMenu.Harass.AddGroupLabel("Harass Preferences", "harass.grouplabel.mode", true);
-                MainMenu.Harass.AddCheckBox("harass.auto", "Use AUTO HARASS", false, true);
-                MainMenu.Harass.Add("harass.emode", new Slider("E Mode: ", 0, 0, 2)).OnValueChange += HarassEModeSlider;
-                Value.AdvancedMenuItemUiDs.Add("harass.emode");
-                MainMenu.Harass["harass.emode"].IsVisible =
-                    MainMenu.Harass["harass.advanced"].Cast<CheckBox>().CurrentValue;
-                MainMenu.Harass.AddSeparator();
-                MainMenu.Harass.AddGroupLabel("Prediction Settings", "harass.advanced.predctionlabel", true);
-                MainMenu.Harass.AddSlider("harass.q.pred", "Use Q if HitChance is above than {0}%", 45, 0, 100, true);
-                MainMenu.Harass.AddSlider("harass.w.pred", "Use W if HitChance is above than {0}%", 30, 0, 100, true);
-                MainMenu.Harass.AddSeparator();
-                MainMenu.Harass.AddGroupLabel("Mana Manager:", "harass.advanced.manamanagerlabel", true);
-                MainMenu.HarassManaManager(true, true, true, false, 60, 60, 0, 0);
-
-                //Farm
-                MainMenu.LaneKeys(useE: false, useR: false);
-                MainMenu.Lane.AddSeparator();
-                MainMenu.Lane.AddGroupLabel("Q Settings", "lane.advanced.qsettingslabel", true);
-                MainMenu.Lane.AddCheckBox("lane.q.aa", "Use Q only when can't AA", true, true);
-                MainMenu.Lane.AddCheckBox("lane.q.lasthit", "Use Q as LastHit also in this mode", false, true);
-                MainMenu.Lane.AddSeparator();
-                MainMenu.Lane.AddGroupLabel("Mana Manager:", "harass.advanced.manamanagerlabel", true);
-                MainMenu.LaneManaManager(true, true, false, false, 65, 0, 0, 0);
-
-                //Jungle Clear Menu Settings
-                MainMenu.JungleKeys(useR: false, defaultE: false);
-                MainMenu.Jungle.AddSeparator();
-                MainMenu.Jungle.AddGroupLabel("Jungleclear Preferences", "jungle.grouplabel.1", true);
-                MainMenu.Jungle.AddCheckBox("jungle.monsters.spell", "Use Abilities on Big Monster", true, true);
-                MainMenu.Jungle.AddCheckBox("jungle.minimonsters.spell", "Use Abilities on Mini Monsters", false, true);
-                MainMenu.Jungle.AddSeparator();
-                MainMenu.Jungle.AddGroupLabel("Mana Manager:", "jungle.grouplabel.2", true);
-                MainMenu.JungleManaManager(true, true, true, false, 60, 50, 40, 50);
-
-                //Last hit Menu Settings
-                MainMenu.LastHitKeys(useW: false, useE: false, useR: false);
-                MainMenu.Lasthit.AddSeparator();
-                MainMenu.Lasthit.AddGroupLabel("Mana Manager:", "lasthit.grouplabel.1", true);
-                MainMenu.LasthitManaManager(true, false, false, false, 60, 50, 40, 50);
-
-                //Ks
-                MainMenu.KsKeys(defaultE: false);
-                MainMenu.Ks.AddSeparator();
-                MainMenu.Ks.AddGroupLabel("Mana Manager:", "killsteal.grouplabel.5", true);
-                MainMenu.KsManaManager(true, true, true, true, 60, 50, 40, 50);
-
-                //Flee Menu
-                MainMenu.FleeKeys(false, useW: false, useR: false);
-
-                //Misc
-                MainMenu.MiscMenu();
-                MainMenu.Misc.AddSeparator();
-                MainMenu.Misc.AddCheckBox("misc.q", "Use Auto Q");
-                MainMenu.Misc.AddCheckBox("misc.w", "Use Auto W");
-                MainMenu.Misc.AddCheckBox("misc.e.gapcloser", "Use Auto E on GapCloser", false);
-                MainMenu.Misc.AddCheckBox("misc.e.gapcloser.wall", "Safe GapCloser E (Wall)");
-                MainMenu.Misc.AddSeparator();
-                MainMenu.Misc.AddGroupLabel("Auto Q-W Settings", "misc.grouplabel.addonmenu", true);
-                MainMenu.Misc.AddCheckBox("misc.w.ally", "Use W on Allies/Yourself", false, true);
-                MainMenu.Misc.AddCheckBox("misc.q.stun", "Use Q on Stunned Enemy", true, true);
-                MainMenu.Misc.AddCheckBox("misc.w.stun", "Use W on Stunned Enemy", true, true);
-                MainMenu.Misc.AddCheckBox("misc.q.charm", "Use Q on Charmed Enemy", true, true);
-                MainMenu.Misc.AddCheckBox("misc.w.charm", "Use W on Charmed Enemy", true, true);
-                MainMenu.Misc.AddCheckBox("misc.q.taunt", "Use Q on Taunted Enemy", true, true);
-                MainMenu.Misc.AddCheckBox("misc.w.taunt", "Use W on Taunted Enemy", true, true);
-                MainMenu.Misc.AddCheckBox("misc.q.fear", "Use Q on Feared Enemy", true, true);
-                MainMenu.Misc.AddCheckBox("misc.w.fear", "Use W on Feared Enemy", true, true);
-                MainMenu.Misc.AddCheckBox("misc.q.snare", "Use Q on Snared Enemy", true, true);
-                MainMenu.Misc.AddCheckBox("misc.w.snare", "Use W on Snared Enemy", true, true);
-                MainMenu.Misc.AddSeparator();
-                MainMenu.Misc.AddGroupLabel("Mana Manager:", "misc.grouplabel.addonmenu.1", true);
-                MainMenu.Misc.AddSlider("misc.q.mana", "Use Q on CC Enemy if Mana is above than {0}%", 30, 0, 100,
-                    true);
-                MainMenu.Misc.AddSlider("misc.w.mana", "Use W on CC Enemy if Mana is above than {0}%", 30, 0, 100,
-                    true);
-                MainMenu.DrawKeys();
-                MainMenu.Draw.AddCheckBox("draw.hp.bar", "Draw Combo Damage", true, true);
-                MainMenu.DamageIndicator(true);
-                //Value
-                Value.Init();
+                SetMana();
             }
-            catch (Exception e)
+
+            if (R.IsReady() && Config.Item("Rjungle", true).GetValue<bool>())
             {
-                Console.WriteLine(e);
-                Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code MENU)</font>");
+                KsJungle();
             }
-            try
+            else
+                DragonTime = 0;
+
+            if (E.IsReady())
             {
-                Drawing.OnDraw += GameOnDraw;
-                Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
-                Orbwalker.OnPreAttack += OrbwalkerOnOnPreAttack;
-                Orbwalker.OnPostAttack += OrbwalkerOnOnPostAttack;
-                if (MainMenu.Menu["useonupdate"].Cast<CheckBox>().CurrentValue)
+                if (Program.LagFree(1) && Config.Item("autoE", true).GetValue<bool>() && Program.Combo)
+                    LogicE();
+
+                if (Config.Item("smartE", true).GetValue<KeyBind>().Active)
+                    Esmart = true;
+                if (Config.Item("smartEW", true).GetValue<KeyBind>().Active && W.IsReady())
                 {
-                    Game.OnUpdate += GameOnUpdate;
+                    CursorPosition = Game.CursorPos;
+                    W.Cast(CursorPosition);
                 }
-                else
-                {
-                    Game.OnTick += GameOnUpdate;
-                }
-                Obj_AI_Base.OnBuffGain += BuffGain;
-                Drawing.OnEndScene += Drawing_OnEndScene;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code 503)</font>");
-            }
-        }
-
-        #endregion
-
-        #region Gamerelated Logic
-
-        #region Combo
-
-        public override void Combo()
-        {
-            var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
-
-            if (target == null) return;
-
-            if (Value.Get("combo.mode") == 0)
-            {
-                if (_e.IsReady() && Value.Use("combo.e".AddName()))
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana"))
-                    {
-                        ELogic();
-                    }
-                }
-                else if (_q.IsReady() && Value.Use("combo.q".AddName()))
-                {
-                    if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("combo.q.pred")) &&
-                        (Player.Instance.ManaPercent >= Value.Get("combo.q.mana")))
-                    {
-                        _q.Cast(_q.GetPrediction(target).CastPosition);
-                    }
-                }
-                else if (_w.IsReady() && Value.Use("combo.w".AddName()))
-                {
-                    var ally =
-                        EntityManager.Heroes.Allies
-                            .FirstOrDefault(x => x.IsValidTarget(_w.Range));
-
-                    if (Value.Use("misc.w.ally"))
-                    {
-                        if (Player.Instance.Distance(ally) <= _w.Range)
-                        {
-                            _w.Cast(_w.GetPrediction(ally).CastPosition);
-                        }
-                        else
-                        {
-                            _w.Cast(Game.CursorPos);
-                        }
-                    }
-                    else if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("combo.w.pred")) &&
-                             (Player.Instance.ManaPercent >= Value.Get("combo.w.mana")))
-                    {
-                        _w.Cast(_w.GetPrediction(target).CastPosition);
-                    }
-                }
+                if (Esmart && Player.Position.Extend(Game.CursorPos, E.Range).CountEnemiesInRange(500) < 4)
+                    E.Cast(Player.Position.Extend(Game.CursorPos, E.Range), true);
+                
+                if (!CursorPosition.IsZero)
+                    E.Cast(Player.Position.Extend(CursorPosition, E.Range), true);
             }
             else
             {
-                if (_q.IsReady() && Value.Use("combo.q".AddName()))
+                CursorPosition = Vector3.Zero;
+                Esmart = false;
+            }
+
+            if (Program.LagFree(2) && Q.IsReady())
+                LogicQ();
+
+            if (Program.LagFree(3) && W.IsReady() && Config.Item("autoW", true).GetValue<bool>())
+                LogicW();
+
+            if ( R.IsReady())
+            {
+                if (Config.Item("useR", true).GetValue<KeyBind>().Active)
                 {
-                    if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("combo.q.pred")) &&
-                        (Player.Instance.ManaPercent >= Value.Get("combo.q.mana")))
-                    {
-                        _q.Cast(_q.GetPrediction(target).CastPosition);
-                    }
+                    var t = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Physical);
+                    if (t.IsValidTarget())
+                        R.Cast(t, true, true);
                 }
-                else if (_w.IsReady() && Value.Use("combo.w".AddName()))
-                {
-                    if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("combo.w.pred")) &&
-                        (Player.Instance.ManaPercent >= Value.Get("combo.w.mana")))
-                    {
-                        _w.Cast(_w.GetPrediction(target).CastPosition);
-                    }
-                }
-                else if (_e.IsReady() && Value.Use("combo.e".AddName()))
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("combo.e.mana"))
-                    {
-                        ELogic();
-                    }
-                }
+
+                if (Program.LagFree(4))
+                    LogicR();
             }
         }
 
-        #endregion
-
-        #region Harass
-
-        public override void Harass()
+        private void LogicQ()
         {
-            var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
-
-            if (target == null) return;
-
-            if (_q.IsReady() && Value.Use("harass.q"))
+            if (Config.Item("mura", true).GetValue<bool>())
             {
-                if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("harass.q.pred")) &&
-                    (Player.Instance.ManaPercent >= Value.Get("harass.q.mana")))
+                int Mur = Items.HasItem(Muramana) ? 3042 : 3043;
+                if (Program.Combo && Items.HasItem(Mur) && Items.CanUseItem(Mur) && Player.Mana > RMANA + EMANA + QMANA + WMANA)
                 {
-                    _q.Cast(_q.GetPrediction(target).CastPosition);
+                    if (!Player.HasBuff("Muramana"))
+                        Items.UseItem(Mur);
                 }
+                else if (Player.HasBuff("Muramana") && Items.HasItem(Mur) && Items.CanUseItem(Mur))
+                    Items.UseItem(Mur);
             }
-            else if (_w.IsReady() && Value.Use("harass.w"))
-            {
-                var ally =
-                    EntityManager.Heroes.Allies
-                        .FirstOrDefault(x => x.IsValidTarget(_w.Range));
+            var t = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
+            if (Player.CountEnemiesInRange(900) > 0)
+                t = TargetSelector.GetTarget(900, TargetSelector.DamageType.Physical);
 
-                if (Value.Use("misc.w.ally"))
+            if (t.IsValidTarget())
+            {
+                
+                if (Program.Combo && Player.Mana > RMANA + QMANA)
+                    Program.CastSpell(Q, t);
+                else if (Program.Farm && Player.Mana > RMANA + EMANA + QMANA + WMANA && OktwCommon.CanHarras())
                 {
-                    if (Player.Instance.Distance(ally) <= _w.Range)
+                    foreach (var enemy in Program.Enemies.Where(enemy => enemy.IsValidTarget(Q.Range) && Config.Item("haras" + enemy.ChampionName).GetValue<bool>()))
                     {
-                        _w.Cast(_w.GetPrediction(ally).CastPosition);
+                        Program.CastSpell(Q, enemy);
                     }
-                    else
-                    {
-                        _w.Cast(Game.CursorPos);
-                    }
-                }
-
-                else if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("harass.w.pred")) &&
-                         (Player.Instance.ManaPercent >= Value.Get("harass.w.mana")))
-                {
-                    _w.Cast(_w.GetPrediction(target).CastPosition);
-                }
-            }
-            else if (_e.IsReady() && Value.Use("harass.e"))
-            {
-                if (Player.Instance.ManaPercent >= Value.Get("harass.e.mana"))
-                {
-                    ELogic();
-                }
-            }
-        }
-
-        #endregion
-
-        #region Laneclear
-
-        public override void Laneclear()
-        {
-            var source =
-                EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy,
-                    Player.Instance.ServerPosition,
-                    _q.Range).OrderByDescending(a => a.MaxHealth).FirstOrDefault();
-
-            if (source == null) return;
-
-            if (_q.IsReady() && Value.Use("lane.q"))
-            {
-                if (Value.Use("lane.q.lasthit") && _q.IsReady())
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana") &&
-                        source.TotalShieldHealth() <= Player.Instance.GetSpellDamage(source, SpellSlot.Q))
-                    {
-                        _q.Cast(source);
-                    }
-                }
-                else if (Player.Instance.ManaPercent >= Value.Get("lane.q.mana"))
-                {
-                    if (Value.Use("lane.q.aa"))
-                    {
-                        if (Player.Instance.GetAutoAttackRange() >= source.Distance(Player.Instance))
-                        {
-                            _q.Cast(source);
-                        }
-                    }
-                    else
-                    {
-                        _q.Cast(source);
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region Jungleclear
-
-        public override void Jungleclear()
-        {
-            var monsters =
-                EntityManager.MinionsAndMonsters.GetJungleMonsters(ObjectManager.Player.ServerPosition,
-                    _q.Range)
-                    .FirstOrDefault(x => x.IsValidTarget(_q.Range));
-            var fappamonsters =
-                EntityManager.MinionsAndMonsters.GetJungleMonsters(ObjectManager.Player.ServerPosition,
-                    _q.Range)
-                    .LastOrDefault(x => x.IsValidTarget(_q.Range));
-
-            if ((monsters == null) || (fappamonsters == null)) return;
-
-            if (Value.Use("jungle.monsters.spell"))
-            {
-                if (Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
-                {
-                    if (Value.Use("jungle.q") && _q.IsReady())
-                    {
-                        _q.Cast(monsters);
-                    }
-                }
-
-                else if (_w.IsReady() && Value.Use("jungle.w"))
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("jungle.w.mana"))
-                    {
-                        _w.Cast(monsters);
-                    }
-                }
-
-                else if (Player.Instance.ManaPercent >= Value.Get("jungle.e.mana"))
-                {
-                    if (Value.Use("jungle.e") && _e.IsReady())
-                    {
-                        _e.Cast(DetectWall());
-                    }
-                }
-            }
-
-            if (Value.Use("jungle.minimonsters.spell"))
-            {
-                if (Player.Instance.ManaPercent >= Value.Get("jungle.q.mana"))
-                {
-                    if (Value.Use("jungle.q") && _q.IsReady())
-                    {
-                        _q.Cast();
-                    }
-                }
-
-                else if (_w.IsReady() && Value.Use("jungle.w"))
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("jungle.w.mana"))
-                    {
-                        _w.Cast(fappamonsters);
-                    }
-                }
-
-                if (Player.Instance.ManaPercent >= Value.Get("jungle.e.mana"))
-                {
-                    if (Value.Use("jungle.e") && _w.IsReady())
-                    {
-                        _e.Cast(DetectWall());
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region Flee
-
-        public override void Flee()
-        {
-            if (_e.IsReady() && Value.Use("flee.e") && _e.IsLearned)
-            {
-                _e.Cast(Player.Instance.ServerPosition.Extend(Game.CursorPos, _e.Range).To3D());
-            }
-        }
-
-        #endregion
-
-        #region Lasthit
-
-        public override void LastHit()
-        {
-            var source =
-                EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault
-                    (m =>
-                        m.IsValidTarget(_q.Range) &&
-                        (Player.Instance.GetSpellDamage(m, SpellSlot.Q) > m.TotalShieldHealth()));
-
-            if (source == null) return;
-
-            if (Player.Instance.ManaPercent >= Value.Get("lasthit.q.mana"))
-            {
-                if (Value.Use("lasthit.q") && _q.IsReady())
-                {
-                    _q.Cast(source);
-                }
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region Utils
-
-        #region Orbwalker
-
-        private void OrbwalkerOnOnPostAttack(AttackableUnit target, EventArgs args)
-        {
-            if (_minionId != target.NetworkId) return;
-            _minionId = target.NetworkId;
-        }
-
-        private void OrbwalkerOnOnPreAttack(AttackableUnit target, EventArgs args)
-        {
-            if (!target.IsMe) return;
-            if (_minionId != target.NetworkId) return;
-            _minionId = target.NetworkId;
-            if (_w.IsReady() && Value.Use("lane.w") && (target.Type == GameObjectType.obj_AI_Turret) &&
-                target.IsValid && (Player.Instance.ManaPercent >= Value.Get("lane.w.mana")))
-            {
-                foreach (var allies in EntityManager.Heroes.Allies)
-                {
-                    if ((allies.Distance(Player.Instance.Position) < 600) && !allies.IsMe && allies.IsAlly)
-                    {
-                        _w.Cast(allies);
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region OnUpdate
-
-        private void GameOnUpdate(EventArgs args)
-        {
-            if (Player.Instance.IsDead || Player.Instance.HasBuff("Recall")
-                || Player.Instance.IsStunned || Player.Instance.IsRooted || Player.Instance.IsCharmed ||
-                Orbwalker.IsAutoAttacking)
-                return;
-
-            if (Value.Use("harass.auto"))
-            {
-                AutoHarass();
-            }
-
-            KillSteal();
-        }
-
-        #endregion
-
-        #region Damage
-
-        private static void Drawing_OnEndScene(EventArgs args)
-        {
-            if (Value.Use("draw.hp.bar"))
-            {
-                foreach (var enemy in EntityManager.Heroes.Enemies.Where(a => !a.IsDead && a.IsHPBarRendered))
-                {
-                    var damage = ComboDamage(enemy);
-                    var damagepercent = (enemy.TotalShieldHealth() - damage > 0 ? enemy.TotalShieldHealth() - damage : 0)/
-                                        (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var hppercent = enemy.TotalShieldHealth()/
-                                    (enemy.MaxHealth + enemy.AllShield + enemy.AttackShield + enemy.MagicShield);
-                    var start = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + damagepercent*104),
-                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
-                    var end = new Vector2((int) (enemy.HPBarPosition.X + Offset.X + hppercent*104) + 2,
-                        (int) (enemy.HPBarPosition.Y + Offset.Y) - 5);
-
-                    Drawing.DrawLine(start, end, 9, Color.Chartreuse);
-                }
-            }
-        }
-
-        private static float ComboDamage(Obj_AI_Base enemy)
-        {
-            var damage = Player.Instance.GetAutoAttackDamage(enemy);
-
-            if (_q.IsReady())
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.Q);
-            }
-
-            if (_w.IsReady())
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.W);
-            }
-
-            if (_e.IsReady())
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.E);
-            }
-
-            if (_r.IsReady())
-            {
-                damage += Player.Instance.GetSpellDamage(enemy, SpellSlot.R);
-            }
-
-            return damage;
-        }
-
-        #endregion
-
-        #region AntiGapCloser
-
-        private void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
-        {
-            if (!e.Sender.IsValidTarget() || (e.Sender.Type != Player.Instance.Type) || !e.Sender.IsEnemy)
-                return;
-
-            if (Value.Use("misc.e.gapcloser"))
-            {
-                if (Value.Use("misc.e.gapcloser.wall"))
-                {
-                    _e.Cast(DetectWall());
                 }
                 else
                 {
-                    _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
+                    var qDmg = OktwCommon.GetKsDamage(t, Q);
+                    var wDmg = W.GetDamage(t);
+                    if (qDmg > t.Health)
+                    {
+                        Program.CastSpell(Q, t);
+                        OverKill = Game.Time;
+                    }
+                    else if (t.IsValidTarget(W.Range) && qDmg + wDmg > t.Health)
+                    {
+                        Program.CastSpell(Q, t);
+                        OverKill = Game.Time;
+                    }
+                }
+
+                if (!Program.None && Player.Mana > RMANA + QMANA + EMANA)
+                {
+                    foreach (var enemy in Program.Enemies.Where(enemy => enemy.IsValidTarget(Q.Range) && !OktwCommon.CanMove(enemy)))
+                        Q.Cast(enemy, true);
                 }
             }
-        }
-
-        #endregion
-
-        #region Geometry-Cone
-
-        private static bool InsideCone()
-        {
-            var target = TargetSelector.GetTarget(_e.Range, DamageType.Mixed);
-            if (target == null) return false;
-            var cone = new Geometry.Polygon.Sector(Player.Instance.Position,
-                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), 90).To3D(),
-                Geometry.DegreeToRadian(180),
-                Player.Instance.AttackRange + Player.Instance.BoundingRadius*2);
-            return cone.IsInside(Game.CursorPos.To2D());
-        }
-
-        #endregion
-
-        #region Slider
-
-        private static void ComboEModeSlider(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
-        {
-            UpdateSlider(2);
-        }
-
-        private static void ModeSlider(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
-        {
-            UpdateSlider(3);
-        }
-
-        private static void HarassEModeSlider(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
-        {
-            UpdateSlider(4);
-        }
-
-        private static void UpdateSlider(int id)
-        {
-            try
+            if (Farm && Player.Mana > RMANA + EMANA + WMANA + QMANA * 3)
             {
-                string displayName;
-                if (id == 2)
-                {
-                    displayName = "E Mode: ";
-
-                    if (Value.Get("combo.emode") == 0)
-                    {
-                        displayName = displayName + "Safe";
-                    }
-                    else if (Value.Get("combo.emode") == 1)
-                    {
-                        displayName = displayName + "Burst";
-                    }
-                    else if (Value.Get("combo.emode") == 2)
-                    {
-                        displayName = displayName + "To Mouse";
-                    }
-                    MainMenu.Combo["combo.emode"].Cast<Slider>().DisplayName = displayName;
-                }
-                else if (id == 3)
-                {
-                    displayName = "Combo Mode: ";
-
-                    if (Value.Get("combo.mode") == 0)
-                    {
-                        displayName = displayName + "Burst (E->Q->W->R)";
-                    }
-                    else if (Value.Get("combo.mode") == 1)
-                    {
-                        displayName = displayName + "Normal (Q->W->E->R)";
-                    }
-                    MainMenu.Combo["combo.mode"].Cast<Slider>().DisplayName = displayName;
-                }
-                else if (id == 4)
-                {
-                    displayName = "E Mode: ";
-
-                    if (Value.Get("harass.emode") == 0)
-                    {
-                        displayName = displayName + "Safe";
-                    }
-                    else if (Value.Get("harass.emode") == 1)
-                    {
-                        displayName = displayName + "Burst";
-                    }
-                    else if (Value.Get("harass.emode") == 2)
-                    {
-                        displayName = displayName + "To Mouse";
-                    }
-                    MainMenu.Harass["harass.emode"].Cast<Slider>().DisplayName = displayName;
-                }
+                farmQ();
+                lag = Game.Time;
             }
-            catch (Exception e)
+            else if (Config.Item("stack", true).GetValue<bool>()&& Utils.TickCount - Q.LastCastAttemptT > 4000 && !Player.HasBuff("Recall") && Player.Mana > Player.MaxMana * 0.95 && Program.None && (Items.HasItem(Tear) || Items.HasItem(Manamune)))
             {
-                Console.WriteLine(e);
-                Chat.Print(
-                    "<font color='#23ADDB'>Marksman AIO:</font><font color='#E81A0C'> an error ocurred. (Code anal)</font>");
+                Q.Cast(Player.ServerPosition);
             }
         }
 
-        #endregion
-
-        #region UltButton
-
-        private static void OnUltButton(ValueBase<bool> sender, ValueBase<bool>.ValueChangeArgs args)
+        private void LogicW()
         {
-            if (args.NewValue && (TargetSelector.GetTarget(_r.Range, DamageType.Mixed) != null))
-                _r.Cast(_r.GetPrediction(TargetSelector.GetTarget(_r.Range, DamageType.Mixed)).CastPosition);
-        }
-
-        #endregion
-
-        #region ELogic
-
-        private static void ELogic()
-        {
-            var target = TargetSelector.GetTarget(Player.Instance.GetAutoAttackRange(), DamageType.Mixed);
-            if (target == null) return;
-
-            if (Value.Mode(Orbwalker.ActiveModes.Combo))
+            var t = TargetSelector.GetTarget(W.Range, TargetSelector.DamageType.Magical);
+            if (t.IsValidTarget())
             {
-                if (Value.Get("combo.emode") == 0)
+                if (Program.Combo && Player.Mana > RMANA + WMANA + EMANA)
+                    Program.CastSpell(W, t);
+                else if (Program.Farm && Config.Item("harrasW", true).GetValue<bool>() && Config.Item("haras" + t.ChampionName).GetValue<bool>() && (Player.Mana > Player.MaxMana * 0.8 || Config.Item("apEz", true).GetValue<bool>()) && Player.Mana > RMANA + WMANA + EMANA + QMANA && OktwCommon.CanHarras())
+                    Program.CastSpell(W, t);
+                else
                 {
-                    var ePos = OKTRGeometry.SafeDashPosRework(_e.Range/2f, target, _e.CastDelay);
-                    if (ePos != Vector3.Zero)
-                        _e.Cast(ePos);
-                }
-                else if (Value.Get("combo.emode") == 1)
-                {
-                    if ((Game.CursorPos.Distance(Player.Instance.Position) >
-                         Player.Instance.AttackRange + Player.Instance.BoundingRadius*2) &&
-                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
+                    var qDmg = Q.GetDamage(t);
+                    var wDmg = OktwCommon.GetKsDamage(t, W);
+                    if (wDmg > t.Health)
                     {
-                        _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
+                        Program.CastSpell(W, t);
+                        OverKill = Game.Time;
                     }
-                    else
+                    else if (wDmg + qDmg > t.Health && Q.IsReady())
                     {
-                        if (InsideCone())
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), -65)
-                                    .To3D());
-                        }
-                        else
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), 65)
-                                    .To3D());
-                        }
+                        Program.CastSpell(W, t);
                     }
                 }
-                else if (Value.Get("combo.emode") == 2)
+
+                if (!Program.None && Player.Mana > RMANA + WMANA + EMANA)
                 {
-                    _e.Cast(Game.CursorPos);
+                    foreach (var enemy in Program.Enemies.Where(enemy => enemy.IsValidTarget(W.Range) && !OktwCommon.CanMove(enemy)))
+                        W.Cast(enemy, true);
                 }
             }
+        }
+
+        private void LogicE()
+        {
+            var t = TargetSelector.GetTarget(1300, TargetSelector.DamageType.Physical);
+            var dashPosition = Player.Position.Extend(Game.CursorPos, E.Range);
+
+            foreach (var target in Program.Enemies.Where(target => target.IsValidTarget(270) && target.IsMelee))
+            {
+                var dashPos = Dash.CastDash();
+                if (!dashPos.IsZero)
+                {
+                    E.Cast(dashPos);
+                }
+            }
+
+            if (t.IsValidTarget() && Player.HealthPercent > 40 && !Player.UnderTurret(true) && (Game.Time - OverKill > 0.3) && dashPosition.CountEnemiesInRange(900) < 3)
+            {
+                if ( t.Distance(Game.CursorPos) + 300 < t.Position.Distance(Player.Position) && !Orbwalking.InAutoAttackRange(t))
+                {
+                    var dmgCombo = 0f;
+
+                    if (t.IsValidTarget(950))
+                    {
+                        dmgCombo = (float)Player.GetAutoAttackDamage(t) + E.GetDamage(t);
+                    }
+
+                    if (Q.IsReady() && Player.Mana > QMANA + EMANA && Q.WillHit(dashPosition, Q.GetPrediction(t).UnitPosition))
+                        dmgCombo = Q.GetDamage(t);
+
+                    if (W.IsReady() && Player.Mana > QMANA + EMANA + WMANA )
+                    {
+                        dmgCombo += W.GetDamage(t);
+                    }
+
+                    if (dmgCombo > t.Health && OktwCommon.ValidUlt(t))
+                    {
+                        E.Cast(dashPosition);
+                        OverKill = Game.Time;
+                        Program.debug("E ks combo");
+                    }
+                }
+            }
+        }
+
+        private void LogicR()
+        {
+            if (Player.UnderTurret(true) && Config.Item("Rturrent", true).GetValue<bool>())
+                return;
+
+            if (Config.Item("autoR", true).GetValue<bool>() && Player.CountEnemiesInRange(800) == 0 && Game.Time - OverKill > 0.6)
+            {
+                R.Range = Config.Item("MaxRangeR", true).GetValue<Slider>().Value;
+                foreach (var target in Program.Enemies.Where(target => target.IsValidTarget(R.Range) && OktwCommon.ValidUlt(target)))
+                {
+                    double predictedHealth = target.Health - OktwCommon.GetIncomingDamage(target);
+
+                    if ( Config.Item("Rcc", true).GetValue<bool>() && target.IsValidTarget(Q.Range + E.Range) && target.Health < Player.MaxHealth && !OktwCommon.CanMove(target))
+                    {
+                        R.Cast(target, true, true);
+                    }
+
+                    double Rdmg = R.GetDamage(target);
+
+                    if (Rdmg > predictedHealth)
+                        Rdmg = getRdmg(target);
+
+                    if (Rdmg > predictedHealth && target.CountAlliesInRange(500) == 0 && Player.Distance(target) > Config.Item("MinRangeR", true).GetValue<Slider>().Value)
+                    {
+                        Program.CastSpell(R,target);
+                        Program.debug("R normal");
+                    }
+                    if ( Program.Combo && Config.Item("Raoe", true).GetValue<bool>() && Player.CountEnemiesInRange(1000) == 0)
+                    {
+                        R.CastIfWillHit(target, 3, true);
+                    }
+                }
+            }
+        }
+
+
+        private bool DashCheck(Vector3 dash)
+        {
+            if ((!dash.UnderTurret(true) || Program.Combo))
+                return true;
             else
+                return false;
+        }
+
+        private double getRdmg(Obj_AI_Base target)
+        {
+            var rDmg = R.GetDamage(target);
+            var dmg = 0;
+            PredictionOutput output = R.GetPrediction(target);
+            Vector2 direction = output.CastPosition.To2D() - Player.Position.To2D();
+            direction.Normalize();
+            List<Obj_AI_Hero> enemies = ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsEnemy && x.IsValidTarget()).ToList();
+            foreach (var enemy in enemies)
             {
-                if (Value.Get("harass.emode") == 0)
+                PredictionOutput prediction = R.GetPrediction(enemy);
+                Vector3 predictedPosition = prediction.CastPosition;
+                Vector3 v = output.CastPosition - Player.ServerPosition;
+                Vector3 w = predictedPosition - Player.ServerPosition;
+                double c1 = Vector3.Dot(w, v);
+                double c2 = Vector3.Dot(v, v);
+                double b = c1 / c2;
+                Vector3 pb = Player.ServerPosition + ((float)b * v);
+                float length = Vector3.Distance(predictedPosition, pb);
+                if (length < (R.Width + 100 + enemy.BoundingRadius / 2) && Player.Distance(predictedPosition) < Player.Distance(target.ServerPosition))
+                    dmg++;
+            }
+            var allMinionsR = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, R.Range, MinionTypes.All);
+            foreach (var minion in allMinionsR)
+            {
+                PredictionOutput prediction = R.GetPrediction(minion);
+                Vector3 predictedPosition = prediction.CastPosition;
+                Vector3 v = output.CastPosition - Player.ServerPosition;
+                Vector3 w = predictedPosition - Player.ServerPosition;
+                double c1 = Vector3.Dot(w, v);
+                double c2 = Vector3.Dot(v, v);
+                double b = c1 / c2;
+                Vector3 pb = Player.ServerPosition + ((float)b * v);
+                float length = Vector3.Distance(predictedPosition, pb);
+                if (length < (R.Width + 100 + minion.BoundingRadius / 2) && Player.Distance(predictedPosition) < Player.Distance(target.ServerPosition))
+                    dmg++;
+            }
+            //if (Config.Item("debug", true).GetValue<bool>())
+            //    Game.PrintChat("R collision" + dmg);
+            if (dmg == 0)
+                return rDmg;
+            else if (dmg > 7)
+                return rDmg * 0.7;
+            else
+                return rDmg - (rDmg * 0.1 * dmg);
+
+        }
+
+        private float GetPassiveTime()
+        {
+            return
+                ObjectManager.Player.Buffs.OrderByDescending(buff => buff.EndTime - Game.Time)
+                    .Where(buff => buff.Name == "ezrealrisingspellforce")
+                    .Select(buff => buff.EndTime)
+                    .FirstOrDefault();
+        }
+        public void debug(string msg)
+        {
+            MsgDebug = msg;
+            NotTime = Game.Time;
+            if (Config.Item("debug", true).GetValue<bool>())
+                Console.WriteLine(msg);
+        }
+
+        private bool Farm
+        {
+            get { return (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear) || (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed) || (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LastHit); }
+        }
+
+        public void farmQ()
+        {
+            if (Program.LaneClear)
+            {
+                var mobs = MinionManager.GetMinions(Player.ServerPosition, 800, MinionTypes.All, MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+                if (mobs.Count > 0)
                 {
-                    var ePos = OKTRGeometry.SafeDashPosRework(_e.Range/2f, target, _e.CastDelay);
-                    if (ePos != Vector3.Zero)
-                        _e.Cast(ePos);
+                    var mob = mobs[0];
+                    Q.Cast(mob, true);
                 }
-                else if (Value.Get("harass.emode") == 1)
+            }
+
+            if (!Config.Item("farmQ", true).GetValue<bool>())
+                return;
+            
+            var minions = MinionManager.GetMinions(Player.ServerPosition, Q.Range);
+            int orbTarget = 0;
+            if (Orbwalker.GetTarget() != null)
+                orbTarget = Orbwalker.GetTarget().NetworkId;
+
+            foreach (var minion in minions.Where(minion => minion.IsValidTarget() && orbTarget != minion.NetworkId && !Orbwalker.InAutoAttackRange(minion) && minion.Health < Q.GetDamage(minion)))
+            {
+                if (Q.Cast(minion) == Spell.CastStates.SuccessfullyCasted)
+                    return;
+            }
+
+            if (Config.Item("LC", true).GetValue<bool>() && Program.LaneClear && !Orbwalking.CanAttack() && Player.ManaPercent > Config.Item("Mana", true).GetValue<Slider>().Value)
+            {
+                var LCP = Config.Item("LCP", true).GetValue<bool>();
+                var PT = Game.Time - GetPassiveTime() > -1.5 || !E.IsReady();
+
+                foreach (var minion in minions.Where(minion => minion.IsValidTarget() && Orbwalker.InAutoAttackRange(minion) && orbTarget != minion.NetworkId))
                 {
-                    if ((Game.CursorPos.Distance(Player.Instance.Position) >
-                         Player.Instance.AttackRange + Player.Instance.BoundingRadius*2) &&
-                        !Player.Instance.Position.Extend(Game.CursorPos, _e.Range).IsUnderTurret())
+                    var hpPred = HealthPrediction.GetHealthPrediction(minion, 300);
+                    if (hpPred < 10)
+                        continue;
+                    var dmgMinion = minion.GetAutoAttackDamage(minion);
+                    var qDmg = Q.GetDamage(minion);
+                    if (hpPred < qDmg)
                     {
-                        _e.Cast(Player.Instance.Position.Extend(Game.CursorPos, _e.Range).To3D());
+                        if (hpPred > dmgMinion)
+                        {
+                            if (Q.Cast(minion) == Spell.CastStates.SuccessfullyCasted)
+                                return;
+                        }
+                    }
+                    else if (PT || LCP)
+                    {
+                        if(hpPred > dmgMinion + qDmg)
+                        {
+                            if (Q.Cast(minion) == Spell.CastStates.SuccessfullyCasted)
+                                return;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void KsJungle()
+        {
+            var mobs = MinionManager.GetMinions(Player.ServerPosition, float.MaxValue, MinionTypes.All, MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            foreach (var mob in mobs)
+            {
+                //debug(mob.SkinName);
+                if (((mob.SkinName == "SRU_Dragon" && Config.Item("Rdragon", true).GetValue<bool>())
+                    || (mob.SkinName == "SRU_Baron" && Config.Item("Rbaron", true).GetValue<bool>())
+                    || (mob.SkinName == "SRU_Red" && Config.Item("Rred", true).GetValue<bool>())
+                    || (mob.SkinName == "SRU_Blue" && Config.Item("Rblue", true).GetValue<bool>()))
+                    && (mob.CountAlliesInRange(1000) == 0 || Config.Item("Rally", true).GetValue<bool>())
+                    && mob.Health < mob.MaxHealth
+                    && mob.Distance(Player.Position) > 1000
+                    )
+                {
+                    if (DragonDmg == 0)
+                        DragonDmg = mob.Health;
+
+                    if (Game.Time - DragonTime > 3)
+                    {
+                        if (DragonDmg - mob.Health > 0)
+                        {
+                            DragonDmg = mob.Health;
+                        }
+                        DragonTime = Game.Time;
                     }
                     else
                     {
-                        if (InsideCone())
+                        var DmgSec = (DragonDmg - mob.Health) * (Math.Abs(DragonTime - Game.Time) / 3);
+                        //Program.debug("DS  " + DmgSec);
+                        if (DragonDmg - mob.Health > 0)
                         {
-                            _e.Cast(
-                                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), 255)
-                                    .To3D());
+                            debug(mob.SkinName + " " + (DmgSec / 3) + " dmg per sec");
+                            var timeTravel = GetUltTravelTime(Player, R.Speed, R.Delay, mob.Position);
+                            var timeR = (mob.Health - R.GetDamage(mob)) / (DmgSec / 3);
+                            //Program.debug("timeTravel " + timeTravel + "timeR " + timeR + "d " + R.GetDamage(mob));
+                            if (timeTravel > timeR)
+                                R.Cast(mob.Position);
+                            
                         }
                         else
-                        {
-                            _e.Cast(
-                                OKTRGeometry.Rotatoes(Player.Instance.Position.To2D(), target.Position.To2D(), 65)
-                                    .To3D());
-                        }
+                            DragonDmg = mob.Health;
+                        
+                        //Program.debug("" + GetUltTravelTime(ObjectManager.Player, R.Speed, R.Delay, mob.Position));
                     }
-                }
-                else if (Value.Get("harass.emode") == 2)
-                {
-                    _e.Cast(Game.CursorPos);
                 }
             }
         }
 
-        #endregion
-
-        #region AutoHarass
-
-        private static void AutoHarass()
+        private float GetUltTravelTime(Obj_AI_Hero source, float speed, float delay, Vector3 targetpos)
         {
-            var target = TargetSelector.GetTarget(_q.Range, DamageType.Mixed);
+            float distance = Vector3.Distance(source.ServerPosition, targetpos);
+            float missilespeed = speed;
 
-            if (_q.IsReady() && Value.Use("harass.q"))
-            {
-                if ((_q.GetPrediction(target).HitChancePercent >= Value.Get("harass.q.pred")) &&
-                    (Player.Instance.ManaPercent >= Value.Get("harass.q.mana")))
-                {
-                    _q.Cast(_q.GetPrediction(target).CastPosition);
-                }
-            }
-            else if (_w.IsReady() && Value.Use("harass.w"))
-            {
-                var ally =
-                    EntityManager.Heroes.Allies
-                        .FirstOrDefault(x => x.IsValidTarget(_w.Range));
-
-                if (Value.Use("misc.w.ally"))
-                {
-                    if (Player.Instance.Distance(ally) <= _w.Range)
-                    {
-                        _w.Cast(_w.GetPrediction(ally).CastPosition);
-                    }
-                    else
-                    {
-                        _w.Cast(Game.CursorPos);
-                    }
-                }
-
-                else if ((_w.GetPrediction(target).HitChancePercent >= Value.Get("harass.w.pred")) &&
-                         (Player.Instance.ManaPercent >= Value.Get("harass.w.mana")))
-                {
-                    _w.Cast(_w.GetPrediction(target).CastPosition);
-                }
-            }
+            return (distance / missilespeed + delay);
         }
 
-        #endregion
-
-        #region OnBuffGain
-
-        private void BuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
+        private void SetMana()
         {
-            if (Value.Use("misc.q") && _q.IsReady())
+            if ((Config.Item("manaDisable" ,true).GetValue<bool>() && Program.Combo) || Player.HealthPercent < 20)
             {
-                if (sender.IsMe) return;
+                QMANA = 0;
+                WMANA = 0;
+                EMANA = 0;
+                RMANA = 0;
+                return;
+            }
 
-                if (Player.Instance.IsInRange(sender, _q.Range) && Value.Get("misc.q.mana") >= Player.Instance.ManaPercent)
-                {
-                    if (Value.Use("misc.q.stun") && sender.IsStunned)
-                    {
-                        _q.Cast(sender);
-                    }
-                    if (Value.Use("misc.q.snare") && sender.IsRooted)
-                    {
-                        _q.Cast(sender);
-                    }
-                    if (Value.Use("misc.q.charm") && sender.IsCharmed)
-                    {
-                        _q.Cast(sender);
-                    }
-                    if (Value.Use("misc.q.taunt") && sender.IsTaunted)
-                    {
-                        _q.Cast(sender);
-                    }
-                    if (Value.Use("misc.q.fear") && sender.IsFeared)
-                    {
-                        _q.Cast(sender);
-                    }
-                }
-            }
-            if (Value.Use("misc.w") && _w.IsReady())
-            {
-                if (Player.Instance.IsInRange(sender, _w.Range) && Value.Get("misc.w.mana") >= Player.Instance.ManaPercent)
-                {
-                    if (Value.Use("misc.w.stun") && sender.IsStunned)
-                    {
-                        _w.Cast(sender);
-                    }
-                    if (Value.Use("misc.w.snare") && sender.IsRooted)
-                    {
-                        _w.Cast(sender);
-                    }
-                    if (Value.Use("misc.w.charm") && sender.IsCharmed)
-                    {
-                        _w.Cast(sender);
-                    }
-                    if (Value.Use("misc.w.taunt") && sender.IsTaunted)
-                    {
-                        _w.Cast(sender);
-                    }
-                    if (Value.Use("misc.w.fear") && sender.IsFeared)
-                    {
-                        _w.Cast(sender);
-                    }
-                }
-            }
+            QMANA = Q.Instance.ManaCost;
+            WMANA = W.Instance.ManaCost;
+            EMANA = E.Instance.ManaCost;
+
+            if (!R.IsReady())
+                RMANA = QMANA - Player.PARRegenRate * Q.Instance.Cooldown;
+            else
+                RMANA = R.Instance.ManaCost;
         }
 
-        #endregion 
-
-        #region KillSteal
-
-        private static void KillSteal()
+        public static void drawText(string msg, Obj_AI_Hero Hero, System.Drawing.Color color)
         {
-            foreach (
-                var target in
-                    EntityManager.Heroes.Enemies.Where(
-                        hero =>
-                            hero.IsValidTarget(1200) && !hero.IsDead && !hero.IsZombie &&
-                            (hero.HealthPercent <= 25)))
-            {
-                if (Value.Use("killsteal.q") && _q.IsReady())
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.q.mana"))
-                    {
-                        if (target.Health + target.AttackShield <
-                            Player.Instance.GetSpellDamage(target, SpellSlot.Q))
-
-                        {
-                            _q.Cast(_q.GetPrediction(target).CastPosition);
-                        }
-                    }
-                }
-
-                if (Value.Use("killsteal.w") && _w.IsReady())
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.w.mana"))
-                    {
-                        if (target.Health + target.AttackShield <
-                            Player.Instance.GetSpellDamage(target, SpellSlot.W))
-
-                        {
-                            _w.Cast(_w.GetPrediction(target).CastPosition);
-                        }
-                    }
-                }
-
-                if (Value.Use("killsteal.e") && _e.IsReady())
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.e.mana"))
-                    {
-                        var tawah =
-                            EntityManager.Turrets.Enemies.FirstOrDefault(
-                                a =>
-                                    !a.IsDead && (a.Distance(target) <= 775 + Player.Instance.BoundingRadius +
-                                                  target.BoundingRadius/2 + 44.2));
-
-                        if ((target.Health + target.AttackShield <
-                             Player.Instance.GetSpellDamage(target, SpellSlot.E)) &&
-                            (target.Position.CountEnemiesInRange(800) == 1) && (tawah == null) &&
-                            (Player.Instance.Mana >= 120))
-                        {
-                            _e.Cast(target);
-                        }
-                    }
-                }
-                if (Value.Use("killsteal.r") && _r.IsReady())
-                {
-                    if (Player.Instance.ManaPercent >= Value.Get("killsteal.r.mana"))
-                    {
-                        if (target.Distance(Player.Instance) <= 1200)
-                            if (target.Health + target.AttackShield <
-                                Player.Instance.GetSpellDamage(target, SpellSlot.R))
-                            {
-                                _r.Cast(_r.GetPrediction(target).CastPosition);
-                            }
-                    }
-                }
-            }
+            var wts = Drawing.WorldToScreen(Hero.Position);
+            Drawing.DrawText(wts[0] - (msg.Length) * 5, wts[1], color, msg);
         }
 
-        #endregion
-
-        #region DetectWall
-
-        private Vector3 DetectWall()
+        private void Drawing_OnDraw(EventArgs args)
         {
-            const int circleLineSegmentN = 20;
-
-            var outRadius = 700/(float) Math.Cos(2*Math.PI/circleLineSegmentN);
-            var inRadius = 300/(float) Math.Cos(2*Math.PI/circleLineSegmentN);
-            var bestPoint = ObjectManager.Player.Position;
-            for (var i = 1; i <= circleLineSegmentN; i++)
+            if (Config.Item("qRange", true).GetValue<bool>())
             {
-                var angle = i*2*Math.PI/circleLineSegmentN;
-                var point =
-                    new Vector2(ObjectManager.Player.Position.X + outRadius*(float) Math.Cos(angle),
-                        ObjectManager.Player.Position.Y + outRadius*(float) Math.Sin(angle)).To3D();
-                var point2 =
-                    new Vector2(ObjectManager.Player.Position.X + inRadius*(float) Math.Cos(angle),
-                        ObjectManager.Player.Position.Y + inRadius*(float) Math.Sin(angle)).To3D();
-                if (((point.ToNavMeshCell().CollFlags & CollisionFlags.Wall) != 0) &&
-                    ((point2.ToNavMeshCell().CollFlags & CollisionFlags.Wall) != 0) &&
-                    (Game.CursorPos.Distance(point) < Game.CursorPos.Distance(bestPoint)))
+                if (Config.Item("onlyRdy", true).GetValue<bool>())
                 {
-                    bestPoint = point;
-                    return bestPoint;
+                    if (Q.IsReady())
+                        Utility.DrawCircle(Player.Position, Q.Range, System.Drawing.Color.Cyan, 1, 1);
                 }
+                else
+                    Utility.DrawCircle(Player.Position, Q.Range, System.Drawing.Color.Cyan, 1, 1);
+            }
+            if (Config.Item("wRange", true).GetValue<bool>())
+            {
+                if (Config.Item("onlyRdy", true).GetValue<bool>())
+                {
+                    if (W.IsReady())
+                        Utility.DrawCircle(ObjectManager.Player.Position, W.Range, System.Drawing.Color.Orange, 1, 1);
+                }
+                else
+                    Utility.DrawCircle(ObjectManager.Player.Position, W.Range, System.Drawing.Color.Orange, 1, 1);
+            }
+            if (Config.Item("eRange", true).GetValue<bool>())
+            {
+                if (Config.Item("onlyRdy", true).GetValue<bool>())
+                {
+                    if (E.IsReady())
+                        Utility.DrawCircle(Player.Position, E.Range, System.Drawing.Color.Yellow, 1, 1);
+                }
+                else
+                    Utility.DrawCircle(Player.Position, E.Range, System.Drawing.Color.Yellow, 1, 1);
+            }
+            if (Config.Item("rRange", true).GetValue<bool>())
+            {
+                if (Config.Item("onlyRdy", true).GetValue<bool>())
+                {
+                    if (R.IsReady())
+                        Utility.DrawCircle(Player.Position, R.Range, System.Drawing.Color.Gray, 1, 1);
+                }
+                else
+                    Utility.DrawCircle(Player.Position, R.Range, System.Drawing.Color.Gray, 1, 1);
             }
 
-            return new Vector3();
+
+            if (Config.Item("noti", true).GetValue<bool>())
+            {
+                if (Game.Time - NotTime < 10)
+                {
+                    Drawing.DrawText(Drawing.Width * 0.01f, Drawing.Height * 0.5f, System.Drawing.Color.Red, MsgDebug);
+                }
+                else
+                {
+                    MsgDebug = "wait";
+                    Drawing.DrawText(Drawing.Width * 0.01f, Drawing.Height * 0.5f, System.Drawing.Color.GreenYellow, MsgDebug);
+                }
+
+                var target = TargetSelector.GetTarget(1500, TargetSelector.DamageType.Physical);
+                if (target.IsValidTarget())
+                {
+
+                    var poutput = Q.GetPrediction(target);
+                    if ((int)poutput.Hitchance == 5)
+                        Render.Circle.DrawCircle(poutput.CastPosition, 50, System.Drawing.Color.YellowGreen);
+                    if (Q.GetDamage(target) > target.Health)
+                    {
+                        Render.Circle.DrawCircle(target.ServerPosition, 200, System.Drawing.Color.Red);
+                        Drawing.DrawText(Drawing.Width * 0.1f, Drawing.Height * 0.4f, System.Drawing.Color.Red, "Q kill: " + target.ChampionName + " have: " + target.Health + "hp");
+                    }
+                    else if (Q.GetDamage(target) + W.GetDamage(target) > target.Health)
+                    {
+                        Render.Circle.DrawCircle(target.ServerPosition, 200, System.Drawing.Color.Red);
+                        Drawing.DrawText(Drawing.Width * 0.1f, Drawing.Height * 0.4f, System.Drawing.Color.Red, "Q + W kill: " + target.ChampionName + " have: " + target.Health + "hp");
+                    }
+                    else if (Q.GetDamage(target) + W.GetDamage(target) + E.GetDamage(target) > target.Health)
+                    {
+                        Render.Circle.DrawCircle(target.ServerPosition, 200, System.Drawing.Color.Red);
+                        Drawing.DrawText(Drawing.Width * 0.1f, Drawing.Height * 0.4f, System.Drawing.Color.Red, "Q + W + E kill: " + target.ChampionName + " have: " + target.Health + "hp");
+                    }
+                }
+            }
         }
-
-        #endregion
-
-        #endregion
     }
 }
